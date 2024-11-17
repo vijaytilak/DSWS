@@ -7,6 +7,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  User,
 } from "lucide-react"
 
 import {
@@ -57,7 +58,7 @@ export function NavUser() {
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
                 <AvatarFallback className="rounded-lg">
-                  {user.displayName ? user.displayName[0].toUpperCase() : user.email?.[0].toUpperCase()}
+                  <User className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -78,7 +79,7 @@ export function NavUser() {
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
                   <AvatarFallback className="rounded-lg">
-                    {user.displayName ? user.displayName[0].toUpperCase() : user.email?.[0].toUpperCase()}
+                    <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
