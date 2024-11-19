@@ -41,10 +41,12 @@ export function NavUser({
     avatar: string
   }
 }) {  
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
   const { logout } = useAuth()
 
   const handleLogout = async () => {
+    // Close mobile sidebar first
+    setOpenMobile(false)
     try {
       await logout()
     } catch (error) {

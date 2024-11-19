@@ -39,6 +39,10 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       await signOut(auth);
+      // Reset user state before navigation
+      setUser(null);
+      // Small delay to ensure state cleanup
+      await new Promise(resolve => setTimeout(resolve, 0));
       router.push('/login');
     } catch (error) {
       throw error;
