@@ -116,6 +116,10 @@ const data = {
       icon: Settings2,
       items: [
         {
+          title: "Profile",
+          url: "/dashboard/profile",
+        },
+        {
           title: "General",
           url: "#",
         },
