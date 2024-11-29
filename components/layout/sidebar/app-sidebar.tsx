@@ -17,7 +17,7 @@ import {
 import { NavMain } from "@/components/layout/sidebar/nav-main"
 import { NavProjects } from "@/components/layout/sidebar/nav-projects"
 import { NavUser } from "@/components/layout/sidebar/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { AppLogo } from "@/components/layout/sidebar/app-logo"
 import {
   Sidebar,
   SidebarContent,
@@ -32,20 +32,10 @@ const data = {
 
   teams: [
     {
-      name: "Acme Inc",
+      name: "Datasphere",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
+      plan: "Dashboard",
+    }
   ],
   navMain: [
     {
@@ -64,48 +54,6 @@ const data = {
         },
         {
           title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
           url: "#",
         },
       ],
@@ -148,12 +96,7 @@ const data = {
       name: "Sales & Marketing",
       url: "#",
       icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
+    }
   ],
 }
 
@@ -171,7 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <AppLogo teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
