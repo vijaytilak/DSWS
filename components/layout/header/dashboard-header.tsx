@@ -1,6 +1,12 @@
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ThemeToggle } from "@/components/layout/header/theme-toggle"
+import dynamic from 'next/dynamic'
+
+const ThemeToggleClient = dynamic(
+  () => import('@/components/layout/header/theme-toggle').then(mod => ({ default: mod.ThemeToggle })),
+  { ssr: false }
+)
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,7 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-export function DashboardHeader() {
+export async function DashboardHeader() {
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 px-4 flex-1">
@@ -31,7 +37,7 @@ export function DashboardHeader() {
         </Breadcrumb>
       </div>
       <div className="flex items-center pr-4">
-        <ThemeToggle />
+        <ThemeToggleClient />
       </div>
     </header>
   )
