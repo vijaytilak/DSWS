@@ -7,10 +7,11 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Sheet = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Root>
->(({ children, ...props }, ref) => {
+interface SheetProps extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Root> {
+  children: React.ReactNode;
+}
+
+const Sheet = ({ children, ...props }: SheetProps) => {
   React.useEffect(() => {
     return () => {
       // Cleanup pointer-events on unmount
@@ -19,11 +20,11 @@ const Sheet = React.forwardRef<
   }, []);
 
   return (
-    <SheetPrimitive.Root {...props} ref={ref}>
+    <SheetPrimitive.Root {...props}>
       {children}
     </SheetPrimitive.Root>
   );
-});
+};
 Sheet.displayName = SheetPrimitive.Root.displayName;
 
 const SheetTrigger = SheetPrimitive.Trigger
