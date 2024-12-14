@@ -1,14 +1,41 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, } from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { ThemeToggle } from "@/components/layout/header/theme-toggle"
-import Datasphere from "@/components/Datasphere/Datasphere"
+'use client';
 
-export default async function Page() {
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { DashboardHeader } from "@/components/layout/header/dashboard-header";
+import sampleData from '@/data/sample.json';
+
+const DataSphere = dynamic(() => import('@/components/DataSphere/DataSphere'), {
+  ssr: false
+});
+
+export default function Page() {
+  const [flowType, setFlowType] = useState("bidirectional");
+  const [centreFlow, setCentreFlow] = useState(false);
+  const [threshold, setThreshold] = useState(0);
+
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex-1 rounded-xl bg-muted/50 p-4">
-        <Datasphere />
+    <main className="flex h-screen flex-col">
+      <DashboardHeader
+        flowType={flowType}
+        setFlowType={setFlowType}
+        centreFlow={centreFlow}
+        setCentreFlow={setCentreFlow}
+        threshold={threshold}
+        setThreshold={setThreshold}
+      />
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full p-4 pt-0">
+          <div className="h-full rounded-xl bg-muted/50 p-4">
+            <DataSphere 
+              data={sampleData}
+              flowType={flowType}
+              centreFlow={centreFlow}
+              threshold={threshold}
+            />
+          </div>
+        </div>
       </div>
-    </div>
-  )
+    </main>
+  );
 }

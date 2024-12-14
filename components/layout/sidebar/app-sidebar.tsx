@@ -32,7 +32,7 @@ const data = {
 
   teams: [
     {
-      name: "Datasphere",
+      name: "DataSphere",
       logo: GalleryVerticalEnd,
       plan: "Dashboard",
     }

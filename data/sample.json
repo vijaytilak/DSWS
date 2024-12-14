@@ -1,0 +1,135 @@
+{
+  "itemIDs": [
+    {
+      "itemID": 0,
+      "itemLabel": "Pizza Hut",
+      "itemSize_absolute": 47000,
+      "itemSize_relative": 0.022091137
+    },
+    {
+      "itemID": 1,
+      "itemLabel": "Others",
+      "itemSize_absolute": 24599,
+      "itemSize_relative": 0.115621254
+    },
+    {
+      "itemID": 2,
+      "itemLabel": "Other Pizza",
+      "itemSize_absolute": 28006,
+      "itemSize_relative": 0.037630137
+    },
+    {
+      "itemID": 3,
+      "itemLabel": "McDonald's",
+      "itemSize_absolute": 124599,
+      "itemSize_relative": 0.215621254
+    },
+    {
+      "itemID": 4,
+      "itemLabel": "Subway",
+      "itemSize_absolute": 38006,
+      "itemSize_relative": 0.087630137
+    },
+    {
+      "itemID": 5,
+      "itemLabel": "Red Rooster",
+      "itemSize_absolute": 18006,
+      "itemSize_relative": 0.027630137
+    },
+    {
+      "itemID": 6,
+      "itemLabel": "KFC",
+      "itemSize_absolute": 58006,
+      "itemSize_relative": 0.097630137
+    },
+    {
+      "itemID": 7,
+      "itemLabel": "Domino's",
+      "itemSize_absolute": 48006,
+      "itemSize_relative": 0.067630137
+    },
+    {
+      "itemID": 8,
+      "itemLabel": "Guzman y Gomez",
+      "itemSize_absolute": 38006,
+      "itemSize_relative": 0.047630137
+    },
+    {
+      "itemID": 9,
+      "itemLabel": "Hungry Jacks",
+      "itemSize_absolute": 68006,
+      "itemSize_relative": 0.107630137
+    },
+    {
+      "itemID": 10,
+      "itemLabel": "Boost Juice",
+      "itemSize_absolute": 28006,
+      "itemSize_relative": 0.037630137
+    }
+  ],
+  "flows_absolute": [
+    {
+      "from": 3,
+      "to": 6,
+      "outFlow": 5409752,
+      "inFlow": 5040952,
+      "interaction": 368800
+    },
+    {
+      "from": 3,
+      "to": 7,
+      "outFlow": 1634698,
+      "inFlow": 1425301,
+      "interaction": 209397
+    },
+    {
+      "from": 3,
+      "to": 1,
+      "outFlow": 2550793,
+      "inFlow": 2252324,
+      "interaction": 298469
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "outFlow": 1234567,
+      "inFlow": 987654,
+      "interaction": 246913
+    },
+    {
+      "from": 9,
+      "to": 3,
+      "outFlow": 3456789,
+      "inFlow": 3123456,
+      "interaction": 333333
+    },
+    {
+      "from": 8,
+      "to": 9,
+      "outFlow": 876543,
+      "inFlow": 654321,
+      "interaction": 222222
+    },
+    {
+      "from": 0,
+      "to": 2,
+      "outFlow": 445566,
+      "inFlow": 334455,
+      "interaction": 111111
+    },
+    {
+      "from": 4,
+      "to": 3,
+      "outFlow": 789012,
+      "inFlow": 567890,
+      "interaction": 221122
+    },
+    {
+      "from": 10,
+      "to": 3,
+      "outFlow": 234567,
+      "inFlow": 123456,
+      "interaction": 111111
+    }
+  ]
+}

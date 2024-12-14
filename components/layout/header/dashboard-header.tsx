@@ -1,42 +1,48 @@
+'use client';
+
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import dynamic from 'next/dynamic'
+import { Controls } from "@/components/DataSphere/components/Controls"
 
 const ThemeToggleClient = dynamic(
   () => import('@/components/layout/header/theme-toggle').then(mod => ({ default: mod.ThemeToggle })),
   { ssr: false }
 )
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+interface DashboardHeaderProps {
+  flowType: string;
+  setFlowType: (value: string) => void;
+  centreFlow: boolean;
+  setCentreFlow: (value: boolean) => void;
+  threshold: number;
+  setThreshold: (value: number) => void;
+}
 
-export async function DashboardHeader() {
+export function DashboardHeader({
+  flowType,
+  setFlowType,
+  centreFlow,
+  setCentreFlow,
+  threshold,
+  setThreshold
+}: DashboardHeaderProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-      <div className="flex items-center gap-2 px-4 flex-1">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="#">
-                Building Your Application
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="flex items-center pr-4">
+    <header className="border-b bg-background">
+      <div className="flex h-16 items-center gap-4 px-4">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="-ml-2" />
+          <Separator orientation="vertical" className="h-6" />
+        </div>
+        <Controls
+          threshold={threshold}
+          setThreshold={setThreshold}
+          flowType={flowType}
+          setFlowType={setFlowType}
+          centreFlow={centreFlow}
+          setCentreFlow={setCentreFlow}
+          className="flex-1"
+        />
         <ThemeToggleClient />
       </div>
     </header>

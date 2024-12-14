@@ -4,7 +4,6 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { DashboardHeader } from "@/components/layout/header/dashboard-header"
 
 export default function DashboardLayout({
   children,
@@ -16,7 +15,6 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <DashboardHeader />
           {children}
         </SidebarInset>
       </SidebarProvider>
