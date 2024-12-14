@@ -28,7 +28,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Keep GET method for testing
 export async function GET() {
   try {
     const apiUrl = `${process.env.API_URL}/${process.env.BUBBLES_API}`;

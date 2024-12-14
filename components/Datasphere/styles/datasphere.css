@@ -1,0 +1,43 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: black;
+  color: white;
+}
+
+#svg-container {
+  background-color: black;
+  max-width: 100%;
+  height: 100%;
+  display: flex;    
+}
+
+#flow-type-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+#filter-threshold-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;  
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  width: auto;
+  padding: 6px;
+  font: 12px sans-serif;
+  background: white;
+  border: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.5);
+  color: #333;
+}
+

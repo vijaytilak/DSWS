@@ -1,7 +1,7 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/layout/header/theme-toggle"
-import Datasphere from "@/components/Datasphere/Datasphere"
+import Datasphere from "@/components/datasphere/Datasphere"
 
 export default async function Page() {
   return (
