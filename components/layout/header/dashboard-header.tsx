@@ -33,6 +33,14 @@ export function DashboardHeader({
       <div className="flex flex-1 items-center gap-2 px-3">
         <SidebarTrigger />
         <Separator orientation="vertical" className="mr-2 h-4" />
+        <Controls
+          threshold={threshold}
+          setThreshold={setThreshold}
+          flowType={flowType}
+          setFlowType={setFlowType}
+          centreFlow={centreFlow}
+          setCentreFlow={setCentreFlow}
+        />
         <div className="flex-1" />
         <RightSidebarTrigger />
       </div>
