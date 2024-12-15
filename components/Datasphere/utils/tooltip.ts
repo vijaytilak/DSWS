@@ -56,7 +56,8 @@ export function hideTooltip() {
 }
 
 export function getBubbleTooltip(bubble: Bubble): string {
-  if (bubble.id === bubble.noOfBubbles) {
+  // Center bubble is always the last one in the array
+  if (bubble.id === bubble.totalBubbles - 1) {
     return ''; // No tooltip for center bubble
   }
   return `${formatNumber(bubble.itemSizeAbsolute)} people visited ${bubble.label}`;
@@ -66,12 +67,12 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
   if (centreFlow) {
     switch (flowDirection) {
       case 'inFlow':
-        return `Churn into ${source.label} was ${formatNumber(flow.absolute_inFlow)}.`;
+        return `Churn into ${target.label} was ${formatNumber(flow.absolute_inFlow)}.`;
       case 'outFlow':
         return `Churn away from ${source.label} was ${formatNumber(flow.absolute_outFlow)}.`;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          return `Churn into ${source.label} was ${formatNumber(flow.absolute_netFlow)}.`;
+          return `Churn into ${target.label} was ${formatNumber(flow.absolute_netFlow)}.`;
         } else {
           return `Churn away from ${source.label} was ${formatNumber(flow.absolute_netFlow)}.`;
         }

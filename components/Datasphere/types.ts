@@ -29,6 +29,7 @@ export interface Bubble {
   focus: boolean;
   fontSize: number;
   outerRingRadius: number;
+  totalBubbles: number; // Total number of bubbles including center
 }
 
 export interface Flow {

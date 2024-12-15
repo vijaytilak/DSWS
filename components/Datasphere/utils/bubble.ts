@@ -73,6 +73,7 @@ export function prepareBubbleData(
       focus: false,
       fontSize,
       outerRingRadius: scaledRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
+      totalBubbles: noOfBubbles + 1, // Total including center bubble
     };
   });
 
@@ -93,6 +94,7 @@ export function prepareBubbleData(
     focus: false,
     fontSize: CONFIG.bubble.minFontSize * 0.7,
     outerRingRadius: 0.15 * positionCircleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
+    totalBubbles: noOfBubbles + 1, // Total including center bubble
   };
 
   return { 
