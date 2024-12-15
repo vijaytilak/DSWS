@@ -1,9 +1,11 @@
 import ProtectedRoute from "@/components/auth/protected-route";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar"
+import { AppRightSidebar } from "@/components/layout/sidebar/right-sidebar"
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { RightSidebarProvider } from "@/components/ui/right-sidebar"
 
 export default function DashboardLayout({
   children,
@@ -12,12 +14,19 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          {children}
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="relative flex min-h-screen flex-col">
+        <RightSidebarProvider>
+          <SidebarProvider>
+            <div className="flex flex-1">
+              <AppSidebar />
+              <SidebarInset className="flex-1">
+                {children}
+              </SidebarInset>
+              <AppRightSidebar />
+            </div>
+          </SidebarProvider>
+        </RightSidebarProvider>
+      </div>
     </ProtectedRoute>
   );
 }

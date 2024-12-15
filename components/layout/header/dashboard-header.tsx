@@ -2,6 +2,7 @@
 
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { RightSidebarTrigger } from "@/components/ui/right-sidebar"
 import dynamic from 'next/dynamic'
 import { Controls } from "@/components/DataSphere/components/Controls"
 
@@ -28,22 +29,12 @@ export function DashboardHeader({
   setThreshold
 }: DashboardHeaderProps) {
   return (
-    <header className="bg-background">
-      <div className="flex h-16 items-center gap-4 px-4">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="-ml-2" />
-          <Separator orientation="vertical" className="h-6" />
-        </div>
-        <Controls
-          threshold={threshold}
-          setThreshold={setThreshold}
-          flowType={flowType}
-          setFlowType={setFlowType}
-          centreFlow={centreFlow}
-          setCentreFlow={setCentreFlow}
-          className="flex-1"
-        />
-        <ThemeToggleClient />
+    <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
+      <div className="flex flex-1 items-center gap-2 px-3">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <div className="flex-1" />
+        <RightSidebarTrigger />
       </div>
     </header>
   )
