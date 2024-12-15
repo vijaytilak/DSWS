@@ -77,6 +77,7 @@ export function prepareBubbleData(
   });
 
   // Add center bubble
+  const isDark = document.documentElement.classList.contains('dark');
   const centerBubble = {
     id: noOfBubbles,
     label: "Market",
@@ -88,7 +89,7 @@ export function prepareBubbleData(
     angle: 0,
     itemSizeAbsolute: 0,
     sizeRankPercentage: 0,
-    color: "transparent",
+    color: isDark ? "white" : "black",
     focus: false,
     fontSize: CONFIG.bubble.minFontSize * 0.7,
     outerRingRadius: 0.15 * positionCircleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,

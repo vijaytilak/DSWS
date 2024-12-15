@@ -56,19 +56,40 @@ export function hideTooltip() {
 }
 
 export function getBubbleTooltip(bubble: Bubble): string {
+  if (bubble.id === bubble.noOfBubbles) {
+    return ''; // No tooltip for center bubble
+  }
   return `${formatNumber(bubble.itemSizeAbsolute)} people visited ${bubble.label}`;
 }
 
-export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string): string {
-  const value = flowDirection === 'netFlow' ? flow.absolute_netFlow :
-                flowDirection === 'inFlow' ? flow.absolute_inFlow :
-                flowDirection === 'outFlow' ? flow.absolute_outFlow :
-                Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-                
-  const direction = flowDirection === 'interaction' ? 'interacted between' :
-                   flowDirection === 'netFlow' ? (flow.absolute_netFlowDirection === 'inFlow' ? 'net flow from' : 'net flow to') :
-                   flowDirection === 'inFlow' ? 'flow from' :
-                   'flow to';
+export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false): string {
+  if (centreFlow) {
+    switch (flowDirection) {
+      case 'inFlow':
+        return `Churn into ${source.label} was ${formatNumber(flow.absolute_inFlow)}.`;
+      case 'outFlow':
+        return `Churn away from ${source.label} was ${formatNumber(flow.absolute_outFlow)}.`;
+      case 'netFlow':
+        if (flow.absolute_netFlowDirection === 'inFlow') {
+          return `Churn into ${source.label} was ${formatNumber(flow.absolute_netFlow)}.`;
+        } else {
+          return `Churn away from ${source.label} was ${formatNumber(flow.absolute_netFlow)}.`;
+        }
+      case 'interaction':
+        return `${formatNumber(flow.absolute_netFlow)} people interacted between ${source.label} and ${target.label}.`;
+    }
+  } else {
+    switch (flowDirection) {
+      case 'inFlow':
+        return `${formatNumber(flow.absolute_inFlow)} people came to ${target.label} from ${source.label}.`;
+      case 'outFlow':
+        return `${formatNumber(flow.absolute_outFlow)} people went to ${target.label} from ${source.label}.`;
+      case 'netFlow':
+        return `${formatNumber(flow.absolute_netFlow)} people went from ${source.label} to ${target.label}.`;
+      case 'interaction':
+        return `${formatNumber(flow.absolute_netFlow)} people interacted between ${source.label} and ${target.label}.`;
+    }
+  }
 
-  return `${formatNumber(value)} people ${direction} ${source.label} and ${target.label}`;
+  return ''; // Default case
 }

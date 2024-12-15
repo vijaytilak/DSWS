@@ -6,7 +6,109 @@ import { formatNumber } from '../utils/format';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip, getFlowTooltip, updateTooltipTheme } from './tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from './bubble';
 
-// Initialize tooltip with theme based on initial system theme
+// Create VisualizationManager to handle theme changes
+class VisualizationManager {
+  private static instance: VisualizationManager;
+  private svg: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null;
+  private bubbles: Bubble[] = [];
+  private themeObserver: MutationObserver;
+
+  private constructor() {
+    this.themeObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class' && this.svg) {
+          const isDarkTheme = document.documentElement.classList.contains('dark');
+          updateTooltipTheme(isDarkTheme);
+          
+          const manager = this; // Capture this for inner scopes
+          
+          // Update all flow lines to match their source bubble colors
+          this.svg.selectAll<SVGLineElement, Flow>("line.flow-line")
+            .each(function(flow) {
+              const line = d3.select<SVGLineElement, Flow>(this);
+              const isFromCenter = line.attr("data-from-center") === "true";
+              const flowDirection = line.attr("data-flow-direction");
+              
+              // For center flows, use the current theme color
+              if (isFromCenter) {
+                const themeColor = isDarkTheme ? "#ffffff" : "#000000";
+                line.attr("stroke", themeColor);
+                
+                const markerId = flowDirection + "-" + flow.from + "-" + flow.to;
+                manager.svg?.select<SVGPathElement>(`#${markerId} path`)
+                  .attr("fill", themeColor);
+              }
+            });
+          
+          // Update center bubble and its elements
+          this.svg.selectAll<SVGCircleElement, Bubble>("circle")
+            .filter((d) => d.id === manager.bubbles.length - 1)
+            .attr("fill", isDarkTheme ? "#1a1a1a" : "#ffffff") 
+            .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
+            .attr("stroke-width", "2"); 
+            
+          // Update center bubble outer ring
+          this.svg.selectAll<SVGCircleElement, Bubble>("circle")
+            .filter((d, i, nodes) => {
+              const bubble = d3.select<SVGCircleElement, Bubble>(nodes[i]).datum();
+              const isOuterRing = d3.select<SVGCircleElement, Bubble>(nodes[i]).attr("r") === bubble.outerRingRadius.toString();
+              return bubble.id === manager.bubbles.length - 1 && isOuterRing;
+            })
+            .attr("fill", "none")
+            .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
+            .attr("stroke-width", "1.5")
+            .attr("stroke-dasharray", "5,5"); 
+            
+          // Update center bubble label with higher contrast
+          this.svg.selectAll<SVGTextElement, Bubble>("text.bubble-label")
+            .filter((d) => d.id === manager.bubbles.length - 1)
+            .attr("fill", isDarkTheme ? "#ffffff" : "#000000")
+            .attr("font-weight", "bold"); 
+
+          // Also update any line markers from or to the center bubble
+          this.svg.selectAll<SVGMarkerElement, unknown>("marker")
+            .each(function() {
+              const marker = d3.select(this);
+              const markerId = marker.attr("id");
+              const [_, fromId, toId] = markerId.split("-").map(Number);
+              
+              if (fromId === manager.bubbles.length - 1) {
+                // If the flow is from center bubble, use center bubble color
+                marker.select("path").attr("fill", isDarkTheme ? "#ffffff" : "#000000");
+              }
+            });
+        }
+      });
+    });
+
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  public static getInstance(): VisualizationManager {
+    if (!VisualizationManager.instance) {
+      VisualizationManager.instance = new VisualizationManager();
+    }
+    return VisualizationManager.instance;
+  }
+
+  public updateReferences(
+    svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+    bubbles: Bubble[]
+  ): void {
+    this.svg = svg;
+    this.bubbles = bubbles;
+  }
+
+  public dispose(): void {
+    this.themeObserver.disconnect();
+    this.svg = null;
+    this.bubbles = [];
+  }
+}
+
 let isDarkTheme = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
 let tooltip = createTooltip(isDarkTheme);
 
@@ -58,38 +160,8 @@ export function drawBubbles(
   // Create tooltip with current theme
   createTooltip(isDark);
 
-  // Add theme change listener
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.attributeName === 'class') {
-        const isDarkTheme = document.documentElement.classList.contains('dark');
-        updateTooltipTheme(isDarkTheme);
-        
-        // Update center bubble stroke and text color
-        svg.selectAll("circle")
-          .filter(d => (d as Bubble).id === bubbles.length - 1)
-          .attr("stroke", isDarkTheme ? "white" : "black");
-          
-        // Update center bubble outer ring color
-        svg.selectAll("circle")
-          .filter((d, i, nodes) => {
-            const bubble = d3.select(nodes[i]).datum() as Bubble;
-            const isOuterRing = d3.select(nodes[i]).attr("r") === bubble.outerRingRadius.toString();
-            return bubble.id === bubbles.length - 1 && isOuterRing;
-          })
-          .attr("stroke", isDarkTheme ? "white" : "black");
-          
-        svg.selectAll("text.bubble-label")
-          .filter(d => (d as Bubble).id === bubbles.length - 1)
-          .attr("fill", isDarkTheme ? "white" : "black");
-      }
-    });
-  });
-
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class']
-  });
+  // Update visualization manager references
+  VisualizationManager.getInstance().updateReferences(svg, bubbles);
 
   const bubbleGroups = svg
     .selectAll<SVGGElement, Bubble>("g.bubble")
@@ -183,32 +255,32 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow, bubbles);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow, bubbles);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'netFlow', target, source, flowType, centreFlow, bubbles);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'netFlow', source, target, flowType, centreFlow, bubbles);
         }
         break;
       case 'interaction':
-        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow);
+        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles);
         break;
       case 'bidirectional':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow, bubbles);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow);
+          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow, bubbles);
         }
         break;
     }
@@ -222,19 +294,26 @@ export function drawFlowLine(
   startBubble: Bubble,
   endBubble: Bubble,
   flowType: string,
-  centreFlow: boolean = false
+  centreFlow: boolean = false,
+  allBubbles: Bubble[]
 ) {
   const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow, centreFlow);
   const lineThickness = calculateLineThickness(flow);
   const markerSize = calculateMarkerSize(lineThickness);
-  const lineColor = startBubble.color;
+  const isDarkTheme = document.documentElement.classList.contains('dark');
+  
+  // Determine colors based on whether this is a center flow
+  const isFromCenter = startBubble.id === allBubbles.length - 1;
+  const lineColor = isFromCenter ? (isDarkTheme ? "#ffffff" : "#000000") : startBubble.color;
+  const markerColor = isFromCenter ? (isDarkTheme ? "#ffffff" : "#000000") : startBubble.color;
 
   // Create marker for this specific flow
   const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-  createFlowMarker(svg, markerId, markerSize, lineColor, flowDirection);
+  createFlowMarker(svg, markerId, markerSize, markerColor, flowDirection);
 
   // Draw the flow line
   const path = svg.append("line")
+    .attr("class", "flow-line")
     .attr("x1", points.start.x)
     .attr("y1", points.start.y)
     .attr("x2", points.end.x)
@@ -243,8 +322,11 @@ export function drawFlowLine(
     .attr("stroke-width", lineThickness)
     .attr("marker-end", `url(#${markerId})`)
     .attr("opacity", 0.8)
+    .attr("data-flow-direction", flowDirection)
+    .attr("data-from-center", isFromCenter.toString()) // Store whether this flow is from center
+    .datum(flow)
     .on("mouseover", (event) => {
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection));
+      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
     .on("mouseout", hideTooltip);
 }
