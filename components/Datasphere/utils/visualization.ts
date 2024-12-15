@@ -344,22 +344,33 @@ export function drawFlows(
           outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
         }
 
+        // Calculate angles for text positioning
+        const inFlowAngle = Math.atan2(start.y - splitY, start.x - splitX);
+        const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
+        const offset = 15;
+
         // Add flow percentages
         if (flow.absolute_inFlow > 0) {
+          const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
+          const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
           svg.append('text')
-            .attr('x', start.x + (splitX - start.x) * 0.2)
-            .attr('y', start.y + (splitY - start.y) * 0.2 - 10)
-            .attr('text-anchor', 'middle')
+            .attr('x', textX)
+            .attr('y', textY)
+            .attr('text-anchor', 'start')
+            .attr('dominant-baseline', 'middle')
             .attr('fill', target.color)
             .attr('font-size', '11px')
             .text(`${Math.round((flow.absolute_inFlow / totalFlow) * 100)}%`);
         }
 
         if (flow.absolute_outFlow > 0) {
+          const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
+          const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
           svg.append('text')
-            .attr('x', splitX + (end.x - splitX) * 0.8)
-            .attr('y', splitY + (end.y - splitY) * 0.8 - 10)
-            .attr('text-anchor', 'middle')
+            .attr('x', textX)
+            .attr('y', textY)
+            .attr('text-anchor', 'start')
+            .attr('dominant-baseline', 'middle')
             .attr('fill', source.color)
             .attr('font-size', '11px')
             .text(`${Math.round((flow.absolute_outFlow / totalFlow) * 100)}%`);
