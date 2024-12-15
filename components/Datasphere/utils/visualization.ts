@@ -145,12 +145,6 @@ export function drawBubbles(
       return d.color;
     })
     .attr("font-size", d => d.fontSize)
-    .attr("paint-order", "stroke")
-    .attr("stroke", d => {
-      if (d.id === bubbles.length - 1) return "none";
-      return isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)";
-    })
-    .attr("stroke-width", "4px")
     .attr("font-weight", d => d.id === bubbles.length - 1 ? "normal" : "bold")
     .text(d => d.label);
 }
