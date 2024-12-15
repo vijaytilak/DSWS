@@ -16,21 +16,33 @@ export function updateTooltipWithTheme(isDark: boolean) {
 
 export function initializeBubbleVisualization(
   data: FlowData,
-  positionCircleRadius: number,
+  width: number,
+  height: number,
   noOfBubbles: number,
   centerX: number,
   centerY: number
-): Bubble[] {
+): { bubbles: Bubble[], maxBubbleRadius: number, minBubbleRadius: number } {
   const baseTextSize = Math.max(
     Math.min(centerX, centerY) * 0.035,
     CONFIG.bubble.minFontSize
   );
 
+  // Calculate the radius of the circle on which bubbles are positioned
+  const maxRadius = Math.max(width, height) / 2;
+  const minRadius = Math.min(width, height) / 2;
+  const positionCircleRadius = Math.min(width, height) / 2;
+
   // Prepare bubble data
-  const { bubbles } = prepareBubbleData(data, positionCircleRadius, noOfBubbles);
+  const bubbleData = prepareBubbleData(data, positionCircleRadius, noOfBubbles);
   
   // Calculate layout positions
-  return calculateBubbleLayout(bubbles, centerX, centerY, positionCircleRadius, baseTextSize);
+  const bubbles = calculateBubbleLayout(bubbleData.bubbles, centerX, centerY, positionCircleRadius, baseTextSize);
+  
+  return {
+    bubbles,
+    maxBubbleRadius: bubbleData.maxBubbleRadius,
+    minBubbleRadius: bubbleData.minBubbleRadius
+  };
 }
 
 export function drawBubbles(
@@ -68,16 +80,15 @@ export function drawBubbles(
     .attr("class", "bubble")
     .attr("transform", d => `translate(${d.x},${d.y})`);
 
-  bubbleGroups
   // Add circles
   bubbleGroups
     .append("circle")
     .attr("r", d => d.radius)
-    .attr("fill", d => d.id === bubbles.length ? "" : d.color)
+    .attr("fill", d => d.id === bubbles.length - 1 ? "transparent" : d.color)
     .attr("cursor", "pointer")
     .on("click", (event, d) => onClick(d))
     .on("mouseover", (event, d) => {
-      if (d.id !== bubbles.length) {
+      if (d.id !== bubbles.length - 1) {
         showTooltip(event, getBubbleTooltip(d));
       }
     })
@@ -88,11 +99,11 @@ export function drawBubbles(
     .append("circle")
     .attr("r", d => d.outerRingRadius)
     .attr("fill", "none")
-    .attr("stroke", d => d.id === bubbles.length ? "" : d.color)
-    .attr("stroke-dasharray", "5,5")  // Make it dotted
-    .attr("opacity", 0.6);
+    .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : d.color)
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? 2 : 1)
+    .attr("stroke-dasharray", d => d.id === bubbles.length - 1 ? "none" : "5,5")
+    .attr("opacity", d => d.id === bubbles.length - 1 ? 1 : 0.6);
 
-  bubbleGroups
   // Add labels separately from bubbles
   svg.selectAll("text.bubble-label")
     .data(bubbles)
@@ -102,20 +113,26 @@ export function drawBubbles(
     .attr("x", d => d.textX)
     .attr("y", d => d.textY)
     .attr("text-anchor", d => {
+      if (d.id === bubbles.length - 1) return "middle";
       const angle = Math.atan2(d.y - centerY, d.x - centerX);
-      // Adjust text-anchor based on position in the circle
       if (Math.abs(angle) < Math.PI / 4) return "start";
       if (Math.abs(angle) > 3 * Math.PI / 4) return "end";
       return "middle";
     })
     .attr("dominant-baseline", "middle")
-    .attr("fill", textColor)
+    .attr("fill", d => {
+      if (d.id === bubbles.length - 1) return isDark ? "white" : "black";
+      return d.color;
+    })
     .attr("font-size", d => `${d.fontSize}px`)
     .attr("paint-order", "stroke")
-    .attr("stroke", isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)")
-    .attr("stroke-width", "3px")
-    .attr("font-weight", "bold")
-    .text(d => d.id === bubbles.length ? "" : d.label);
+    .attr("stroke", d => {
+      if (d.id === bubbles.length - 1) return "none";
+      return isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)";
+    })
+    .attr("stroke-width", "4px")
+    .attr("font-weight", d => d.id === bubbles.length - 1 ? "normal" : "bold")
+    .text(d => d.label);
 }
 
 export function drawFlows(

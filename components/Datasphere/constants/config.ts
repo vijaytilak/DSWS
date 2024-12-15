@@ -7,14 +7,13 @@ export const CONFIG = {
     maxMarkerSize: 15
   },
   bubble: {
-    marginForPositionCirclePercent: 15, // percentage of min(width, height)
-    minDistanceBetweenRings: 20,
-    minDistanceBetweenBubbleAndRing: 15,
+    minDistanceBetweenRings: 30,
+    minDistanceBetweenBubbleAndRing: 20,
     minBubbleRadiusPercentage: 0.2,
-    labelOffset: 15,
-    maxOuterRingRadius: 200,
+    labelOffset: 20,
+    maxOuterRingRadius: 100,
     minBubbleRadius: 6,
-    minFontSize: 10
+    minFontSize: 16
   },
   visualization: {
     minWidth: 320,

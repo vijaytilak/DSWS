@@ -8,13 +8,16 @@ export function prepareBubbleData(
   positionCircleRadius: number,
   noOfBubbles: number,
 ): { bubbles: Bubble[], maxBubbleRadius: number, minBubbleRadius: number } {
-  // Enforce minimum position circle radius
-  const minPositionCircleRadius = Math.max(positionCircleRadius, CONFIG.bubble.minDistanceBetweenRings * 2);
-  
-  // Calculate outer ring radius based on available space and number of bubbles
-  const outerRingRadius = (2 * Math.PI * minPositionCircleRadius - (noOfBubbles - 1) * CONFIG.bubble.minDistanceBetweenRings) / (2 * noOfBubbles);
+  // Calculate the outer ring radius based on available circumference space
+  const circumference = 2 * Math.PI * positionCircleRadius;
+  const totalGapSpace = (noOfBubbles - 1) * CONFIG.bubble.minDistanceBetweenRings;
+  const availableSpace = Math.max(circumference - totalGapSpace, 0);
+  const outerRingRadius = Math.min(
+    Math.max(availableSpace / (2 * noOfBubbles), CONFIG.bubble.minBubbleRadius * 2),
+    CONFIG.bubble.maxOuterRingRadius
+  );
 
-  // Enforce minimum bubble radius
+  // Calculate max and min bubble radius based on outer ring
   const maxBubbleRadius = Math.max(
     outerRingRadius - CONFIG.bubble.minDistanceBetweenBubbleAndRing,
     CONFIG.bubble.minBubbleRadius
@@ -37,7 +40,10 @@ export function prepareBubbleData(
   // Create bubbles for all items except center
   const bubbles = itemsWithRanks.map((item, index) => {
     // Scale the bubble radius based on percentile rank
-    const scaledRadius = minBubbleRadius + (maxBubbleRadius - minBubbleRadius) * (item.percentRank / 100);
+    const scaledRadius = Math.max(
+      minBubbleRadius + (maxBubbleRadius - minBubbleRadius) * (item.percentRank / 100),
+      CONFIG.bubble.minBubbleRadius
+    );
     
     // Calculate position on the circle
     const angle = (2 * Math.PI * index) / noOfBubbles;
@@ -73,8 +79,8 @@ export function prepareBubbleData(
   // Add center bubble
   const centerBubble = {
     id: noOfBubbles,
-    label: "Major Chains",
-    radius: 0.1 * minPositionCircleRadius,
+    label: "Market",
+    radius: 0.15 * positionCircleRadius,
     x: 0,
     y: 0,
     textX: 0,
@@ -82,10 +88,10 @@ export function prepareBubbleData(
     angle: 0,
     itemSizeAbsolute: 0,
     sizeRankPercentage: 0,
-    color: "white",
+    color: "transparent",
     focus: false,
-    fontSize: CONFIG.bubble.minFontSize,
-    outerRingRadius: (0.1 * minPositionCircleRadius) + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
+    fontSize: CONFIG.bubble.minFontSize * 0.9,
+    outerRingRadius: 0.15 * positionCircleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
   };
 
   return { 
@@ -103,11 +109,18 @@ export function calculateBubbleLayout(
   baseTextSize: number
 ): Bubble[] {
   const noOfBubbles = bubbles.length - 1; // Excluding center bubble
-  const adjustedRadius = Math.min(
-    positionCircleRadius,
-    Math.min(centerX, centerY) * 0.8
+  
+  // Calculate the minimum radius needed to maintain minDistanceBetweenRings
+  const maxBubbleOuterRadius = Math.max(...bubbles.slice(0, -1).map(b => b.outerRingRadius));
+  const minRequiredCircumference = noOfBubbles * (2 * maxBubbleOuterRadius + CONFIG.bubble.minDistanceBetweenRings);
+  const minRequiredRadius = minRequiredCircumference / (2 * Math.PI);
+  
+  const adjustedRadius = Math.max(
+    minRequiredRadius,
+    Math.min(positionCircleRadius, Math.min(centerX, centerY))
   );
-  const maxLabelOffset = Math.min(centerX, centerY) * 0.2;
+  
+  const maxLabelOffset = Math.min(centerX, centerY) * 0.3;
 
   return bubbles.map((bubble, index) => {
     if (index === bubbles.length - 1) {

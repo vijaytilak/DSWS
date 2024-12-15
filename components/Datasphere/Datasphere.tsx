@@ -35,8 +35,8 @@ export default function DataSphere({
 
     const svg = d3.select(svgRef.current);
     svg.style("background", resolvedTheme === 'dark' ? "black" : "white")
-      .attr("width", dimensions.width)
-      .attr("height", dimensions.height)
+      .attr("width", "100%")
+      .attr("height", "100%")
       .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
@@ -46,13 +46,17 @@ export default function DataSphere({
     // Initialize visualization with minimum constraints
     const centerX = dimensions.width / 2;
     const centerY = dimensions.height / 2;
-    const minDimension = Math.min(dimensions.width, dimensions.height);
-    const marginForPositionCircle = (minDimension * CONFIG.bubble.marginForPositionCirclePercent) / 100;
-    const positionCircleRadius = (minDimension / 2) - marginForPositionCircle;
     const noOfBubbles = Object.keys(data.itemIDs).length;
     
     // Calculate bubble positions and sizes
-    const initialBubbles = initializeBubbleVisualization(data, positionCircleRadius, noOfBubbles, centerX, centerY);
+    const { bubbles: initialBubbles } = initializeBubbleVisualization(
+      data,
+      dimensions.width,
+      dimensions.height,
+      noOfBubbles,
+      centerX,
+      centerY
+    );
     setBubbles(initialBubbles);
 
     // Draw bubbles
