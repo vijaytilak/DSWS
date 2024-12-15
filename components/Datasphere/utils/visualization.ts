@@ -177,8 +177,12 @@ export function drawBubbles(
     .attr("fill", d => d.id === bubbles.length - 1 ? "transparent" : d.color)
     .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
     .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0)
-    .attr("cursor", "pointer")
-    .on("click", (event, d) => onClick(d))
+    .attr("cursor", d => d.id === bubbles.length - 1 ? "default" : "pointer")
+    .on("click", (event, d) => {
+      if (d.id !== bubbles.length - 1) {
+        onClick(d);
+      }
+    })
     .on("mouseover", (event, d) => {
       if (d.id !== bubbles.length - 1) {
         showTooltip(event, getBubbleTooltip(d));
