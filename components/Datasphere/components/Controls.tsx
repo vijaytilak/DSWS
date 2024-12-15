@@ -36,14 +36,17 @@ export function Controls({
     <div className={cn("flex items-center gap-4", className)}>
       <div className="flex items-center gap-3 min-w-[200px]">
         <span className="text-sm font-medium">Filter:</span>
-        <Slider
-          value={[threshold]}
-          onValueChange={([value]) => setThreshold(value)}
-          min={0}
-          max={100}
-          step={1}
-          className="w-[140px]"
-        />
+        <div className="flex items-center gap-2 flex-1">
+          <Slider
+            value={[threshold]}
+            onValueChange={([value]) => setThreshold(value)}
+            min={0}
+            max={100}
+            step={1}
+            className="w-[140px]"
+          />
+          <span className="text-sm text-muted-foreground min-w-[32px]">{threshold}%</span>
+        </div>
       </div>
       
       <Select defaultValue={flowType} onValueChange={setFlowType}>

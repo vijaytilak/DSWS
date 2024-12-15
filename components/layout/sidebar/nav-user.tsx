@@ -1,12 +1,8 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
   User,
 } from "lucide-react"
 
@@ -31,6 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -43,6 +40,7 @@ export function NavUser({
 }) {  
   const { isMobile, setOpenMobile } = useSidebar()
   const { logout } = useAuth()
+  const router = useRouter()
 
   const handleLogout = async () => {
     // Close mobile sidebar first
@@ -52,6 +50,11 @@ export function NavUser({
     } catch (error) {
       console.error('Logout failed:', error)
     }
+  }
+
+  const handleProfileClick = () => {
+    setOpenMobile(false) // Close mobile sidebar first
+    router.push('/dashboard/profile')
   }
 
   return (
@@ -94,24 +97,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+              <DropdownMenuItem onClick={handleProfileClick}>
+                <User className="size-4" />
+                Profile
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
