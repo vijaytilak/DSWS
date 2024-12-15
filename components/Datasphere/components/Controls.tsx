@@ -16,7 +16,7 @@ interface ControlsProps {
 }
 
 const flowTypeOptions = [
-  { id: "bidirectional", label: "Two-way Flows" },
+  { id: "two-way flows", label: "Two-way Flows" },
   { id: "netFlow", label: "Net Flow" },
   { id: "interaction", label: "Interaction" },
   { id: "outFlow only", label: "Out-Flow Only" },

@@ -15,7 +15,7 @@ const svg = d3.select("#svg-container")
   .attr("viewBox", `0 0 ${canvasWidth} ${canvasHeight}`);
 
 // Global Configuration
-let flowType = "bidirectional";
+let flowType = "two-way flows";
 let centreFlow = false;
 let netFlowFilterThreshold = 0; //controlled by slider
 const outerRingVisibility = false;
@@ -463,7 +463,7 @@ function prepareFlowData() {
   console.log("FOCUSBUBBLE:", focusBubbleId);
   console.log("FOCUSFLOWARRAY:", flowDataArray);
 
-  if (flowType === 'bidirectional') {
+  if (flowType === 'two-way flows') {
     flowDataArray = filterByPercentRanks(flowDataArray, 'absolute_netFlow', netFlowFilterThreshold);
     flowDataArray = calculateRelativeSizePercent(flowDataArray, 'absolute_inFlow', 'absolute_outFlow');
   } else if (flowType === 'netFlow') {
@@ -614,7 +614,7 @@ function drawFlow(flow) {
       // Draw a node representing interaction between 'fromBubble' and 'toBubble'
       drawFlowLine(flow, 'interaction', fromBubble, toBubble);
       break;
-    case "bidirectional":
+    case "two-way flows":
       if (flow.absolute_inFlow > 0) {
         // Draw an arrow representing inflow from 'toBubble' to 'fromBubble'
         drawFlowLine(flow, 'inFlow', toBubble, fromBubble);
@@ -886,7 +886,7 @@ function initSlider() {
 function initFlowTypeDropdown() {
   const flowTypeOptions = [
     { id: "netFlow", value: "Net Flow" },
-    { id: "bidirectional", value: "Two-way Flows" },
+    { id: "two-way flows", value: "Two-way Flows" },
     { id: "interaction", value: "Interaction" },
     { id: "outFlow only", value: "Out-Flow Only" },
     { id: "inFlow only", value: "In-Flow Only" }
@@ -916,7 +916,7 @@ function initFlowTypeDropdown() {
     //   // trigger checkbox change event to prepare flow data
     //   d3.select("#centreFlowCheckbox").property("checked", true);
     //   d3.select("#centreFlowCheckbox").dispatch("change");
-    // } else if (((flowType === 'inFlow only') || (flowType === 'outFlow only') || (flowType === 'interaction') || (flowType === 'bidirectional')) && (focusBubbleId == null)) {
+    // } else if (((flowType === 'inFlow only') || (flowType === 'outFlow only') || (flowType === 'interaction') || (flowType === 'two-way flows')) && (focusBubbleId == null)) {
     //   // trigger checkbox change event to prepare flow data
     //   d3.select("#centreFlowCheckbox").property("checked", false);
     //   d3.select("#centreFlowCheckbox").dispatch("change");

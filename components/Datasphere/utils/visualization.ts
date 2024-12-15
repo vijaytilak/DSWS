@@ -277,7 +277,7 @@ export function drawFlows(
       case 'interaction':
         drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles);
         break;
-      case 'bidirectional':
+      case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
           drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow, bubbles);
@@ -387,8 +387,8 @@ function calculateFlowPoints(
     y: target.y - target.outerRingRadius * Math.sin(angle)
   };
 
-  // Apply offset for bidirectional flows
-  if (flowType === 'bidirectional') {
+  // Apply offset for two-way flows flows
+  if (flowType === 'two-way flows') {
     // Calculate line thickness to determine the offset
     const lineThickness = calculateLineThickness(flow);
     
@@ -423,7 +423,7 @@ function calculateFlowPoints(
     };
   }
 
-  // Return points without offset for non-bidirectional flows
+  // Return points without offset for non two-way flows
   return { start: startPoint, end: endPoint };
 }
 

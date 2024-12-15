@@ -10,7 +10,7 @@ const DataSphere = dynamic(() => import('@/components/DataSphere/DataSphere'), {
 });
 
 export default function Page() {
-  const [flowType, setFlowType] = useState("bidirectional");
+  const [flowType, setFlowType] = useState("two-way flows");
   const [centreFlow, setCentreFlow] = useState(false);
   const [threshold, setThreshold] = useState(0);
 
