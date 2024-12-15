@@ -287,6 +287,84 @@ export function drawFlows(
           drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow, bubbles);
         }
         break;
+      case 'bi-directional':
+        // Calculate total flow for line thickness
+        const totalFlow = flow.absolute_inFlow + flow.absolute_outFlow;
+        const lineThickness = calculateLineThickness({ ...flow, absolute_netFlow: totalFlow });
+        
+        // Calculate proportions for splitting the line
+        const inFlowProportion = flow.absolute_inFlow / totalFlow;
+        const outFlowProportion = flow.absolute_outFlow / totalFlow;
+        
+        // Calculate points for the full line
+        const points = calculateFlowPoints(source, target, flowType, 'bi-directional', flow, centreFlow);
+        const { start, end } = points;
+        
+        // Calculate the split point based on flow proportions
+        const splitX = start.x + (end.x - start.x) * inFlowProportion;
+        const splitY = start.y + (end.y - start.y) * inFlowProportion;
+        
+        if (flow.absolute_inFlow > 0) {
+          // Draw inflow line from start to split point
+          const inFlowLine = svg.append('line')
+            .attr('x1', splitX)
+            .attr('y1', splitY)
+            .attr('x2', start.x)
+            .attr('y2', start.y)
+            .attr('stroke', target.color)
+            .attr('stroke-width', lineThickness)
+            .attr('class', 'flow-line')
+            .attr('data-flow-direction', 'inFlow')
+            .attr('data-from-center', target.id === bubbles.length - 1)
+            .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
+            .on('mouseout', hideTooltip);
+
+          // Add inflow marker
+          createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), target.color, 'inFlow');
+          inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
+        }
+
+        if (flow.absolute_outFlow > 0) {
+          // Draw outflow line from split point to end
+          const outFlowLine = svg.append('line')
+            .attr('x1', splitX)
+            .attr('y1', splitY)
+            .attr('x2', end.x)
+            .attr('y2', end.y)
+            .attr('stroke', source.color)
+            .attr('stroke-width', lineThickness)
+            .attr('class', 'flow-line')
+            .attr('data-flow-direction', 'outFlow')
+            .attr('data-from-center', source.id === bubbles.length - 1)
+            .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
+            .on('mouseout', hideTooltip);
+
+          // Add outflow marker
+          createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), source.color, 'outFlow');
+          outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+        }
+
+        // Add flow percentages
+        if (flow.absolute_inFlow > 0) {
+          svg.append('text')
+            .attr('x', start.x + (splitX - start.x) * 0.2)
+            .attr('y', start.y + (splitY - start.y) * 0.2 - 10)
+            .attr('text-anchor', 'middle')
+            .attr('fill', target.color)
+            .attr('font-size', '11px')
+            .text(`${Math.round((flow.absolute_inFlow / totalFlow) * 100)}%`);
+        }
+
+        if (flow.absolute_outFlow > 0) {
+          svg.append('text')
+            .attr('x', splitX + (end.x - splitX) * 0.8)
+            .attr('y', splitY + (end.y - splitY) * 0.8 - 10)
+            .attr('text-anchor', 'middle')
+            .attr('fill', source.color)
+            .attr('font-size', '11px')
+            .text(`${Math.round((flow.absolute_outFlow / totalFlow) * 100)}%`);
+        }
+        break;
     }
   });
 }

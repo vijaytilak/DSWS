@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { flowTypeOptions } from "../constants/flowTypes";
 
 interface ControlsProps {
   threshold: number;
@@ -14,14 +15,6 @@ interface ControlsProps {
   setCentreFlow: (value: boolean) => void;
   className?: string;
 }
-
-const flowTypeOptions = [
-  { id: "two-way flows", label: "Two-way Flows" },
-  { id: "netFlow", label: "Net Flow" },
-  { id: "interaction", label: "Interaction" },
-  { id: "outFlow only", label: "Out-Flow Only" },
-  { id: "inFlow only", label: "In-Flow Only" }
-];
 
 export function Controls({
   threshold,
