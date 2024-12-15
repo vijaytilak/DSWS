@@ -64,6 +64,24 @@ export function drawBubbles(
       if (mutation.attributeName === 'class') {
         const isDarkTheme = document.documentElement.classList.contains('dark');
         updateTooltipTheme(isDarkTheme);
+        
+        // Update center bubble stroke and text color
+        svg.selectAll("circle")
+          .filter(d => (d as Bubble).id === bubbles.length - 1)
+          .attr("stroke", isDarkTheme ? "white" : "black");
+          
+        // Update center bubble outer ring color
+        svg.selectAll("circle")
+          .filter((d, i, nodes) => {
+            const bubble = d3.select(nodes[i]).datum() as Bubble;
+            const isOuterRing = d3.select(nodes[i]).attr("r") === bubble.outerRingRadius.toString();
+            return bubble.id === bubbles.length - 1 && isOuterRing;
+          })
+          .attr("stroke", isDarkTheme ? "white" : "black");
+          
+        svg.selectAll("text.bubble-label")
+          .filter(d => (d as Bubble).id === bubbles.length - 1)
+          .attr("fill", isDarkTheme ? "white" : "black");
       }
     });
   });
@@ -85,6 +103,8 @@ export function drawBubbles(
     .append("circle")
     .attr("r", d => d.radius)
     .attr("fill", d => d.id === bubbles.length - 1 ? "transparent" : d.color)
+    .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0)
     .attr("cursor", "pointer")
     .on("click", (event, d) => onClick(d))
     .on("mouseover", (event, d) => {
@@ -100,9 +120,9 @@ export function drawBubbles(
     .attr("r", d => d.outerRingRadius)
     .attr("fill", "none")
     .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : d.color)
-    .attr("stroke-width", d => d.id === bubbles.length - 1 ? 2 : 1)
-    .attr("stroke-dasharray", d => d.id === bubbles.length - 1 ? "none" : "5,5")
-    .attr("opacity", d => d.id === bubbles.length - 1 ? 1 : 0.6);
+    .attr("stroke-width", 1)
+    .attr("stroke-dasharray", "5,5")
+    .attr("opacity", 0.6);
 
   // Add labels separately from bubbles
   svg.selectAll("text.bubble-label")
@@ -124,7 +144,7 @@ export function drawBubbles(
       if (d.id === bubbles.length - 1) return isDark ? "white" : "black";
       return d.color;
     })
-    .attr("font-size", d => `${d.fontSize}px`)
+    .attr("font-size", d => d.fontSize)
     .attr("paint-order", "stroke")
     .attr("stroke", d => {
       if (d.id === bubbles.length - 1) return "none";

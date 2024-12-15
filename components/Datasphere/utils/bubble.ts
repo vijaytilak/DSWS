@@ -90,7 +90,7 @@ export function prepareBubbleData(
     sizeRankPercentage: 0,
     color: "transparent",
     focus: false,
-    fontSize: CONFIG.bubble.minFontSize * 0.9,
+    fontSize: CONFIG.bubble.minFontSize * 0.7,
     outerRingRadius: 0.15 * positionCircleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
   };
 
@@ -132,7 +132,6 @@ export function calculateBubbleLayout(
         textX: centerX,
         textY: centerY,
         angle: 0,
-        fontSize: baseTextSize
       };
     }
 
