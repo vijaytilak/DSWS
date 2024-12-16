@@ -4,12 +4,35 @@ import { formatNumber } from './format';
 
 let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, any>;
 
-export function createTooltip(isDark: boolean) {
+export function createTooltip(isDark: boolean): d3.Selection<HTMLDivElement, unknown, HTMLElement, any> {
   // Remove any existing tooltip
   if (tooltip) tooltip.remove();
   
-  tooltip = d3.select("body")
-    .append("div")
+  // Find the SVG container
+  const svg = d3.select<SVGSVGElement, unknown>("svg");
+  const svgElement = svg.node();
+  if (!svgElement) {
+    console.warn("SVG container not found, falling back to body");
+    tooltip = d3.select<HTMLElement, unknown>("body")
+      .append<HTMLDivElement>("div")
+      .attr("class", "tooltip");
+    return tooltip;
+  }
+  
+  // Get the SVG's parent container
+  const parentElement = svgElement.parentElement;
+  if (!parentElement) {
+    console.warn("SVG parent container not found, falling back to body");
+    tooltip = d3.select<HTMLElement, unknown>("body")
+      .append<HTMLDivElement>("div")
+      .attr("class", "tooltip");
+    return tooltip;
+  }
+
+  const container = d3.select<HTMLElement, unknown>(parentElement);
+  
+  tooltip = container
+    .append<HTMLDivElement>("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "absolute")
@@ -40,13 +63,23 @@ export function updateTooltipTheme(isDark: boolean) {
 }
 
 export function showTooltip(event: MouseEvent, content: string) {
+  if (!tooltip) return;
+
+  const svg = d3.select<SVGSVGElement, unknown>("svg");
+  const svgElement = svg.node();
+  if (!svgElement) return;
+
+  const rect = svgElement.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
   tooltip.transition()
     .duration(200)
     .style("opacity", 0.9);
   
   tooltip.html(content)
-    .style("left", (event.pageX + 10) + "px")
-    .style("top", (event.pageY - 28) + "px");
+    .style("left", `${x + 10}px`)
+    .style("top", `${y - 28}px`);
 }
 
 export function hideTooltip() {

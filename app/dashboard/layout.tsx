@@ -15,7 +15,12 @@ export default function DashboardLayout({
   return (
     <ProtectedRoute>
       <div className="relative flex min-h-screen flex-col">
-        <RightSidebarProvider>
+        <RightSidebarProvider
+          style={{
+            "--sidebar-width": "24rem",
+            "--sidebar-width-mobile": "24rem",
+          } as React.CSSProperties}
+        >
           <SidebarProvider>
             <div className="flex flex-1">
               <AppSidebar />

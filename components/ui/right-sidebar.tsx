@@ -12,8 +12,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 const RIGHT_SIDEBAR_COOKIE_NAME = "right-sidebar:state"
 const RIGHT_SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const RIGHT_SIDEBAR_WIDTH = "16rem"
-const RIGHT_SIDEBAR_WIDTH_MOBILE = "18rem"
+const RIGHT_SIDEBAR_WIDTH = "24rem"
+const RIGHT_SIDEBAR_WIDTH_MOBILE = "24rem"
 const RIGHT_SIDEBAR_WIDTH_ICON = "3rem"
 const RIGHT_SIDEBAR_KEYBOARD_SHORTCUT = "n"
 
@@ -197,7 +197,7 @@ export const RightSidebarContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-1 flex-col gap-4 overflow-hidden", className)}
+      className={cn("flex flex-1 flex-col overflow-auto", className)}
       {...props}
     />
   )
