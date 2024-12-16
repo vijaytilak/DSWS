@@ -2,9 +2,10 @@ import * as d3 from 'd3';
 import type { Flow, Bubble } from '../types';
 import { formatNumber } from './format';
 
-let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, any>;
+type TooltipSelection = d3.Selection<HTMLDivElement, unknown, HTMLElement, any>;
+let tooltip: TooltipSelection | undefined;
 
-export function createTooltip(isDark: boolean): d3.Selection<HTMLDivElement, unknown, HTMLElement, any> {
+export function createTooltip(isDark: boolean): TooltipSelection {
   // Remove any existing tooltip
   if (tooltip) tooltip.remove();
   
@@ -13,9 +14,10 @@ export function createTooltip(isDark: boolean): d3.Selection<HTMLDivElement, unk
   const svgElement = svg.node();
   if (!svgElement) {
     console.warn("SVG container not found, falling back to body");
-    tooltip = d3.select<HTMLElement, unknown>("body")
+    const bodySelection = d3.select<HTMLBodyElement, unknown>("body");
+    tooltip = bodySelection
       .append<HTMLDivElement>("div")
-      .attr("class", "tooltip");
+      .attr("class", "tooltip") as TooltipSelection;
     return tooltip;
   }
   
@@ -23,31 +25,37 @@ export function createTooltip(isDark: boolean): d3.Selection<HTMLDivElement, unk
   const parentElement = svgElement.parentElement;
   if (!parentElement) {
     console.warn("SVG parent container not found, falling back to body");
-    tooltip = d3.select<HTMLElement, unknown>("body")
+    const bodySelection = d3.select<HTMLBodyElement, unknown>("body");
+    tooltip = bodySelection
       .append<HTMLDivElement>("div")
-      .attr("class", "tooltip");
+      .attr("class", "tooltip") as TooltipSelection;
     return tooltip;
   }
 
-  const container = d3.select<HTMLElement, unknown>(parentElement);
-  
-  tooltip = container
+  // Create the tooltip
+  const parentSelection = d3.select(parentElement) as unknown as d3.Selection<HTMLElement, unknown, HTMLElement, any>;
+  tooltip = parentSelection
     .append<HTMLDivElement>("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "absolute")
-    .style("padding", "6px 6px")
-    .style("border-radius", "8px")
+    .style("padding", "6px 10px")
+    .style("border-radius", "4px")
     .style("pointer-events", "none")
     .style("font-size", "12px")
-    .style("font-weight", "500")
-    .style("line-height", "1.4")
-    .style("box-shadow", "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)")
+    .style("font-weight", "400")
+    .style("line-height", "1.3")
+    .style("letter-spacing", "0.01em")
+    .style("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)")
+    .style("min-width", "200px")
     .style("max-width", "300px")
+    .style("width", "auto")
     .style("white-space", "normal")
     .style("word-wrap", "break-word")
-    .style("text-align", "center")
-    .style("z-index", "1000");
+    .style("text-align", "left")
+    .style("backdrop-filter", "blur(8px)")
+    .style("-webkit-backdrop-filter", "blur(8px)")
+    .style("z-index", "1000") as unknown as TooltipSelection;
 
   updateTooltipTheme(isDark);
   return tooltip;
@@ -57,9 +65,9 @@ export function updateTooltipTheme(isDark: boolean) {
   if (!tooltip) return;
   
   tooltip
-    .style("background", isDark ? "rgba(17, 24, 39, 0.95)" : "rgba(255, 255, 255, 0.95)")
+    .style("background", isDark ? "rgba(23, 23, 23, 0.85)" : "rgba(255, 255, 255, 0.85)")
     .style("color", isDark ? "rgba(229, 231, 235, 1)" : "rgba(17, 24, 39, 1)")
-    .style("border", isDark ? "1px solid rgba(75, 85, 99, 0.4)" : "1px solid rgba(229, 231, 235, 0.4)");
+    .style("border", isDark ? "1px solid rgba(75, 85, 99, 0.1)" : "1px solid rgba(229, 231, 235, 0.1)");
 }
 
 export function showTooltip(event: MouseEvent, content: string) {
@@ -83,7 +91,7 @@ export function showTooltip(event: MouseEvent, content: string) {
 }
 
 export function hideTooltip() {
-  tooltip.transition()
+  tooltip?.transition()
     .duration(500)
     .style("opacity", 0);
 }
