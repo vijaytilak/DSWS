@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { Settings2 } from "lucide-react"
+import Link from "next/link"
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 
 import {
   RightSidebar,
@@ -19,10 +21,14 @@ export function AppRightSidebar({
       className="sticky top-0 h-svh border-l"
       {...props}
     >
-      <RightSidebarHeader className="h-16 border-b border-sidebar-border">
-        <div className="flex h-full items-center px-4">
-          <Settings2 className="mr-2 h-5 w-5" />
-          <span>Settings</span>
+      <RightSidebarHeader>
+        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <Settings2 />
+        </div>
+        <div className="grid flex-1 text-left text-sm leading-tight pl-3">
+          <span className="truncate font-semibold">
+            Data Table
+          </span>
         </div>
       </RightSidebarHeader>
       <RightSidebarContent>
