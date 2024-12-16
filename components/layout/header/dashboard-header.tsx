@@ -42,6 +42,7 @@ export function DashboardHeader({
           setCentreFlow={setCentreFlow}
         />
         <div className="flex-1" />
+        <ThemeToggleClient />
         <RightSidebarTrigger />
       </div>
     </header>

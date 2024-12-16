@@ -24,7 +24,7 @@ class VisualizationManager {
           
           // Update all flow lines to match their source bubble colors
           this.svg.selectAll<SVGLineElement, Flow>("line.flow-line")
-            .each(function(flow) {
+            .each(function() {
               const line = d3.select<SVGLineElement, Flow>(this);
               const isFromCenter = line.attr("data-from-center") === "true";
               const flowDirection = line.attr("data-flow-direction");
@@ -34,9 +34,34 @@ class VisualizationManager {
                 const themeColor = isDarkTheme ? "#ffffff" : "#000000";
                 line.attr("stroke", themeColor);
                 
-                const markerId = flowDirection + "-" + flow.from + "-" + flow.to;
-                manager.svg?.select<SVGPathElement>(`#${markerId} path`)
-                  .attr("fill", themeColor);
+                // Get from and to IDs from the line's data attributes
+                const fromId = line.attr("data-from-id");
+                const toId = line.attr("data-to-id");
+                if (fromId && toId) {
+                  const markerId = flowDirection + "-" + fromId + "-" + toId;
+                  manager.svg?.select<SVGPathElement>(`#${markerId} path`)
+                    .attr("fill", themeColor);
+
+                  // Update percentage labels for center flows
+                  manager.svg?.selectAll<SVGTextElement, unknown>("text")
+                    .filter(function() {
+                      const text = d3.select(this);
+                      const x = parseFloat(text.attr("x"));
+                      const y = parseFloat(text.attr("y"));
+                      const lineX1 = parseFloat(line.attr("x1"));
+                      const lineY1 = parseFloat(line.attr("y1"));
+                      const lineX2 = parseFloat(line.attr("x2"));
+                      const lineY2 = parseFloat(line.attr("y2"));
+                      
+                      // Check if the text is near this line
+                      const distanceToLine = Math.abs(
+                        (lineY2 - lineY1) * x - (lineX2 - lineX1) * y + lineX2 * lineY1 - lineY2 * lineX1
+                      ) / Math.sqrt(Math.pow(lineY2 - lineY1, 2) + Math.pow(lineX2 - lineX1, 2));
+                      
+                      return distanceToLine < 20; // Threshold for considering text associated with line
+                    })
+                    .attr("fill", themeColor);
+                }
               }
             });
           
@@ -70,11 +95,16 @@ class VisualizationManager {
             .each(function() {
               const marker = d3.select(this);
               const markerId = marker.attr("id");
-              const [_, fromId, toId] = markerId.split("-").map(Number);
+              if (!markerId) return;
+
+              const [direction, fromId, toId] = markerId.split("-");
+              const fromIdNum = parseInt(fromId);
+              const toIdNum = parseInt(toId);
               
-              if (fromId === manager.bubbles.length - 1) {
-                // If the flow is from center bubble, use center bubble color
-                marker.select("path").attr("fill", isDarkTheme ? "#ffffff" : "#000000");
+              // Update marker color if it's connected to the center bubble
+              if (fromIdNum === manager.bubbles.length - 1 || toIdNum === manager.bubbles.length - 1) {
+                const themeColor = isDarkTheme ? "#ffffff" : "#000000";
+                marker.selectAll("path, circle").attr("fill", themeColor);
               }
             });
         }
@@ -316,6 +346,8 @@ export function drawFlows(
             .attr('class', 'flow-line')
             .attr('data-flow-direction', 'inFlow')
             .attr('data-from-center', target.id === bubbles.length - 1)
+            .attr('data-from-id', target.id.toString())
+            .attr('data-to-id', source.id.toString())
             .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
             .on('mouseout', hideTooltip);
 
@@ -336,6 +368,8 @@ export function drawFlows(
             .attr('class', 'flow-line')
             .attr('data-flow-direction', 'outFlow')
             .attr('data-from-center', source.id === bubbles.length - 1)
+            .attr('data-from-id', source.id.toString())
+            .attr('data-to-id', target.id.toString())
             .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
             .on('mouseout', hideTooltip);
 
@@ -416,7 +450,9 @@ export function drawFlowLine(
     .attr("marker-end", `url(#${markerId})`)
     .attr("opacity", 0.8)
     .attr("data-flow-direction", flowDirection)
-    .attr("data-from-center", isFromCenter.toString()) // Store whether this flow is from center
+    .attr("data-from-center", isFromCenter.toString())
+    .attr("data-from-id", startBubble.id.toString())
+    .attr("data-to-id", endBubble.id.toString())
     .datum(flow)
     .on("mouseover", (event) => {
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
