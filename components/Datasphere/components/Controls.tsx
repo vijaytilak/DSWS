@@ -32,7 +32,7 @@ export function Controls({
         <div className="flex items-center gap-2 flex-1">
           <Slider
             value={[threshold]}
-            onValueChange={([value]) => setThreshold(value)}
+            onValueChange={([value]: number[]) => setThreshold(value)}
             min={0}
             max={100}
             step={1}
@@ -59,7 +59,7 @@ export function Controls({
         <Checkbox
           id="centre-flow"
           checked={centreFlow}
-          onCheckedChange={(checked) => setCentreFlow(checked as boolean)}
+          onCheckedChange={(checked: boolean) => setCentreFlow(checked)}
         />
         <label
           htmlFor="centre-flow"

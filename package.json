@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@firebase/firestore": "^4.7.5",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-avatar": "^1.1.1",
@@ -29,7 +30,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
-    "firebase": "^11.0.2",
+    "firebase": "^11.1.0",
     "lucide-react": "^0.456.0",
     "next": "14.2.16",
     "next-themes": "^0.4.3",
@@ -43,6 +44,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.15",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
