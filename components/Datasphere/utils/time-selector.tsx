@@ -237,7 +237,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-4 mx-auto">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mx-auto">
       <div className="overflow-x-auto mx-auto">
         <div className="relative mx-auto" style={{ width: `${containerWidth}px` }}>
           {/* Year labels/dropdowns */}
@@ -245,7 +245,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
             <select 
               value={yearRange.toYear}
               onChange={(e) => handleYearChange('to', e.target.value)}
-              className="text-sm font-semibold text-gray-700 border rounded px-2 py-1"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
             >
               {yearOptions.map(year => (
                 <option key={`to-${year}`} value={year}>{year}</option>
@@ -254,7 +254,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
             <select 
               value={yearRange.fromYear}
               onChange={(e) => handleYearChange('from', e.target.value)}
-              className="text-sm font-semibold text-gray-700 border rounded px-2 py-1"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
             >
               {yearOptions.map(year => (
                 <option key={`from-${year}`} value={year}>{year}</option>
@@ -264,11 +264,11 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
           
           <div className="relative h-16">
             {/* Main background */}
-            <div className="absolute inset-0 bg-gray-50 rounded-lg border border-gray-100" />
+            <div className="absolute inset-0 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600" />
             
             {/* Year divider */}
             <div 
-              className="absolute top-0 bottom-0 w-px bg-gray-200"
+              className="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600"
               style={{ left: `${12 * monthWidth}px` }}
             />
             
@@ -277,7 +277,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
               {timelineData.map((month) => (
                 <div 
                   key={month.id}
-                  className="flex-shrink-0 text-xs text-center text-gray-500 font-medium"
+                  className="flex-shrink-0 text-xs text-center text-gray-500 dark:text-gray-400 font-medium"
                   style={{ width: `${monthWidth}px` }}
                   title={`${month.fullLabel} ${month.year}`}
                 >
@@ -294,17 +294,17 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
             >
               {/* Selection rectangles */}
               <div
-                className="absolute h-full bg-blue-100 rounded shadow-sm"
+                className="absolute h-full bg-blue-100 dark:bg-blue-900/50 rounded shadow-sm"
                 style={getSelectionStyle(ranges.firstYear)}
               />
               <div
-                className="absolute h-full bg-green-100 rounded shadow-sm"
+                className="absolute h-full bg-green-100 dark:bg-green-900/50 rounded shadow-sm"
                 style={getSelectionStyle(ranges.secondYear)}
               />
             </div>
           </div>
           
-          <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Selected periods: {formatPeriodLabel(ranges.firstYear)} and {formatPeriodLabel(ranges.secondYear)}
           </div>
         </div>
