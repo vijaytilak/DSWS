@@ -241,7 +241,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
       <div className="overflow-x-auto mx-auto">
         <div className="relative mx-auto" style={{ width: `${containerWidth}px` }}>
           {/* Year labels/dropdowns */}
-          <div className="flex justify-between mb-2">
+          <div className="flex justify-between items-center mb-2">
             <select 
               value={yearRange.toYear}
               onChange={(e) => handleYearChange('to', e.target.value)}
@@ -251,6 +251,11 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
                 <option key={`to-${year}`} value={year}>{year}</option>
               ))}
             </select>
+            
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Selected periods: {formatPeriodLabel(ranges.firstYear)} and {formatPeriodLabel(ranges.secondYear)}
+            </div>
+
             <select 
               value={yearRange.fromYear}
               onChange={(e) => handleYearChange('from', e.target.value)}
@@ -302,10 +307,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
                 style={getSelectionStyle(ranges.secondYear)}
               />
             </div>
-          </div>
-          
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Selected periods: {formatPeriodLabel(ranges.firstYear)} and {formatPeriodLabel(ranges.secondYear)}
           </div>
         </div>
       </div>
