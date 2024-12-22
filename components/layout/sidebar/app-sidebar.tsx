@@ -51,7 +51,11 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  setCentreFlow: (value: boolean) => void;
+}
+
+export function AppSidebar({ setCentreFlow, ...props }: AppSidebarProps) {
   const { user } = useAuth()
 
   if (!user) return null
@@ -68,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <AppLogo teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain} setCentreFlow={setCentreFlow} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />

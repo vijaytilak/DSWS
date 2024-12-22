@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DashboardHeader } from "@/components/layout/header/dashboard-header";
 import MonthSelector from "@/components/Datasphere/utils/time-selector";
 import sampleData from '@/data/sample.json';
+import { useCentreFlow } from './layout';
 
 const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
   ssr: false
@@ -12,8 +13,8 @@ const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
 
 export default function Page() {
   const [flowType, setFlowType] = useState("two-way flows");
-  const [centreFlow, setCentreFlow] = useState(false);
   const [threshold, setThreshold] = useState(0);
+  const { centreFlow, setCentreFlow } = useCentreFlow();
 
   return (
     <main className="flex h-screen flex-col">

@@ -60,6 +60,7 @@ export function Controls({
           id="centre-flow"
           checked={centreFlow}
           onCheckedChange={(checked: boolean) => setCentreFlow(checked)}
+          data-centre-flow-checkbox
         />
         <label
           htmlFor="centre-flow"
