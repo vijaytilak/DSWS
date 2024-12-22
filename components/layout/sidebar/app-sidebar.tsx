@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/layout/sidebar/nav-main"
+import { NavOptions } from "@/components/layout/sidebar/nav-options"
 import { NavUser } from "@/components/layout/sidebar/nav-user"
 import { AppLogo } from "@/components/layout/sidebar/app-logo"
 import {
@@ -28,7 +29,6 @@ import { useAuth } from "@/hooks/useAuth"
 
 // This is sample data.
 const data = {
-
   teams: [
     {
       name: "DataSphere",
@@ -73,6 +73,7 @@ export function AppSidebar({ setCentreFlow, ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} setCentreFlow={setCentreFlow} />
+        <NavOptions />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />
