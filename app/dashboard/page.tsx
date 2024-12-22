@@ -3,10 +3,10 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { DashboardHeader } from "@/components/layout/header/dashboard-header";
-import MonthSelector from "@/components/DataSphere/utils/time-selector";
+import MonthSelector from "@/components/Datasphere/utils/time-selector";
 import sampleData from '@/data/sample.json';
 
-const DataSphere = dynamic(() => import('@/components/DataSphere/DataSphere'), {
+const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
   ssr: false
 });
 

@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { RightSidebarTrigger } from "@/components/ui/right-sidebar"
 import dynamic from 'next/dynamic'
-import { Controls } from "@/components/DataSphere/components/Controls"
+import { Controls } from "@/components/Datasphere/components/Controls"
 
 const ThemeToggleClient = dynamic(
   () => import('@/components/layout/header/theme-toggle').then(mod => ({ default: mod.ThemeToggle })),
