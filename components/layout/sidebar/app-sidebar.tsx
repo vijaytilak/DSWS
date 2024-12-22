@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/layout/sidebar/nav-main"
-import { NavProjects } from "@/components/layout/sidebar/nav-projects"
 import { NavUser } from "@/components/layout/sidebar/nav-user"
 import { AppLogo } from "@/components/layout/sidebar/app-logo"
 import {
@@ -39,64 +38,16 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Markets",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Settings",
+      title: "Brands",
       url: "#",
       icon: Settings2,
-      items: [
-        {
-          title: "Profile",
-          url: "/dashboard/profile",
-        },
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
     },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    }
   ],
 }
 
@@ -118,7 +69,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />
