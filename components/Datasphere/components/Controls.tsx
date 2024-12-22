@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { flowTypeOptions } from "../constants/flowTypes";
+import { flowTypeOptions } from "@/components/Datasphere/constants/flowTypes";
 
 interface ControlsProps {
   threshold: number;
