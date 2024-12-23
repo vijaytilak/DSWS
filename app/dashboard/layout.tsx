@@ -14,6 +14,8 @@ import { RightSidebarProvider } from "@/components/ui/right-sidebar"
 interface CentreFlowContextType {
   centreFlow: boolean;
   setCentreFlow: (value: boolean) => void;
+  flowType: string;
+  setFlowType: (value: string) => void;
 }
 
 const CentreFlowContext = createContext<CentreFlowContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [centreFlow, setCentreFlow] = useState(false);
+  const [flowType, setFlowType] = useState("bi-directional");
 
   return (
     <ProtectedRoute>
@@ -43,9 +46,13 @@ export default function DashboardLayout({
           } as React.CSSProperties}
         >
           <SidebarProvider>
-            <CentreFlowContext.Provider value={{ centreFlow, setCentreFlow }}>
+            <CentreFlowContext.Provider value={{ centreFlow, setCentreFlow, flowType, setFlowType }}>
               <div className="flex flex-1">
-                <AppSidebar setCentreFlow={setCentreFlow} />
+                <AppSidebar 
+                  setCentreFlow={setCentreFlow} 
+                  setFlowType={setFlowType}
+                  flowType={flowType}
+                />
                 <SidebarInset className="flex-1">
                   {children}
                 </SidebarInset>

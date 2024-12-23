@@ -12,9 +12,8 @@ const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
 });
 
 export default function Page() {
-  const [flowType, setFlowType] = useState("two-way flows");
   const [threshold, setThreshold] = useState(0);
-  const { centreFlow, setCentreFlow } = useCentreFlow();
+  const { centreFlow, setCentreFlow, flowType, setFlowType } = useCentreFlow();
 
   return (
     <main className="flex h-screen flex-col">

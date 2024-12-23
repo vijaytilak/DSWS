@@ -16,6 +16,7 @@ import {
 
 import { NavMain } from "@/components/layout/sidebar/nav-main"
 import { NavOptions } from "@/components/layout/sidebar/nav-options"
+import { NavFlowTypes } from "@/components/layout/sidebar/nav-flowtypes"
 import { NavUser } from "@/components/layout/sidebar/nav-user"
 import { AppLogo } from "@/components/layout/sidebar/app-logo"
 import {
@@ -53,9 +54,11 @@ const data = {
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   setCentreFlow: (value: boolean) => void;
+  setFlowType: (value: string) => void;
+  flowType: string;
 }
 
-export function AppSidebar({ setCentreFlow, ...props }: AppSidebarProps) {
+export function AppSidebar({ setCentreFlow, setFlowType, flowType, ...props }: AppSidebarProps) {
   const { user } = useAuth()
 
   if (!user) return null
@@ -74,6 +77,7 @@ export function AppSidebar({ setCentreFlow, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={data.navMain} setCentreFlow={setCentreFlow} />
         <NavOptions />
+        <NavFlowTypes setFlowType={setFlowType} currentFlowType={flowType} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />
