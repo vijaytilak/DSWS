@@ -7,7 +7,7 @@ export function prepareFlowData(
   threshold: number,
   focusBubbleId: number | null
 ): Flow[] {
-  let flows: Flow[] = data.flows_absolute.map(flow => {
+  let flows: Flow[] = data.flows_brands.map(flow => {
     return {
       from: flow.from,
       to: flow.to,

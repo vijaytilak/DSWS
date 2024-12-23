@@ -67,7 +67,72 @@
       "itemSize_relative": 0.037630137
     }
   ],
-  "flows_absolute": [
+  "flows_brands": [
+    {
+      "from": 3,
+      "to": 6,
+      "outFlow": 5409752,
+      "inFlow": 5040952,
+      "interaction": 368800
+    },
+    {
+      "from": 3,
+      "to": 7,
+      "outFlow": 1634698,
+      "inFlow": 1425301,
+      "interaction": 209397
+    },
+    {
+      "from": 3,
+      "to": 1,
+      "outFlow": 2550793,
+      "inFlow": 2252324,
+      "interaction": 298469
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "outFlow": 1234567,
+      "inFlow": 987654,
+      "interaction": 246913
+    },
+    {
+      "from": 9,
+      "to": 3,
+      "outFlow": 3456789,
+      "inFlow": 3123456,
+      "interaction": 333333
+    },
+    {
+      "from": 8,
+      "to": 9,
+      "outFlow": 876543,
+      "inFlow": 654321,
+      "interaction": 222222
+    },
+    {
+      "from": 0,
+      "to": 2,
+      "outFlow": 445566,
+      "inFlow": 334455,
+      "interaction": 111111
+    },
+    {
+      "from": 4,
+      "to": 3,
+      "outFlow": 789012,
+      "inFlow": 567890,
+      "interaction": 221122
+    },
+    {
+      "from": 10,
+      "to": 3,
+      "outFlow": 234567,
+      "inFlow": 123456,
+      "interaction": 111111
+    }
+  ],
+  "flows_markets": [
     {
       "from": 3,
       "to": 6,

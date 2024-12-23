@@ -5,7 +5,7 @@ export interface FlowData {
     itemSize_absolute: number;
     itemSize_relative: number;
   }>;
-  flows_absolute: Array<{
+  flows_brands: Array<{
     from: number;
     to: number;
     outFlow: number;
