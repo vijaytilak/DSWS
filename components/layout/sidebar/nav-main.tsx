@@ -29,9 +29,9 @@ export function NavMain({
     if (!setCentreFlow) return;
 
     if (item.title === "Brands") {
-      setCentreFlow(true); // Enable CentreFlow
-    } else if (item.title === "Markets") {
       setCentreFlow(false); // Disable CentreFlow
+    } else if (item.title === "Markets") {
+      setCentreFlow(true); // Enable CentreFlow
     }
   };
 
