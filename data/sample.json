@@ -134,67 +134,151 @@
   ],
   "flows_markets": [
     {
-      "from": 3,
-      "to": 6,
-      "outFlow": 5409752,
-      "inFlow": 5040952,
-      "interaction": 368800
+      "itemID": 3,
+      "churn": {
+        "in": 35.2,
+        "out": 42.7,
+        "net": -7.5,
+        "both": 12.8
+      },
+      "switching": {
+        "in": 28.4,
+        "out": 39.8,
+        "net": -11.4,
+        "both": 15.5
+      },
+      "affinity": {
+        "in": 45.3,
+        "out": 32.1,
+        "net": 13.2,
+        "both": 24.2
+      }
     },
     {
-      "from": 3,
-      "to": 7,
-      "outFlow": 1634698,
-      "inFlow": 1425301,
-      "interaction": 209397
+      "itemID": 6,
+      "churn": {
+        "in": 38.9,
+        "out": 31.2,
+        "net": 7.7,
+        "both": 21.9
+      },
+      "switching": {
+        "in": 34.5,
+        "out": 43.2,
+        "net": -8.7,
+        "both": 22.1
+      },
+      "affinity": {
+        "in": 49.8,
+        "out": 37.5,
+        "net": 12.3,
+        "both": 28.5
+      }
     },
     {
-      "from": 3,
-      "to": 1,
-      "outFlow": 2550793,
-      "inFlow": 2252324,
-      "interaction": 298469
+      "itemID": 7,
+      "churn": {
+        "in": 30.5,
+        "out": 43.8,
+        "net": -13.3,
+        "both": 22.2
+      },
+      "switching": {
+        "in": 46.7,
+        "out": 35.4,
+        "net": 11.3,
+        "both": 25.8
+      },
+      "affinity": {
+        "in": 52.4,
+        "out": 40.1,
+        "net": 12.3,
+        "both": 33.9
+      }
     },
     {
-      "from": 6,
-      "to": 7,
-      "outFlow": 1234567,
-      "inFlow": 987654,
-      "interaction": 246913
+      "itemID": 1,
+      "churn": {
+        "in": 42.3,
+        "out": 35.6,
+        "net": 6.7,
+        "both": 25.5
+      },
+      "switching": {
+        "in": 38.9,
+        "out": 46.7,
+        "net": -7.8,
+        "both": 28.1
+      },
+      "affinity": {
+        "in": 54.5,
+        "out": 41.2,
+        "net": 13.3,
+        "both": 34.5
+      }
     },
     {
-      "from": 9,
-      "to": 3,
-      "outFlow": 3456789,
-      "inFlow": 3123456,
-      "interaction": 333333
+      "itemID": 9,
+      "churn": {
+        "in": 29.8,
+        "out": 42.4,
+        "net": -12.6,
+        "both": 21.8
+      },
+      "switching": {
+        "in": 45.6,
+        "out": 34.2,
+        "net": 11.4,
+        "both": 27.4
+      },
+      "affinity": {
+        "in": 50.8,
+        "out": 38.5,
+        "net": 12.3,
+        "both": 31.7
+      }
     },
     {
-      "from": 8,
-      "to": 9,
-      "outFlow": 876543,
-      "inFlow": 654321,
-      "interaction": 222222
+      "itemID": 8,
+      "churn": {
+        "in": 41.2,
+        "out": 34.5,
+        "net": 6.7,
+        "both": 24.1
+      },
+      "switching": {
+        "in": 37.8,
+        "out": 45.6,
+        "net": -7.8,
+        "both": 28.9
+      },
+      "affinity": {
+        "in": 53.4,
+        "out": 40.1,
+        "net": 13.3,
+        "both": 32.1
+      }
     },
     {
-      "from": 0,
-      "to": 2,
-      "outFlow": 445566,
-      "inFlow": 334455,
-      "interaction": 111111
-    },
-    {
-      "from": 4,
-      "to": 3,
-      "outFlow": 789012,
-      "inFlow": 567890,
-      "interaction": 221122
-    },
-    {
-      "from": 10,
-      "to": 3,
-      "outFlow": 234567,
-      "inFlow": 123456,
-      "interaction": 111111
+      "itemID": 0,
+      "churn": {
+        "in": 37.8,
+        "out": 50.1,
+        "net": -12.3,
+        "both": 28.5
+      },
+      "switching": {
+        "in": 43.4,
+        "out": 32.1,
+        "net": 11.3,
+        "both": 25.9
+      },
+      "affinity": {
+        "in": 48.7,
+        "out": 36.4,
+        "net": 12.3,
+        "both": 29.2
+      }
     }
   ]
 }
