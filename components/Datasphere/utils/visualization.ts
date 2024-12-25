@@ -208,17 +208,44 @@ export function drawBubbles(
     .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
     .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0)
     .attr("cursor", d => d.id === bubbles.length - 1 ? "default" : "pointer")
-    .on("click", (event, d) => {
+    .on("click", (event: MouseEvent, d: Bubble) => {
       if (d.id !== bubbles.length - 1) {
+        // Remove highlight from all bubbles
+        bubbleGroups.selectAll<SVGCircleElement, Bubble>("circle")
+          .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
+          .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0);
+        
+        // Add highlight to clicked bubble
+        const target = event.currentTarget as SVGCircleElement;
+        d3.select<SVGCircleElement, Bubble>(target)
+          .attr("stroke", isDark ? "white" : "black")
+          .attr("stroke-width", 2);
+          
         onClick(d);
       }
     })
-    .on("mouseover", (event, d) => {
+    .on("mouseover", (event: MouseEvent, d: Bubble) => {
       if (d.id !== bubbles.length - 1) {
+        const target = event.currentTarget as SVGCircleElement;
+        d3.select<SVGCircleElement, Bubble>(target)
+          .attr("stroke", isDark ? "white" : "black")
+          .attr("stroke-width", 2);
         showTooltip(event, getBubbleTooltip(d));
       }
     })
-    .on("mouseout", hideTooltip);
+    .on("mouseout", (event: MouseEvent, d: Bubble) => {
+      if (d.id !== bubbles.length - 1) {
+        // Only remove highlight if this bubble wasn't clicked
+        const target = event.currentTarget as SVGCircleElement;
+        const isClicked = d3.select<SVGCircleElement, Bubble>(target).attr("stroke-width") === "2";
+        if (!isClicked) {
+          d3.select<SVGCircleElement, Bubble>(target)
+            .attr("stroke", "none")
+            .attr("stroke-width", 0);
+        }
+      }
+      hideTooltip();
+    });
 
   // Add outer rings
   bubbleGroups
@@ -348,7 +375,7 @@ export function drawFlows(
             .attr('data-from-center', target.id === bubbles.length - 1)
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
-            .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
+            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
             .on('mouseout', hideTooltip);
 
           // Add inflow marker
@@ -370,7 +397,7 @@ export function drawFlows(
             .attr('data-from-center', source.id === bubbles.length - 1)
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
-            .on('mouseover', (event) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
+            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
             .on('mouseout', hideTooltip);
 
           // Add outflow marker
@@ -454,7 +481,7 @@ export function drawFlowLine(
     .attr("data-from-id", startBubble.id.toString())
     .attr("data-to-id", endBubble.id.toString())
     .datum(flow)
-    .on("mouseover", (event) => {
+    .on("mouseover", (event: MouseEvent) => {
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
     .on("mouseout", hideTooltip);
