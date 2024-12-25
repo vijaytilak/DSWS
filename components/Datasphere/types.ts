@@ -12,6 +12,24 @@ export interface FlowData {
     inFlow: number;
     interaction: number;
   }>;
+  flows_markets: Array<{
+    itemID: number;
+    churn: {
+      in: number;
+      out: number;
+      net: number;
+    };
+    switching: {
+      in: number;
+      out: number;
+      net: number;
+    };
+    affinity: {
+      in: number;
+      out: number;
+      net: number;
+    };
+  }>;
 }
 
 export interface Bubble {

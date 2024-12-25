@@ -1,51 +1,116 @@
 import type { FlowData, Flow } from '../types';
 
+interface MarketFlow {
+  itemID: number;
+  churn: { in: number; out: number; net: number; both: number; };
+  switching: { in: number; out: number; net: number; both: number; };
+  affinity: { in: number; out: number; net: number; both: number; };
+}
+
+interface BrandFlow {
+  from: number;
+  to: number;
+  outFlow: number;
+  inFlow: number;
+  interaction: number;
+}
+
+type FlowDirection = "inFlow" | "outFlow";
+
 export function prepareFlowData(
   data: FlowData,
   flowType: string,
   centreFlow: boolean,
   threshold: number,
-  focusBubbleId: number | null
+  focusBubbleId: number | null,
+  isMarketView: boolean = false,
+  flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
 ): Flow[] {
-  let flows: Flow[] = data.flows_brands.map(flow => {
-    return {
-      from: flow.from,
-      to: flow.to,
-      absolute_inFlow: flow.inFlow,
-      absolute_outFlow: flow.outFlow,
-      absolute_netFlowDirection: flow.interaction >= 0 ? "inFlow" : "outFlow",
-      absolute_netFlow: Math.abs(flow.interaction),
-    };
-  });
+  if (isMarketView) {
+    // For Markets view, create centre flows for each market
+    const marketFlows = data.flows_markets.map((flow) => {
+      const marketFlow = flow as MarketFlow;
+      const optionData = marketFlow[flowOption];
+      const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
+      
+      // Create a flow from the market to the center
+      return {
+        from: marketFlow.itemID,
+        to: data.itemIDs.length, // Center bubble ID
+        absolute_inFlow: optionData.in,
+        absolute_outFlow: optionData.out,
+        absolute_netFlowDirection: flowDirection,
+        absolute_netFlow: Math.abs(optionData.net),
+      };
+    });
 
-  // Handle centre flow aggregation
-  if (centreFlow) {
-    const noOfBubbles = data.itemIDs.length;
-    flows = prepareCentreFlowData(flows, noOfBubbles);
+    // Filter flows if there's a focus bubble
+    let filteredFlows = marketFlows;
+    if (focusBubbleId !== null) {
+      filteredFlows = marketFlows.filter(flow => 
+        flow.from === focusBubbleId || flow.to === focusBubbleId
+      );
+    }
+
+    // Apply threshold filtering
+    return filteredFlows.filter(flow => {
+      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
+                   flowType === 'inFlow only' ? flow.absolute_inFlow :
+                   flowType === 'outFlow only' ? flow.absolute_outFlow :
+                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
+      
+      const maxValue = Math.max(...marketFlows.map(f => 
+        flowType === 'netFlow' ? f.absolute_netFlow :
+        flowType === 'inFlow only' ? f.absolute_inFlow :
+        flowType === 'outFlow only' ? f.absolute_outFlow :
+        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+      ));
+
+      return (value / maxValue) * 100 >= threshold;
+    });
+  } else {
+    // For Brands view, use the original brand flows
+    const brandFlows = data.flows_brands.map((flow) => {
+      const brandFlow = flow as BrandFlow;
+      const flowDirection: FlowDirection = brandFlow.interaction >= 0 ? "inFlow" : "outFlow";
+      
+      return {
+        from: brandFlow.from,
+        to: brandFlow.to,
+        absolute_inFlow: brandFlow.inFlow,
+        absolute_outFlow: brandFlow.outFlow,
+        absolute_netFlowDirection: flowDirection,
+        absolute_netFlow: Math.abs(brandFlow.interaction),
+      };
+    });
+
+    // Handle centre flow aggregation for brands
+    let flows = centreFlow ? prepareCentreFlowData(brandFlows, data.itemIDs.length) : brandFlows;
+
+    // Filter flows if there's a focus bubble
+    if (focusBubbleId !== null) {
+      flows = flows.filter(flow => 
+        flow.from === focusBubbleId || flow.to === focusBubbleId
+      );
+    }
+
+    // Apply threshold filtering
+    return flows.filter(flow => {
+      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
+                   flowType === 'inFlow only' ? flow.absolute_inFlow :
+                   flowType === 'outFlow only' ? flow.absolute_outFlow :
+                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
+      
+      const maxValue = Math.max(...flows.map(f => 
+        flowType === 'netFlow' ? f.absolute_netFlow :
+        flowType === 'inFlow only' ? f.absolute_inFlow :
+        flowType === 'outFlow only' ? f.absolute_outFlow :
+        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+      ));
+
+      return (value / maxValue) * 100 >= threshold;
+    });
   }
-
-  let filteredFlows = flows;
-  if (focusBubbleId !== null) {
-    filteredFlows = flows.filter(flow => 
-      flow.from === focusBubbleId || flow.to === focusBubbleId
-    );
-  }
-
-  return filteredFlows.filter(flow => {
-    const value = flowType === 'netFlow' ? flow.absolute_netFlow :
-                 flowType === 'inFlow only' ? flow.absolute_inFlow :
-                 flowType === 'outFlow only' ? flow.absolute_outFlow :
-                 Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-    
-    const maxValue = Math.max(...flows.map(f => 
-      flowType === 'netFlow' ? f.absolute_netFlow :
-      flowType === 'inFlow only' ? f.absolute_inFlow :
-      flowType === 'outFlow only' ? f.absolute_outFlow :
-      Math.max(f.absolute_inFlow, f.absolute_outFlow)
-    ));
-
-    return (value / maxValue) * 100 >= threshold;
-  });
 }
 
 function prepareCentreFlowData(flows: Flow[], noOfBubbles: number): Flow[] {
@@ -73,12 +138,15 @@ function prepareCentreFlowData(flows: Flow[], noOfBubbles: number): Flow[] {
   // Convert aggregated flows to Flow objects through center
   return Array.from(centreFlowMap.entries())
     .filter(([id]) => id !== noOfBubbles) // Exclude the center node itself
-    .map(([id, flow]) => ({
-      from: id,
-      to: noOfBubbles,
-      absolute_inFlow: flow.totalInFlow,
-      absolute_outFlow: flow.totalOutFlow,
-      absolute_netFlowDirection: flow.totalInFlow >= flow.totalOutFlow ? "inFlow" : "outFlow",
-      absolute_netFlow: Math.abs(flow.totalInFlow - flow.totalOutFlow)
-    }));
+    .map(([id, flow]) => {
+      const flowDirection: FlowDirection = flow.totalInFlow >= flow.totalOutFlow ? "inFlow" : "outFlow";
+      return {
+        from: id,
+        to: noOfBubbles,
+        absolute_inFlow: flow.totalInFlow,
+        absolute_outFlow: flow.totalOutFlow,
+        absolute_netFlowDirection: flowDirection,
+        absolute_netFlow: Math.abs(flow.totalInFlow - flow.totalOutFlow)
+      };
+    });
 }

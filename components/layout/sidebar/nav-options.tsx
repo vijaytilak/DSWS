@@ -1,7 +1,5 @@
-"use client"
-
 import { type LucideIcon, Activity, Repeat, Heart } from "lucide-react"
-import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 import {
   SidebarGroup,
@@ -11,44 +9,50 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+type FlowOption = 'churn' | 'switching' | 'affinity';
+
 interface NavOptionsProps {
-  items?: {
-    title: string
-    url: string
-    icon: LucideIcon
-  }[]
+  isMarketView: boolean;
+  onFlowOptionChange: (option: FlowOption) => void;
+  flowOption: FlowOption;
 }
 
-const defaultItems = [
+const optionItems = [
   {
     title: "Churn",
-    url: "#",
+    value: "churn" as FlowOption,
     icon: Activity,
   },
   {
     title: "Switching",
-    url: "#",
+    value: "switching" as FlowOption,
     icon: Repeat,
   },
   {
     title: "Affinity",
-    url: "#",
+    value: "affinity" as FlowOption,
     icon: Heart,
   },
 ]
 
-export function NavOptions({ items = defaultItems }: NavOptionsProps) {
+export function NavOptions({ isMarketView, onFlowOptionChange, flowOption }: NavOptionsProps) {
+  // Only show options menu for Markets view
+  if (!isMarketView) {
+    return null;
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Options</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <item.icon className="h-4 w-4" />
-                <span>{item.title}</span>
-              </Link>
+        {optionItems.map((item) => (
+          <SidebarMenuItem key={item.value}>
+            <SidebarMenuButton
+              isActive={flowOption === item.value}
+              onClick={() => onFlowOptionChange(item.value)}
+            >
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}

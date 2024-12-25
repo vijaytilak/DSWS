@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
+type FlowOption = 'churn' | 'switching' | 'affinity';
+
 // This is sample data.
 const data = {
   teams: [
@@ -56,9 +58,22 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   setCentreFlow: (value: boolean) => void;
   setFlowType: (value: string) => void;
   flowType: string;
+  onFlowOptionChange?: (option: FlowOption) => void;
+  isMarketView?: boolean;
+  setIsMarketView: (value: boolean) => void;
+  flowOption?: FlowOption;
 }
 
-export function AppSidebar({ setCentreFlow, setFlowType, flowType, ...props }: AppSidebarProps) {
+export function AppSidebar({ 
+  setCentreFlow, 
+  setFlowType, 
+  flowType, 
+  onFlowOptionChange, 
+  isMarketView = false,
+  setIsMarketView,
+  flowOption = 'churn',
+  ...props 
+}: AppSidebarProps) {
   const { user } = useAuth()
 
   if (!user) return null
@@ -75,8 +90,16 @@ export function AppSidebar({ setCentreFlow, setFlowType, flowType, ...props }: A
         <AppLogo teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} setCentreFlow={setCentreFlow} />
-        <NavOptions />
+        <NavMain 
+          items={data.navMain} 
+          setCentreFlow={setCentreFlow}
+          setIsMarketView={setIsMarketView}
+        />
+        <NavOptions 
+          isMarketView={isMarketView} 
+          onFlowOptionChange={onFlowOptionChange || (() => {})} 
+          flowOption={flowOption}
+        />
         <NavFlowTypes setFlowType={setFlowType} currentFlowType={flowType} />
       </SidebarContent>
       <SidebarFooter>

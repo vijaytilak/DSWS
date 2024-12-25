@@ -8,6 +8,9 @@ import type { FlowData, Bubble, Flow } from './types';
 import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/visualization';
 import { prepareFlowData } from './utils/flow';
 import { useDimensions } from './hooks/useDimensions';
+import { useCentreFlow } from '@/app/dashboard/layout';
+
+type FlowOption = 'churn' | 'switching' | 'affinity';
 
 interface DataSphereProps {
   data: FlowData;
@@ -25,6 +28,7 @@ export default function DataSphere({
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
+  const { isMarketView, flowOption } = useCentreFlow();
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [flows, setFlows] = useState<Flow[]>([]);
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
@@ -72,10 +76,18 @@ export default function DataSphere({
     };
     drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY);
 
-    const initialFlows = prepareFlowData(data, flowType, centreFlow, threshold, focusBubbleId);
+    const initialFlows = prepareFlowData(
+      data, 
+      flowType, 
+      centreFlow, 
+      threshold, 
+      focusBubbleId,
+      isMarketView,
+      flowOption
+    );
     setFlows(initialFlows);
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions]);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

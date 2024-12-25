@@ -11,11 +11,17 @@ import {
 } from "@/components/ui/sidebar"
 import { RightSidebarProvider } from "@/components/ui/right-sidebar"
 
+type FlowOption = 'churn' | 'switching' | 'affinity';
+
 interface CentreFlowContextType {
   centreFlow: boolean;
   setCentreFlow: (value: boolean) => void;
   flowType: string;
   setFlowType: (value: string) => void;
+  isMarketView: boolean;
+  setIsMarketView: (value: boolean) => void;
+  flowOption: FlowOption;
+  setFlowOption: (value: FlowOption) => void;
 }
 
 const CentreFlowContext = createContext<CentreFlowContextType | undefined>(undefined);
@@ -34,7 +40,24 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [centreFlow, setCentreFlow] = useState(false);
-  const [flowType, setFlowType] = useState("bi-directional");
+  const [flowType, setFlowType] = useState("all");
+  const [isMarketView, setIsMarketView] = useState(false);
+  const [flowOption, setFlowOption] = useState<FlowOption>("churn");
+
+  const handleFlowOptionChange = (option: FlowOption) => {
+    setFlowOption(option);
+  };
+
+  const value = {
+    centreFlow,
+    setCentreFlow,
+    flowType,
+    setFlowType,
+    isMarketView,
+    setIsMarketView,
+    flowOption,
+    setFlowOption
+  };
 
   return (
     <ProtectedRoute>
@@ -46,16 +69,22 @@ export default function DashboardLayout({
           } as React.CSSProperties}
         >
           <SidebarProvider>
-            <CentreFlowContext.Provider value={{ centreFlow, setCentreFlow, flowType, setFlowType }}>
+            <CentreFlowContext.Provider value={value}>
               <div className="flex flex-1">
                 <AppSidebar 
                   setCentreFlow={setCentreFlow} 
                   setFlowType={setFlowType}
                   flowType={flowType}
+                  isMarketView={isMarketView}
+                  setIsMarketView={setIsMarketView}
+                  onFlowOptionChange={handleFlowOptionChange}
+                  flowOption={flowOption}
                 />
-                <SidebarInset className="flex-1">
-                  {children}
-                </SidebarInset>
+                <main className="flex-1">
+                  <SidebarInset>
+                    {children}
+                  </SidebarInset>
+                </main>
                 <AppRightSidebar />
               </div>
             </CentreFlowContext.Provider>
@@ -63,5 +92,5 @@ export default function DashboardLayout({
         </RightSidebarProvider>
       </div>
     </ProtectedRoute>
-  );
+  )
 }
