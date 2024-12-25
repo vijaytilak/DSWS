@@ -73,63 +73,225 @@
       "to": 6,
       "outFlow": 5409752,
       "inFlow": 5040952,
-      "interaction": 368800
+      "interaction": 368800,
+      "churn": {
+        "in": 45.2,
+        "out": 38.7,
+        "net": 6.5,
+        "both": 28.4
+      },
+      "switching": {
+        "in": 52.8,
+        "out": 41.3,
+        "net": 11.5,
+        "both": 35.2
+      },
+      "affinity": {
+        "in": 63.4,
+        "out": 55.8,
+        "net": 7.6,
+        "both": 42.1
+      }
     },
     {
       "from": 3,
       "to": 7,
       "outFlow": 1634698,
       "inFlow": 1425301,
-      "interaction": 209397
+      "interaction": 209397,
+      "churn": {
+        "in": 32.1,
+        "out": 48.9,
+        "net": -16.8,
+        "both": 25.6
+      },
+      "switching": {
+        "in": 58.3,
+        "out": 43.7,
+        "net": 14.6,
+        "both": 38.9
+      },
+      "affinity": {
+        "in": 47.5,
+        "out": 51.2,
+        "net": -3.7,
+        "both": 31.8
+      }
     },
     {
       "from": 3,
       "to": 1,
       "outFlow": 2550793,
       "inFlow": 2252324,
-      "interaction": 298469
+      "interaction": 298469,
+      "churn": {
+        "in": 55.6,
+        "out": 42.3,
+        "net": 13.3,
+        "both": 33.4
+      },
+      "switching": {
+        "in": 41.9,
+        "out": 53.4,
+        "net": -11.5,
+        "both": 29.8
+      },
+      "affinity": {
+        "in": 68.2,
+        "out": 59.5,
+        "net": 8.7,
+        "both": 45.3
+      }
     },
     {
       "from": 6,
       "to": 7,
       "outFlow": 1234567,
       "inFlow": 987654,
-      "interaction": 246913
+      "interaction": 246913,
+      "churn": {
+        "in": 43.8,
+        "out": 51.2,
+        "net": -7.4,
+        "both": 31.5
+      },
+      "switching": {
+        "in": 62.4,
+        "out": 45.8,
+        "net": 16.6,
+        "both": 41.2
+      },
+      "affinity": {
+        "in": 53.7,
+        "out": 48.9,
+        "net": 4.8,
+        "both": 37.6
+      }
     },
     {
       "from": 9,
       "to": 3,
       "outFlow": 3456789,
       "inFlow": 3123456,
-      "interaction": 333333
+      "interaction": 333333,
+      "churn": {
+        "in": 49.3,
+        "out": 44.7,
+        "net": 4.6,
+        "both": 35.8
+      },
+      "switching": {
+        "in": 37.8,
+        "out": 55.2,
+        "net": -17.4,
+        "both": 27.5
+      },
+      "affinity": {
+        "in": 71.5,
+        "out": 62.8,
+        "net": 8.7,
+        "both": 48.9
+      }
     },
     {
       "from": 8,
       "to": 9,
       "outFlow": 876543,
       "inFlow": 654321,
-      "interaction": 222222
+      "interaction": 222222,
+      "churn": {
+        "in": 38.4,
+        "out": 46.9,
+        "net": -8.5,
+        "both": 29.1
+      },
+      "switching": {
+        "in": 57.2,
+        "out": 49.5,
+        "net": 7.7,
+        "both": 39.8
+      },
+      "affinity": {
+        "in": 44.6,
+        "out": 52.3,
+        "net": -7.7,
+        "both": 32.4
+      }
     },
     {
       "from": 0,
       "to": 2,
       "outFlow": 445566,
       "inFlow": 334455,
-      "interaction": 111111
+      "interaction": 111111,
+      "churn": {
+        "in": 51.7,
+        "out": 43.2,
+        "net": 8.5,
+        "both": 36.4
+      },
+      "switching": {
+        "in": 45.3,
+        "out": 54.8,
+        "net": -9.5,
+        "both": 33.2
+      },
+      "affinity": {
+        "in": 59.8,
+        "out": 47.3,
+        "net": 12.5,
+        "both": 41.5
+      }
     },
     {
       "from": 4,
       "to": 3,
       "outFlow": 789012,
       "inFlow": 567890,
-      "interaction": 221122
+      "interaction": 221122,
+      "churn": {
+        "in": 42.5,
+        "out": 49.8,
+        "net": -7.3,
+        "both": 32.8
+      },
+      "switching": {
+        "in": 64.7,
+        "out": 51.2,
+        "net": 13.5,
+        "both": 43.6
+      },
+      "affinity": {
+        "in": 55.9,
+        "out": 46.4,
+        "net": 9.5,
+        "both": 38.7
+      }
     },
     {
       "from": 10,
       "to": 3,
       "outFlow": 234567,
       "inFlow": 123456,
-      "interaction": 111111
+      "interaction": 111111,
+      "churn": {
+        "in": 47.8,
+        "out": 41.5,
+        "net": 6.3,
+        "both": 34.2
+      },
+      "switching": {
+        "in": 53.4,
+        "out": 48.9,
+        "net": 4.5,
+        "both": 37.8
+      },
+      "affinity": {
+        "in": 66.7,
+        "out": 57.2,
+        "net": 9.5,
+        "both": 44.9
+      }
     }
   ],
   "flows_markets": [
