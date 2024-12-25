@@ -36,11 +36,6 @@ const optionItems = [
 ]
 
 export function NavOptions({ isMarketView, onFlowOptionChange, flowOption }: NavOptionsProps) {
-  // Only show options menu for Markets view
-  if (!isMarketView) {
-    return null;
-  }
-
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Options</SidebarGroupLabel>
