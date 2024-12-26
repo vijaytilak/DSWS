@@ -92,14 +92,14 @@ export function prepareFlowData(
         inValue,
         outValue,
         absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? outValue : outValue
+        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue
       });
 
       return {
         from: brandFlow.from,
         to: brandFlow.to,
         absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? outValue : outValue,
+        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net),
       };

@@ -74,7 +74,7 @@ export default function DataSphere({
         focus: b.id === bubble.id ? newFocusId !== null : false
       })));
     };
-    drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY);
+    drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY, isMarketView);
 
     const initialFlows = prepareFlowData(
       data, 

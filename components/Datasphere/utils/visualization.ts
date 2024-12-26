@@ -182,7 +182,8 @@ export function drawBubbles(
   bubbles: Bubble[],
   onClick: (bubble: Bubble) => void,
   centerX: number,
-  centerY: number
+  centerY: number,
+  isMarketView: boolean = false
 ) {
   const isDark = document.documentElement.classList.contains('dark');
   const textColor = isDark ? 'white' : 'black';
@@ -204,9 +205,14 @@ export function drawBubbles(
   bubbleGroups
     .append("circle")
     .attr("r", d => d.radius)
-    .attr("fill", d => d.id === bubbles.length - 1 ? "transparent" : d.color)
+    .attr("fill", d => {
+      if (d.id === bubbles.length - 1) {
+        return isMarketView ? "transparent" : "none";
+      }
+      return d.color;
+    })
     .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
-    .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0)
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (isMarketView ? 4 : 0) : 0)
     .attr("cursor", d => d.id === bubbles.length - 1 ? "default" : "pointer")
     .on("click", (event: MouseEvent, d: Bubble) => {
       if (d.id !== bubbles.length - 1) {
@@ -252,8 +258,13 @@ export function drawBubbles(
     .append("circle")
     .attr("r", d => d.outerRingRadius)
     .attr("fill", "none")
-    .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : d.color)
-    .attr("stroke-width", 1)
+    .attr("stroke", d => {
+      if (d.id === bubbles.length - 1) {
+        return isMarketView ? (isDark ? "white" : "black") : "none";
+      }
+      return d.color;
+    })
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (isMarketView ? 1 : 0) : 1)
     .attr("stroke-dasharray", "5,5")
     .attr("opacity", 0.6);
 
@@ -274,12 +285,14 @@ export function drawBubbles(
     })
     .attr("dominant-baseline", "middle")
     .attr("fill", d => {
-      if (d.id === bubbles.length - 1) return isDark ? "white" : "black";
+      if (d.id === bubbles.length - 1) {
+        return isMarketView ? (isDark ? "white" : "black") : "none";
+      }
       return d.color;
     })
     .attr("font-size", d => d.fontSize)
     .attr("font-weight", d => d.id === bubbles.length - 1 ? "normal" : "bold")
-    .text(d => d.label);
+    .text(d => isMarketView || d.id !== bubbles.length - 1 ? d.label : "");
 }
 
 export function drawFlows(
