@@ -28,12 +28,12 @@ class VisualizationManager {
               const line = d3.select<SVGLineElement, Flow>(this);
               const isFromCenter = line.attr("data-from-center") === "true";
               const flowDirection = line.attr("data-flow-direction");
-              
+　　 　 　 　
               // For center flows, use the current theme color
               if (isFromCenter) {
                 const themeColor = isDarkTheme ? "#ffffff" : "#000000";
                 line.attr("stroke", themeColor);
-                
+				
                 // Get from and to IDs from the line's data attributes
                 const fromId = line.attr("data-from-id");
                 const toId = line.attr("data-to-id");
@@ -52,12 +52,12 @@ class VisualizationManager {
                       const lineY1 = parseFloat(line.attr("y1"));
                       const lineX2 = parseFloat(line.attr("x2"));
                       const lineY2 = parseFloat(line.attr("y2"));
-                      
+　　　　　　　　　　
                       // Check if the text is near this line
                       const distanceToLine = Math.abs(
                         (lineY2 - lineY1) * x - (lineX2 - lineX1) * y + lineX2 * lineY1 - lineY2 * lineX1
                       ) / Math.sqrt(Math.pow(lineY2 - lineY1, 2) + Math.pow(lineX2 - lineX1, 2));
-                      
+　　　　　　　　　　
                       return distanceToLine < 20; // Threshold for considering text associated with line
                     })
                     .attr("fill", themeColor);
@@ -100,7 +100,7 @@ class VisualizationManager {
               const [direction, fromId, toId] = markerId.split("-");
               const fromIdNum = parseInt(fromId);
               const toIdNum = parseInt(toId);
-              
+　　 　 　 　
               // Update marker color if it's connected to the center bubble
               if (fromIdNum === manager.bubbles.length - 1 || toIdNum === manager.bubbles.length - 1) {
                 const themeColor = isDarkTheme ? "#ffffff" : "#000000";
@@ -333,8 +333,7 @@ export function drawFlows(
       from: f.from,
       to: f.to,
       absolute_inFlow: f.absolute_inFlow,
-      absolute_outFlow: f.absolute_outFlow,
-      percent: f.percent
+      absolute_outFlow: f.absolute_outFlow
     }))
   });
 
