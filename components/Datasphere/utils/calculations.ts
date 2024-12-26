@@ -9,12 +9,29 @@ export function calculateRelativeSizePercent<T extends Record<string, any>>(
   const maxSize = Math.max(...values);
   const sizeRange = maxSize - minSize;
 
-  return array.map(obj => ({
-    ...obj,
-    sizePercent: sizeRange > 0 
+  console.log('DEBUG - Size Calculation:', {
+    sizeProperty,
+    values,
+    minSize,
+    maxSize,
+    sizeRange
+  });
+
+  return array.map(obj => {
+    const sizePercent = sizeRange > 0 
       ? ((obj[sizeProperty] as number - minSize) / sizeRange) * 100 
-      : 100
-  }));
+      : 100;
+    
+    console.log('DEBUG - Individual Size:', {
+      value: obj[sizeProperty],
+      sizePercent
+    });
+
+    return {
+      ...obj,
+      sizePercent
+    };
+  });
 }
 
 export function calculatePercentRanks<T extends Record<string, any>>(

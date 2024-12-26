@@ -108,30 +108,37 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
   if (centreFlow) {
     switch (flowDirection) {
       case 'inFlow':
-        return `Churn into ${target.label} was ${formatNumber(flow.absolute_inFlow)}.`;
+        return `${source.label} to ${target.label}: ${flow.absolute_inFlow.toFixed(1)}%`;
       case 'outFlow':
-        return `Churn away from ${source.label} was ${formatNumber(flow.absolute_outFlow)}.`;
+        return `${source.label} to ${target.label}: ${flow.absolute_outFlow.toFixed(1)}%`;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          return `Churn into ${target.label} was ${formatNumber(flow.absolute_netFlow)}.`;
+          return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
         } else {
-          return `Churn away from ${source.label} was ${formatNumber(flow.absolute_netFlow)}.`;
+          return `Net flow from ${target.label} to ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
         }
-      case 'interaction':
-        return `${formatNumber(flow.absolute_netFlow)} people interacted between ${source.label} and ${target.label}.`;
+      case 'both':
+        const complementaryValue = 100 - flow.absolute_inFlow;
+        return `${source.label} to ${target.label}:
+                Inbound: ${flow.absolute_inFlow.toFixed(1)}%
+                Outbound: ${complementaryValue.toFixed(1)}%
+                Net: ${flow.absolute_netFlow.toFixed(1)}%`;
     }
   } else {
     switch (flowDirection) {
       case 'inFlow':
-        return `${formatNumber(flow.absolute_inFlow)} people came to ${target.label} from ${source.label}.`;
+        return `${source.label} to ${target.label}: ${flow.absolute_inFlow.toFixed(1)}%`;
       case 'outFlow':
-        return `${formatNumber(flow.absolute_outFlow)} people went to ${target.label} from ${source.label}.`;
+        return `${source.label} to ${target.label}: ${flow.absolute_outFlow.toFixed(1)}%`;
       case 'netFlow':
-        return `${formatNumber(flow.absolute_netFlow)} people went from ${source.label} to ${target.label}.`;
-      case 'interaction':
-        return `${formatNumber(flow.absolute_netFlow)} people interacted between ${source.label} and ${target.label}.`;
+        return `Net flow between ${source.label} and ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+      case 'both':
+        const complementaryValue = 100 - flow.absolute_inFlow;
+        return `${source.label} to ${target.label}:
+                Inbound: ${flow.absolute_inFlow.toFixed(1)}%
+                Outbound: ${complementaryValue.toFixed(1)}%
+                Net: ${flow.absolute_netFlow.toFixed(1)}%`;
     }
   }
-
-  return ''; // Default case
+  return '';
 }

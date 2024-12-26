@@ -13,6 +13,9 @@ interface BrandFlow {
   outFlow: number;
   inFlow: number;
   interaction: number;
+  churn: { in: number; out: number; net: number; both: number; };
+  switching: { in: number; out: number; net: number; both: number; };
+  affinity: { in: number; out: number; net: number; both: number; };
 }
 
 type FlowDirection = "inFlow" | "outFlow";
@@ -33,12 +36,11 @@ export function prepareFlowData(
       const optionData = marketFlow[flowOption];
       const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
       
-      // Create a flow from the market to the center
       return {
         from: marketFlow.itemID,
         to: data.itemIDs.length, // Center bubble ID
-        absolute_inFlow: optionData.in,
-        absolute_outFlow: optionData.out,
+        absolute_inFlow: flowType === 'both' ? optionData.both : optionData.in,
+        absolute_outFlow: flowType === 'both' ? (100 - optionData.both) : optionData.out,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net),
       };
@@ -57,12 +59,14 @@ export function prepareFlowData(
       const value = flowType === 'netFlow' ? flow.absolute_netFlow :
                    flowType === 'inFlow only' ? flow.absolute_inFlow :
                    flowType === 'outFlow only' ? flow.absolute_outFlow :
+                   flowType === 'both' ? flow.absolute_inFlow :
                    Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
       
       const maxValue = Math.max(...marketFlows.map(f => 
         flowType === 'netFlow' ? f.absolute_netFlow :
         flowType === 'inFlow only' ? f.absolute_inFlow :
         flowType === 'outFlow only' ? f.absolute_outFlow :
+        flowType === 'both' ? f.absolute_inFlow :
         Math.max(f.absolute_inFlow, f.absolute_outFlow)
       ));
 
@@ -72,15 +76,32 @@ export function prepareFlowData(
     // For Brands view, use the original brand flows
     const brandFlows = data.flows_brands.map((flow) => {
       const brandFlow = flow as BrandFlow;
-      const flowDirection: FlowDirection = brandFlow.interaction >= 0 ? "inFlow" : "outFlow";
+      const optionData = brandFlow[flowOption];
+      const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
       
+      // For 'both' type, we use the 'both' value directly from the flow option data
+      const bothValue = optionData.both;
+      const inValue = optionData.in;
+      const outValue = optionData.out;
+
+      console.log('DEBUG - Flow Preparation:', {
+        from: brandFlow.from,
+        to: brandFlow.to,
+        flowType,
+        bothValue,
+        inValue,
+        outValue,
+        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
+        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? outValue : outValue
+      });
+
       return {
         from: brandFlow.from,
         to: brandFlow.to,
-        absolute_inFlow: brandFlow.inFlow,
-        absolute_outFlow: brandFlow.outFlow,
+        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
+        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? outValue : outValue,
         absolute_netFlowDirection: flowDirection,
-        absolute_netFlow: Math.abs(brandFlow.interaction),
+        absolute_netFlow: Math.abs(optionData.net),
       };
     });
 
@@ -99,12 +120,14 @@ export function prepareFlowData(
       const value = flowType === 'netFlow' ? flow.absolute_netFlow :
                    flowType === 'inFlow only' ? flow.absolute_inFlow :
                    flowType === 'outFlow only' ? flow.absolute_outFlow :
+                   flowType === 'both' ? flow.absolute_inFlow :
                    Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
       
       const maxValue = Math.max(...flows.map(f => 
         flowType === 'netFlow' ? f.absolute_netFlow :
         flowType === 'inFlow only' ? f.absolute_inFlow :
         flowType === 'outFlow only' ? f.absolute_outFlow :
+        flowType === 'both' ? f.absolute_inFlow :
         Math.max(f.absolute_inFlow, f.absolute_outFlow)
       ));
 

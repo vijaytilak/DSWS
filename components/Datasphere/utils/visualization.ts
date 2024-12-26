@@ -288,7 +288,8 @@ export function drawFlows(
   bubbles: Bubble[],
   flowType: string,
   focusBubbleId: number | null = null,
-  centreFlow: boolean = false
+  centreFlow: boolean = false,
+  isMarketView: boolean = false
 ) {
   // Filter flows based on focus bubble if any
   let filteredFlows = focusBubbleId !== null 
@@ -296,12 +297,33 @@ export function drawFlows(
     : flows;
 
   // Calculate percentages and ranks for flows
+  console.log('DEBUG - Before Metrics Calculation:', {
+    flowType,
+    flows: filteredFlows.map(f => ({
+      from: f.from,
+      to: f.to,
+      absolute_inFlow: f.absolute_inFlow,
+      absolute_outFlow: f.absolute_outFlow
+    }))
+  });
+
   const flowsWithMetrics = calculatePercentRanks(calculateRelativeSizePercent(filteredFlows, 
     flowType === 'netFlow' ? 'absolute_netFlow' : 
     flowType === 'inFlow only' ? 'absolute_inFlow' :
-    flowType === 'outFlow only' ? 'absolute_outFlow' : 
-    'absolute_netFlow'
+    flowType === 'outFlow only' ? 'absolute_outFlow' :
+    'absolute_inFlow'  // Default to inFlow for other cases
   ));
+
+  console.log('DEBUG - After Metrics Calculation:', {
+    flowType,
+    flows: flowsWithMetrics.map(f => ({
+      from: f.from,
+      to: f.to,
+      absolute_inFlow: f.absolute_inFlow,
+      absolute_outFlow: f.absolute_outFlow,
+      percent: f.percent
+    }))
+  });
 
   // Clear existing flows
   svg.selectAll("line").remove();
@@ -316,19 +338,19 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles);
         }
         break;
       case 'interaction':
@@ -337,11 +359,11 @@ export function drawFlows(
       case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, flowType, centreFlow, bubbles);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles);
         }
         break;
       case 'bi-directional':
@@ -349,17 +371,13 @@ export function drawFlows(
         const totalFlow = flow.absolute_inFlow + flow.absolute_outFlow;
         const lineThickness = calculateLineThickness({ ...flow, absolute_netFlow: totalFlow });
         
-        // Calculate proportions for splitting the line
-        const inFlowProportion = flow.absolute_inFlow / totalFlow;
-        const outFlowProportion = flow.absolute_outFlow / totalFlow;
-        
         // Calculate points for the full line
-        const points = calculateFlowPoints(source, target, flowType, 'bi-directional', flow, centreFlow);
+        const points = calculateFlowPoints(source, target, flowType, 'both', flow, centreFlow);
         const { start, end } = points;
         
         // Calculate the split point based on flow proportions
-        const splitX = start.x + (end.x - start.x) * inFlowProportion;
-        const splitY = start.y + (end.y - start.y) * inFlowProportion;
+        const splitX = start.x + (end.x - start.x) * (flow.absolute_inFlow / totalFlow);
+        const splitY = start.y + (end.y - start.y) * (flow.absolute_inFlow / totalFlow);
         
         if (flow.absolute_inFlow > 0) {
           // Draw inflow line from start to split point
@@ -403,15 +421,79 @@ export function drawFlows(
           // Add outflow marker
           createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), source.color, 'outFlow');
           outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+
+          // Calculate angles for text positioning
+          const inFlowAngle = Math.atan2(start.y - splitY, start.x - splitX);
+          const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
+          const offset = 15;
+
+          // Add flow percentages
+          if (flow.absolute_inFlow > 0) {
+            const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
+            const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
+            svg.append('text')
+              .attr('x', textX)
+              .attr('y', textY)
+              .attr('text-anchor', 'start')
+              .attr('dominant-baseline', 'middle')
+              .attr('fill', target.color)
+              .attr('font-size', '11px')
+              .text(`${flow.absolute_inFlow.toFixed(1)}%`);
+          }
+
+          if (flow.absolute_outFlow > 0) {
+            const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
+            const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
+            svg.append('text')
+              .attr('x', textX)
+              .attr('y', textY)
+              .attr('text-anchor', 'start')
+              .attr('dominant-baseline', 'middle')
+              .attr('fill', source.color)
+              .attr('font-size', '11px')
+              .text(`${flow.absolute_outFlow.toFixed(1)}%`);
+          }
         }
+        break;
+      case 'both': {
+        const lineThickness = calculateLineThickness(flow);
+        
+        // Calculate points for the full line
+        const points = calculateFlowPoints(source, target, flowType, 'both', flow, centreFlow);
+        const { start, end } = points;
+        
+        // Use the values directly from the flow object
+        const inFlowValue = flow.absolute_inFlow;
+        const outFlowValue = flow.absolute_outFlow;
+        
+        // Calculate the split point based on the actual inFlow value
+        const splitX = start.x + (end.x - start.x) * (inFlowValue / 100);
+        const splitY = start.y + (end.y - start.y) * (inFlowValue / 100);
+        
+        if (inFlowValue > 0) {
+          // Draw inflow line from start to split point
+          const inFlowLine = svg.append('line')
+            .attr('x1', start.x)
+            .attr('y1', start.y)
+            .attr('x2', splitX)
+            .attr('y2', splitY)
+            .attr('stroke', target.color)
+            .attr('stroke-width', lineThickness)
+            .attr('class', 'flow-line')
+            .attr('data-flow-direction', 'inFlow')
+            .attr('data-from-center', target.id === bubbles.length - 1)
+            .attr('data-from-id', target.id.toString())
+            .attr('data-to-id', source.id.toString())
+            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'both', centreFlow)))
+            .on('mouseout', hideTooltip);
 
-        // Calculate angles for text positioning
-        const inFlowAngle = Math.atan2(start.y - splitY, start.x - splitX);
-        const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
-        const offset = 15;
+          // Add inflow marker
+          createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), target.color, 'inFlow');
+          inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
 
-        // Add flow percentages
-        if (flow.absolute_inFlow > 0) {
+          // Add inflow percentage
+          const inFlowAngle = Math.atan2(splitY - start.y, splitX - start.x);
+          const offset = 15;
           const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
           const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
           svg.append('text')
@@ -421,10 +503,33 @@ export function drawFlows(
             .attr('dominant-baseline', 'middle')
             .attr('fill', target.color)
             .attr('font-size', '11px')
-            .text(`${Math.round((flow.absolute_inFlow / totalFlow) * 100)}%`);
+            .text(`${inFlowValue.toFixed(1)}%`);
         }
 
-        if (flow.absolute_outFlow > 0) {
+        if (outFlowValue > 0) {
+          // Draw outflow line from split point to end
+          const outFlowLine = svg.append('line')
+            .attr('x1', splitX)
+            .attr('y1', splitY)
+            .attr('x2', end.x)
+            .attr('y2', end.y)
+            .attr('stroke', source.color)
+            .attr('stroke-width', lineThickness)
+            .attr('class', 'flow-line')
+            .attr('data-flow-direction', 'outFlow')
+            .attr('data-from-center', source.id === bubbles.length - 1)
+            .attr('data-from-id', source.id.toString())
+            .attr('data-to-id', target.id.toString())
+            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'both', centreFlow)))
+            .on('mouseout', hideTooltip);
+
+          // Add outflow marker
+          createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), source.color, 'outFlow');
+          outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+
+          // Add outflow percentage
+          const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
+          const offset = 15;
           const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
           const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
           svg.append('text')
@@ -434,8 +539,11 @@ export function drawFlows(
             .attr('dominant-baseline', 'middle')
             .attr('fill', source.color)
             .attr('font-size', '11px')
-            .text(`${Math.round((flow.absolute_outFlow / totalFlow) * 100)}%`);
+            .text(`${outFlowValue.toFixed(1)}%`);
         }
+        break;
+      }
+      default:
         break;
     }
   });
@@ -485,6 +593,49 @@ export function drawFlowLine(
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
     .on("mouseout", hideTooltip);
+
+  // Calculate label position (midpoint of the line)
+  const midX = (points.start.x + points.end.x) / 2;
+  const midY = (points.start.y + points.end.y) / 2;
+  
+  // Calculate offset for the label (perpendicular to the line)
+  const dx = points.end.x - points.start.x;
+  const dy = points.end.y - points.start.y;
+  const angle = Math.atan2(dy, dx);
+  const offset = 15; // Offset distance from the line
+  
+  // Add label based on flow type (excluding 'both' for now)
+  if (flowType !== 'both') {
+    let value: number;
+    
+    // Get the correct value based on flow type and direction
+    switch (flowType) {
+      case 'inFlow':
+        value = flow.absolute_inFlow;
+        break;
+      case 'outFlow':
+        value = flow.absolute_outFlow;
+        break;
+      case 'netFlow':
+        value = flow.absolute_netFlow;
+        if (flow.absolute_netFlowDirection === 'outFlow') {
+          value = -value;
+        }
+        break;
+      default:
+        value = 0;
+    }
+    
+    svg.append("text")
+      .attr("class", "flow-label")
+      .attr("x", midX + offset * Math.sin(angle))
+      .attr("y", midY - offset * Math.cos(angle))
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("fill", lineColor)
+      .attr("font-size", "12px")
+      .text(`${value.toFixed(1)}%`);
+  }
 }
 
 function createFlowMarker(

@@ -86,7 +86,7 @@ export default function DataSphere({
       flowOption
     );
     setFlows(initialFlows);
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow);
+    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView);
   }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption]);
 
   return (
