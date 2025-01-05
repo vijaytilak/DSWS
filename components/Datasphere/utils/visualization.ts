@@ -29,10 +29,10 @@ class VisualizationManager {
               const isFromCenter = line.attr("data-from-center") === "true";
               const flowDirection = line.attr("data-flow-direction");
 　
-              // For center flows, use the current theme color
+              // For center flows, use the source bubble color
               if (isFromCenter) {
-                const themeColor = isDarkTheme ? "#ffffff" : "#000000";
-                line.attr("stroke", themeColor);
+                const sourceColor = manager.bubbles[0].color;
+                line.attr("stroke", sourceColor);
 				
                 // Get from and to IDs from the line's data attributes
                 const fromId = line.attr("data-from-id");
@@ -40,7 +40,7 @@ class VisualizationManager {
                 if (fromId && toId) {
                   const markerId = flowDirection + "-" + fromId + "-" + toId;
                   manager.svg?.select<SVGPathElement>(`#${markerId} path`)
-                    .attr("fill", themeColor);
+                    .attr("fill", sourceColor);
 
                   // Update percentage labels for center flows
                   manager.svg?.selectAll<SVGTextElement, unknown>("text")
@@ -60,7 +60,7 @@ class VisualizationManager {
 　
                       return distanceToLine < 20; // Threshold for considering text associated with line
                     })
-                    .attr("fill", themeColor);
+                    .attr("fill", sourceColor);
                 }
               }
             });
@@ -103,8 +103,8 @@ class VisualizationManager {
 　
               // Update marker color if it's connected to the center bubble
               if (fromIdNum === manager.bubbles.length - 1 || toIdNum === manager.bubbles.length - 1) {
-                const themeColor = isDarkTheme ? "#ffffff" : "#000000";
-                marker.selectAll("path, circle").attr("fill", themeColor);
+                const sourceColor = manager.bubbles[0].color;
+                marker.selectAll("path, circle").attr("fill", sourceColor);
               }
             });
         }
@@ -361,32 +361,32 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView);
         }
         break;
       case 'interaction':
-        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption);
+        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView);
         break;
       case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView);
         }
         break;
       case 'bi-directional':
@@ -406,11 +406,11 @@ export function drawFlows(
         const isFromCenter = target.id === bubbles.length - 1;
         const isDarkTheme = document.documentElement.classList.contains('dark');
         const inFlowColor = isFromCenter 
-          ? (isDarkTheme ? "#ffffff" : "#000000") 
-          : (flowOption === 'affinity' ? source.color : target.color);
+          ? target.color  // Flow going towards center uses target's color
+          : source.color; // Flow going towards individual bubbles uses source's color
         const outFlowColor = isFromCenter 
-          ? (isDarkTheme ? "#ffffff" : "#000000") 
-          : (flowOption === 'affinity' ? target.color : source.color);
+          ? source.color  // Flow going towards individual bubbles uses source's color
+          : target.color; // Flow going towards center uses target's color
         
         if (flow.absolute_inFlow > 0) {
           // Draw inflow line from start to split point
@@ -507,11 +507,11 @@ export function drawFlows(
         const isFromCenter = target.id === bubbles.length - 1;
         const isDarkTheme = document.documentElement.classList.contains('dark');
         const inFlowColor = isFromCenter 
-          ? (isDarkTheme ? "#ffffff" : "#000000") 
-          : (flowOption === 'affinity' ? source.color : target.color);
+          ? target.color  // Flow going towards center uses target's color
+          : source.color; // Flow going towards individual bubbles uses source's color
         const outFlowColor = isFromCenter 
-          ? (isDarkTheme ? "#ffffff" : "#000000") 
-          : (flowOption === 'affinity' ? target.color : source.color);
+          ? source.color  // Flow going towards individual bubbles uses source's color
+          : target.color; // Flow going towards center uses target's color
         
         if (inFlowValue > 0) {
           // Draw inflow line from start to split point
@@ -601,7 +601,8 @@ export function drawFlowLine(
   flowType: string,
   centreFlow: boolean = false,
   allBubbles: Bubble[],
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
+  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  isMarketView: boolean = false
 ) {
   const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow, centreFlow);
   const lineThickness = calculateLineThickness(flow);
@@ -611,11 +612,11 @@ export function drawFlowLine(
   // Determine colors based on whether this is a center flow or affinity
   const isFromCenter = startBubble.id === allBubbles.length - 1;
   
-  // For center flows, use theme color
+  // For center flows, use source bubble's color
   // For affinity flows, use target bubble's color
   // For all other flows, use source bubble's color
   const lineColor = isFromCenter 
-    ? (isDarkTheme ? "#ffffff" : "#000000") 
+    ? startBubble.color
     : (flowOption === 'affinity' ? endBubble.color : startBubble.color);
   const markerColor = lineColor;
 
