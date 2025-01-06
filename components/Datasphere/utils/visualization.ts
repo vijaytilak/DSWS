@@ -390,6 +390,7 @@ export function drawFlows(
         }
         break;
       case 'bi-directional':
+        
         // Calculate total flow for line thickness
         const totalFlow = flow.absolute_inFlow + flow.absolute_outFlow;
         const lineThickness = calculateLineThickness({ ...flow, absolute_netFlow: totalFlow });
@@ -405,10 +406,10 @@ export function drawFlows(
         // Determine colors based on flowOption
         const isFromCenter = target.id === bubbles.length - 1;
         const isDarkTheme = document.documentElement.classList.contains('dark');
-        const inFlowColor = isFromCenter 
+        const outFlowColor = flowOption === 'affinity' 
           ? target.color  // Flow going towards center uses target's color
           : source.color; // Flow going towards individual bubbles uses source's color
-        const outFlowColor = isFromCenter 
+        const inFlowColor = flowOption === 'affinity' 
           ? source.color  // Flow going towards individual bubbles uses source's color
           : target.color; // Flow going towards center uses target's color
         
@@ -488,104 +489,6 @@ export function drawFlows(
           }
         }
         break;
-      case 'both': {
-        const lineThickness = calculateLineThickness(flow);
-        
-        // Calculate points for the full line
-        const points = calculateFlowPoints(source, target, flowType, 'both', flow, centreFlow);
-        const { start, end } = points;
-        
-        // Use the values directly from the flow object
-        const inFlowValue = flow.absolute_inFlow;
-        const outFlowValue = flow.absolute_outFlow;
-        
-        // Calculate the split point based on the actual inFlow value
-        const splitX = start.x + (end.x - start.x) * (inFlowValue / 100);
-        const splitY = start.y + (end.y - start.y) * (inFlowValue / 100);
-        
-        // Determine colors based on flowOption
-        const isFromCenter = target.id === bubbles.length - 1;
-        const isDarkTheme = document.documentElement.classList.contains('dark');
-        const inFlowColor = isFromCenter 
-          ? target.color  // Flow going towards center uses target's color
-          : source.color; // Flow going towards individual bubbles uses source's color
-        const outFlowColor = isFromCenter 
-          ? source.color  // Flow going towards individual bubbles uses source's color
-          : target.color; // Flow going towards center uses target's color
-        
-        if (inFlowValue > 0) {
-          // Draw inflow line from start to split point
-          const inFlowLine = svg.append('line')
-            .attr('x1', start.x)
-            .attr('y1', start.y)
-            .attr('x2', splitX)
-            .attr('y2', splitY)
-            .attr('stroke', inFlowColor)
-            .attr('stroke-width', lineThickness)
-            .attr('class', 'flow-line')
-            .attr('data-flow-direction', 'inFlow')
-            .attr('data-from-center', target.id === bubbles.length - 1)
-            .attr('data-from-id', target.id.toString())
-            .attr('data-to-id', source.id.toString())
-            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'both', centreFlow)))
-            .on('mouseout', hideTooltip);
-
-          // Add inflow marker
-          createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowColor, 'inFlow');
-          inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
-
-          // Add inflow percentage
-          const inFlowAngle = Math.atan2(splitY - start.y, splitX - start.x);
-          const offset = 15;
-          const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
-          const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
-          svg.append('text')
-            .attr('x', textX)
-            .attr('y', textY)
-            .attr('text-anchor', 'start')
-            .attr('dominant-baseline', 'middle')
-            .attr('fill', inFlowColor)
-            .attr('font-size', '11px')
-            .text(`${inFlowValue.toFixed(1)}%`);
-        }
-
-        if (outFlowValue > 0) {
-          // Draw outflow line from split point to end
-          const outFlowLine = svg.append('line')
-            .attr('x1', splitX)
-            .attr('y1', splitY)
-            .attr('x2', end.x)
-            .attr('y2', end.y)
-            .attr('stroke', outFlowColor)
-            .attr('stroke-width', lineThickness)
-            .attr('class', 'flow-line')
-            .attr('data-flow-direction', 'outFlow')
-            .attr('data-from-center', source.id === bubbles.length - 1)
-            .attr('data-from-id', source.id.toString())
-            .attr('data-to-id', target.id.toString())
-            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'both', centreFlow)))
-            .on('mouseout', hideTooltip);
-
-          // Add outflow marker
-          createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowColor, 'outFlow');
-          outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
-
-          // Add outflow percentage
-          const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
-          const offset = 15;
-          const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
-          const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
-          svg.append('text')
-            .attr('x', textX)
-            .attr('y', textY)
-            .attr('text-anchor', 'start')
-            .attr('dominant-baseline', 'middle')
-            .attr('fill', outFlowColor)
-            .attr('font-size', '11px')
-            .text(`${outFlowValue.toFixed(1)}%`);
-        }
-        break;
-      }
       default:
         break;
     }
@@ -612,12 +515,11 @@ export function drawFlowLine(
   // Determine colors based on whether this is a center flow or affinity
   const isFromCenter = startBubble.id === allBubbles.length - 1;
   
-  // For center flows, use source bubble's color
-  // For affinity flows, use target bubble's color
-  // For all other flows, use source bubble's color
-  const lineColor = isFromCenter 
+  // For affinity flows, always use target bubble's color
+  // For all other flows, use source bubble's color if from center, otherwise source bubble's color
+  const lineColor = flowOption === 'affinity'
     ? startBubble.color
-    : (flowOption === 'affinity' ? endBubble.color : startBubble.color);
+    : endBubble.color;
   const markerColor = lineColor;
 
   console.log('DEBUG - drawFlowLine color selection:', {
