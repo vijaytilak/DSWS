@@ -4,67 +4,709 @@
       "itemID": 0,
       "itemLabel": "Pizza Hut",
       "itemSize_absolute": 47000,
-      "itemSize_relative": 0.022091137
+      "itemSize_relative": 0.022091137,
+      "tabledata": [
+        {
+          "item": "Customer Satisfaction",
+          "index": "82",
+          "abs": "82.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "47000",
+          "abs": "22.1%"
+        }
+      ]
     },
     {
       "itemID": 1,
       "itemLabel": "Others",
       "itemSize_absolute": 24599,
-      "itemSize_relative": 0.115621254
+      "itemSize_relative": 0.115621254,
+      "tabledata": [
+        {
+          "item": "Combined Revenue",
+          "index": "24599",
+          "abs": "11.6%"
+        },
+        {
+          "item": "Market Coverage",
+          "index": "156",
+          "abs": "15.6%"
+        },
+        {
+          "item": "Growth Rate",
+          "index": "8.2",
+          "abs": "8.2%"
+        },
+        {
+          "item": "Store Distribution",
+          "index": "1205",
+          "abs": "12.1%"
+        },
+        {
+          "item": "Average Order Value",
+          "index": "22.5",
+          "abs": "22.5%"
+        }
+      ]
     },
     {
       "itemID": 2,
       "itemLabel": "Other Pizza",
       "itemSize_absolute": 28006,
-      "itemSize_relative": 0.037630137
+      "itemSize_relative": 0.037630137,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "28006",
+          "abs": "3.8%"
+        }
+      ]
     },
     {
       "itemID": 3,
       "itemLabel": "McDonald's",
       "itemSize_absolute": 124599,
-      "itemSize_relative": 0.215621254
+      "itemSize_relative": 0.215621254,
+      "tabledata": [
+        {
+          "item": "Revenue 2024",
+          "index": "124599",
+          "abs": "21.6%"
+        },
+        {
+          "item": "Revenue 2023",
+          "index": "118452",
+          "abs": "20.5%"
+        },
+        {
+          "item": "Revenue 2022",
+          "index": "112365",
+          "abs": "19.4%"
+        },
+        {
+          "item": "Store Count NSW",
+          "index": "245",
+          "abs": "24.5%"
+        },
+        {
+          "item": "Store Count VIC",
+          "index": "198",
+          "abs": "19.8%"
+        },
+        {
+          "item": "Store Count QLD",
+          "index": "167",
+          "abs": "16.7%"
+        },
+        {
+          "item": "Store Count WA",
+          "index": "89",
+          "abs": "8.9%"
+        },
+        {
+          "item": "Store Count SA",
+          "index": "76",
+          "abs": "7.6%"
+        },
+        {
+          "item": "Store Count TAS",
+          "index": "23",
+          "abs": "2.3%"
+        },
+        {
+          "item": "Brand Value 2024",
+          "index": "89.5",
+          "abs": "89.5%"
+        },
+        {
+          "item": "Brand Value 2023",
+          "index": "87.2",
+          "abs": "87.2%"
+        },
+        {
+          "item": "Brand Value 2022",
+          "index": "85.8",
+          "abs": "85.8%"
+        },
+        {
+          "item": "Customer Satisfaction Overall",
+          "index": "84.2",
+          "abs": "84.2%"
+        },
+        {
+          "item": "Customer Satisfaction Food",
+          "index": "82.5",
+          "abs": "82.5%"
+        },
+        {
+          "item": "Customer Satisfaction Service",
+          "index": "85.1",
+          "abs": "85.1%"
+        },
+        {
+          "item": "Customer Satisfaction Value",
+          "index": "83.7",
+          "abs": "83.7%"
+        },
+        {
+          "item": "Market Share Breakfast",
+          "index": "32.5",
+          "abs": "32.5%"
+        },
+        {
+          "item": "Market Share Lunch",
+          "index": "28.7",
+          "abs": "28.7%"
+        },
+        {
+          "item": "Market Share Dinner",
+          "index": "25.4",
+          "abs": "25.4%"
+        },
+        {
+          "item": "Market Share Late Night",
+          "index": "35.2",
+          "abs": "35.2%"
+        },
+        {
+          "item": "Drive-Thru Revenue",
+          "index": "65234",
+          "abs": "52.4%"
+        },
+        {
+          "item": "Dine-In Revenue",
+          "index": "28765",
+          "abs": "23.1%"
+        },
+        {
+          "item": "Delivery Revenue",
+          "index": "30600",
+          "abs": "24.5%"
+        },
+        {
+          "item": "Average Order Value",
+          "index": "15.8",
+          "abs": "15.8%"
+        },
+        {
+          "item": "Customer Frequency Monthly",
+          "index": "3.2",
+          "abs": "3.2%"
+        },
+        {
+          "item": "App Downloads",
+          "index": "2345678",
+          "abs": "23.5%"
+        },
+        {
+          "item": "App Active Users",
+          "index": "1234567",
+          "abs": "12.3%"
+        },
+        {
+          "item": "Loyalty Program Members",
+          "index": "3456789",
+          "abs": "34.6%"
+        },
+        {
+          "item": "Social Media Followers",
+          "index": "2345678",
+          "abs": "23.5%"
+        },
+        {
+          "item": "Employee Count",
+          "index": "45678",
+          "abs": "45.7%"
+        },
+        {
+          "item": "Employee Satisfaction",
+          "index": "78.5",
+          "abs": "78.5%"
+        },
+        {
+          "item": "Training Hours Annual",
+          "index": "234567",
+          "abs": "23.5%"
+        },
+        {
+          "item": "Food Cost Percentage",
+          "index": "32.5",
+          "abs": "32.5%"
+        },
+        {
+          "item": "Labor Cost Percentage",
+          "index": "28.7",
+          "abs": "28.7%"
+        },
+        {
+          "item": "Marketing Spend",
+          "index": "12345678",
+          "abs": "12.3%"
+        },
+        {
+          "item": "Digital Marketing ROI",
+          "index": "345.6",
+          "abs": "345.6%"
+        },
+        {
+          "item": "Sustainability Score",
+          "index": "82.3",
+          "abs": "82.3%"
+        },
+        {
+          "item": "Food Waste Percentage",
+          "index": "4.5",
+          "abs": "4.5%"
+        },
+        {
+          "item": "Energy Efficiency Rating",
+          "index": "87.6",
+          "abs": "87.6%"
+        },
+        {
+          "item": "Water Usage Reduction",
+          "index": "12.3",
+          "abs": "12.3%"
+        }
+      ]
     },
     {
       "itemID": 4,
       "itemLabel": "Subway",
       "itemSize_absolute": 38006,
-      "itemSize_relative": 0.087630137
+      "itemSize_relative": 0.087630137,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "38006",
+          "abs": "8.8%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "23456",
+          "abs": "23.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "8.8",
+          "abs": "8.8%"
+        },
+        {
+          "item": "Health Rating",
+          "index": "85.2",
+          "abs": "85.2%"
+        }
+      ]
     },
     {
       "itemID": 5,
       "itemLabel": "Red Rooster",
       "itemSize_absolute": 18006,
-      "itemSize_relative": 0.027630137
+      "itemSize_relative": 0.027630137,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "18006",
+          "abs": "2.8%"
+        },
+        {
+          "item": "Store Coverage",
+          "index": "156",
+          "abs": "15.6%"
+        },
+        {
+          "item": "Brand Recognition",
+          "index": "78",
+          "abs": "78.0%"
+        },
+        {
+          "item": "Customer Loyalty",
+          "index": "45.6",
+          "abs": "45.6%"
+        },
+        {
+          "item": "Market Growth",
+          "index": "5.6",
+          "abs": "5.6%"
+        },
+        {
+          "item": "Online Orders",
+          "index": "234567",
+          "abs": "23.5%"
+        }
+      ]
     },
     {
       "itemID": 6,
       "itemLabel": "KFC",
       "itemSize_absolute": 58006,
-      "itemSize_relative": 0.097630137
+      "itemSize_relative": 0.097630137,
+      "tabledata": [
+        {
+          "item": "Revenue 2024",
+          "index": "58006",
+          "abs": "9.8%"
+        },
+        {
+          "item": "Revenue 2023",
+          "index": "54321",
+          "abs": "9.2%"
+        },
+        {
+          "item": "Revenue 2022",
+          "index": "51234",
+          "abs": "8.7%"
+        },
+        {
+          "item": "Store Count NSW",
+          "index": "178",
+          "abs": "17.8%"
+        },
+        {
+          "item": "Store Count VIC",
+          "index": "145",
+          "abs": "14.5%"
+        },
+        {
+          "item": "Store Count QLD",
+          "index": "134",
+          "abs": "13.4%"
+        },
+        {
+          "item": "Store Count WA",
+          "index": "67",
+          "abs": "6.7%"
+        },
+        {
+          "item": "Store Count SA",
+          "index": "45",
+          "abs": "4.5%"
+        },
+        {
+          "item": "Store Count TAS",
+          "index": "18",
+          "abs": "1.8%"
+        },
+        {
+          "item": "Brand Value 2024",
+          "index": "85.6",
+          "abs": "85.6%"
+        },
+        {
+          "item": "Brand Value 2023",
+          "index": "83.4",
+          "abs": "83.4%"
+        },
+        {
+          "item": "Brand Value 2022",
+          "index": "81.2",
+          "abs": "81.2%"
+        },
+        {
+          "item": "Customer Satisfaction Overall",
+          "index": "82.3",
+          "abs": "82.3%"
+        },
+        {
+          "item": "Customer Satisfaction Food",
+          "index": "84.5",
+          "abs": "84.5%"
+        },
+        {
+          "item": "Customer Satisfaction Service",
+          "index": "81.2",
+          "abs": "81.2%"
+        },
+        {
+          "item": "Customer Satisfaction Value",
+          "index": "83.4",
+          "abs": "83.4%"
+        },
+        {
+          "item": "Market Share Lunch",
+          "index": "25.6",
+          "abs": "25.6%"
+        },
+        {
+          "item": "Market Share Dinner",
+          "index": "28.9",
+          "abs": "28.9%"
+        },
+        {
+          "item": "Market Share Late Night",
+          "index": "32.1",
+          "abs": "32.1%"
+        },
+        {
+          "item": "Drive-Thru Revenue",
+          "index": "32456",
+          "abs": "55.9%"
+        },
+        {
+          "item": "Dine-In Revenue",
+          "index": "12345",
+          "abs": "21.3%"
+        },
+        {
+          "item": "Delivery Revenue",
+          "index": "13205",
+          "abs": "22.8%"
+        },
+        {
+          "item": "Average Order Value",
+          "index": "16.5",
+          "abs": "16.5%"
+        },
+        {
+          "item": "Customer Frequency Monthly",
+          "index": "2.8",
+          "abs": "2.8%"
+        },
+        {
+          "item": "App Downloads",
+          "index": "1567890",
+          "abs": "15.7%"
+        },
+        {
+          "item": "App Active Users",
+          "index": "987654",
+          "abs": "9.9%"
+        },
+        {
+          "item": "Loyalty Program Members",
+          "index": "2345678",
+          "abs": "23.5%"
+        },
+        {
+          "item": "Social Media Followers",
+          "index": "1789012",
+          "abs": "17.9%"
+        },
+        {
+          "item": "Employee Count",
+          "index": "34567",
+          "abs": "34.6%"
+        },
+        {
+          "item": "Employee Satisfaction",
+          "index": "76.5",
+          "abs": "76.5%"
+        },
+        {
+          "item": "Training Hours Annual",
+          "index": "187654",
+          "abs": "18.8%"
+        },
+        {
+          "item": "Food Cost Percentage",
+          "index": "31.2",
+          "abs": "31.2%"
+        },
+        {
+          "item": "Labor Cost Percentage",
+          "index": "27.8",
+          "abs": "27.8%"
+        },
+        {
+          "item": "Marketing Spend",
+          "index": "9876543",
+          "abs": "9.9%"
+        },
+        {
+          "item": "Digital Marketing ROI",
+          "index": "312.4",
+          "abs": "312.4%"
+        },
+        {
+          "item": "Sustainability Score",
+          "index": "78.9",
+          "abs": "78.9%"
+        },
+        {
+          "item": "Food Waste Percentage",
+          "index": "5.2",
+          "abs": "5.2%"
+        },
+        {
+          "item": "Energy Efficiency Rating",
+          "index": "84.3",
+          "abs": "84.3%"
+        },
+        {
+          "item": "Water Usage Reduction",
+          "index": "10.5",
+          "abs": "10.5%"
+        }
+      ]
     },
     {
       "itemID": 7,
       "itemLabel": "Domino's",
       "itemSize_absolute": 48006,
-      "itemSize_relative": 0.067630137
+      "itemSize_relative": 0.067630137,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "48006",
+          "abs": "6.8%"
+        },
+        {
+          "item": "Store Coverage",
+          "index": "234",
+          "abs": "23.4%"
+        },
+        {
+          "item": "Brand Value",
+          "index": "85.2",
+          "abs": "85.2%"
+        },
+        {
+          "item": "Delivery Time",
+          "index": "28.5",
+          "abs": "28.5%"
+        },
+        {
+          "item": "Online Orders",
+          "index": "876543",
+          "abs": "87.7%"
+        },
+        {
+          "item": "Customer Rating",
+          "index": "4.2",
+          "abs": "84.0%"
+        },
+        {
+          "item": "Market Position",
+          "index": "3",
+          "abs": "75.0%"
+        },
+        {
+          "item": "Growth Rate",
+          "index": "12.3",
+          "abs": "12.3%"
+        }
+      ]
     },
     {
       "itemID": 8,
       "itemLabel": "Guzman y Gomez",
       "itemSize_absolute": 38006,
-      "itemSize_relative": 0.047630137
+      "itemSize_relative": 0.047630137,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "38006",
+          "abs": "4.8%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "18765",
+          "abs": "18.8%"
+        },
+        {
+          "item": "Market Share",
+          "index": "4.8",
+          "abs": "4.8%"
+        },
+        {
+          "item": "Growth Rate",
+          "index": "23.4",
+          "abs": "23.4%"
+        },
+        {
+          "item": "Customer Satisfaction",
+          "index": "88.5",
+          "abs": "88.5%"
+        },
+        {
+          "item": "Food Quality Rating",
+          "index": "92.3",
+          "abs": "92.3%"
+        },
+        {
+          "item": "Average Wait Time",
+          "index": "8.5",
+          "abs": "8.5%"
+        }
+      ]
     },
     {
       "itemID": 9,
       "itemLabel": "Hungry Jacks",
       "itemSize_absolute": 68006,
-      "itemSize_relative": 0.107630137
+      "itemSize_relative": 0.107630137,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "68006",
+          "abs": "10.8%"
+        },
+        {
+          "item": "Store Coverage",
+          "index": "456",
+          "abs": "45.6%"
+        },
+        {
+          "item": "Brand Recognition",
+          "index": "89.1",
+          "abs": "89.1%"
+        }
+      ]
     },
     {
       "itemID": 10,
       "itemLabel": "Boost Juice",
       "itemSize_absolute": 28006,
-      "itemSize_relative": 0.037630137
+      "itemSize_relative": 0.037630137,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "28006",
+          "abs": "3.8%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "14567",
+          "abs": "14.6%"
+        },
+        {
+          "item": "Market Share",
+          "index": "3.8",
+          "abs": "3.8%"
+        },
+        {
+          "item": "Health Score",
+          "index": "92.5",
+          "abs": "92.5%"
+        },
+        {
+          "item": "Customer Age 18-25",
+          "index": "45.6",
+          "abs": "45.6%"
+        },
+        {
+          "item": "Customer Age 26-35",
+          "index": "32.4",
+          "abs": "32.4%"
+        },
+        {
+          "item": "Customer Age 36+",
+          "index": "22.0",
+          "abs": "22.0%"
+        },
+        {
+          "item": "Repeat Purchase Rate",
+          "index": "68.5",
+          "abs": "68.5%"
+        },
+        {
+          "item": "Average Ticket Size",
+          "index": "8.75",
+          "abs": "8.75%"
+        }
+      ]
     }
   ],
   "flows_brands": [
@@ -74,6 +716,23 @@
       "outFlow": 5409752,
       "inFlow": 5040952,
       "interaction": 368800,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "368800",
+          "abs": "36.9%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "5409752",
+          "abs": "54.1%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "31.5",
+          "abs": "31.5%"
+        }
+      ],
       "churn": {
         "in": 51.2,
         "out": 43.8,
@@ -99,6 +758,23 @@
       "outFlow": 1634698,
       "inFlow": 1425301,
       "interaction": 209397,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "209397",
+          "abs": "20.9%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "1634698",
+          "abs": "16.3%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "25.6",
+          "abs": "25.6%"
+        }
+      ],
       "churn": {
         "in": 48.9,
         "out": 32.1,
@@ -124,6 +800,23 @@
       "outFlow": 2550793,
       "inFlow": 2252324,
       "interaction": 298469,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "298469",
+          "abs": "29.8%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "2550793",
+          "abs": "25.5%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "33.4",
+          "abs": "33.4%"
+        }
+      ],
       "churn": {
         "in": 42.3,
         "out": 55.6,
@@ -149,6 +842,23 @@
       "outFlow": 1234567,
       "inFlow": 987654,
       "interaction": 246913,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "246913",
+          "abs": "24.7%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "1234567",
+          "abs": "12.3%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "31.5",
+          "abs": "31.5%"
+        }
+      ],
       "churn": {
         "in": 51.2,
         "out": 43.8,
@@ -174,6 +884,23 @@
       "outFlow": 3456789,
       "inFlow": 3123456,
       "interaction": 333333,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "333333",
+          "abs": "33.3%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "3456789",
+          "abs": "34.6%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "35.8",
+          "abs": "35.8%"
+        }
+      ],
       "churn": {
         "in": 44.7,
         "out": 49.3,
@@ -199,104 +926,273 @@
       "outFlow": 876543,
       "inFlow": 654321,
       "interaction": 222222,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "222222",
+          "abs": "22.2%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "876543",
+          "abs": "8.8%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "28.9",
+          "abs": "28.9%"
+        }
+      ],
       "churn": {
-        "in": 46.9,
-        "out": 38.4,
-        "net": 8.5,
-        "both": 29.1
+        "in": 38.5,
+        "out": 45.2,
+        "net": -6.7,
+        "both": 28.9
       },
       "switching": {
-        "in": 57.2,
-        "out": 49.5,
-        "net": 7.7,
-        "both": 39.8
+        "in": 42.3,
+        "out": 39.7,
+        "net": 2.6,
+        "both": 31.2
       },
       "affinity": {
-        "in": 52.3,
-        "out": 44.6,
-        "net": 7.7,
-        "both": 32.4
+        "in": 58.9,
+        "out": 51.4,
+        "net": 7.5,
+        "both": 42.8
       }
     },
     {
       "from": 0,
-      "to": 2,
-      "outFlow": 445566,
-      "inFlow": 334455,
+      "to": 7,
+      "outFlow": 987654,
+      "inFlow": 876543,
       "interaction": 111111,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "111111",
+          "abs": "11.1%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "987654",
+          "abs": "9.9%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "32.4",
+          "abs": "32.4%"
+        }
+      ],
       "churn": {
-        "in": 43.2,
-        "out": 51.7,
-        "net": 8.5,
-        "both": 36.4
+        "in": 45.8,
+        "out": 42.3,
+        "net": 3.5,
+        "both": 32.4
       },
       "switching": {
-        "in": 45.3,
-        "out": 54.8,
-        "net": 9.5,
-        "both": 33.2
+        "in": 53.2,
+        "out": 48.9,
+        "net": 4.3,
+        "both": 38.7
       },
       "affinity": {
-        "in": 47.3,
-        "out": 59.8,
-        "net": -12.5,
-        "both": 41.5
+        "in": 61.5,
+        "out": 57.8,
+        "net": 3.7,
+        "both": 45.2
       }
     },
     {
       "from": 4,
-      "to": 3,
-      "outFlow": 789012,
-      "inFlow": 567890,
-      "interaction": 221122,
+      "to": 8,
+      "outFlow": 765432,
+      "inFlow": 654321,
+      "interaction": 111111,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "111111",
+          "abs": "11.1%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "765432",
+          "abs": "7.7%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "29.8",
+          "abs": "29.8%"
+        }
+      ],
       "churn": {
-        "in": 49.8,
-        "out": 42.5,
-        "net": 7.3,
-        "both": 32.8
+        "in": 41.2,
+        "out": 38.9,
+        "net": 2.3,
+        "both": 29.8
       },
       "switching": {
-        "in": 64.7,
-        "out": 51.2,
-        "net": 13.5,
-        "both": 43.6
+        "in": 48.7,
+        "out": 45.2,
+        "net": 3.5,
+        "both": 35.6
       },
       "affinity": {
-        "in": 46.4,
-        "out": 55.9,
-        "net": 9.5,
-        "both": 38.7
+        "in": 57.3,
+        "out": 52.8,
+        "net": 4.5,
+        "both": 42.1
+      }
+    },
+    {
+      "from": 5,
+      "to": 6,
+      "outFlow": 543210,
+      "inFlow": 432109,
+      "interaction": 111101,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "111101",
+          "abs": "11.1%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "543210",
+          "abs": "5.4%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "27.4",
+          "abs": "27.4%"
+        }
+      ],
+      "churn": {
+        "in": 39.8,
+        "out": 36.5,
+        "net": 3.3,
+        "both": 27.4
+      },
+      "switching": {
+        "in": 46.2,
+        "out": 42.8,
+        "net": 3.4,
+        "both": 33.2
+      },
+      "affinity": {
+        "in": 54.9,
+        "out": 50.3,
+        "net": 4.6,
+        "both": 40.1
       }
     },
     {
       "from": 10,
-      "to": 3,
-      "outFlow": 234567,
-      "inFlow": 123456,
-      "interaction": 111111,
+      "to": 4,
+      "outFlow": 432109,
+      "inFlow": 321098,
+      "interaction": 111011,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "111011",
+          "abs": "11.1%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "432109",
+          "abs": "4.3%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "25.6",
+          "abs": "25.6%"
+        }
+      ],
       "churn": {
-        "in": 41.5,
-        "out": 47.8,
-        "net": 6.3,
-        "both": 34.2
+        "in": 37.5,
+        "out": 34.2,
+        "net": 3.3,
+        "both": 25.6
       },
       "switching": {
-        "in": 53.4,
-        "out": 48.9,
-        "net": 4.5,
-        "both": 37.8
+        "in": 44.8,
+        "out": 41.3,
+        "net": 3.5,
+        "both": 31.8
       },
       "affinity": {
-        "in": 57.2,
-        "out": 66.7,
-        "net": 9.5,
-        "both": 44.9
+        "in": 52.4,
+        "out": 47.9,
+        "net": 4.5,
+        "both": 38.2
+      }
+    },
+    {
+      "from": 2,
+      "to": 0,
+      "outFlow": 321098,
+      "inFlow": 210987,
+      "interaction": 110111,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "110111",
+          "abs": "11.0%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "321098",
+          "abs": "3.2%"
+        },
+        {
+          "item": "Return Rate",
+          "index": "23.8",
+          "abs": "23.8%"
+        }
+      ],
+      "churn": {
+        "in": 35.2,
+        "out": 31.9,
+        "net": 3.3,
+        "both": 23.8
+      },
+      "switching": {
+        "in": 42.5,
+        "out": 39.0,
+        "net": 3.5,
+        "both": 29.4
+      },
+      "affinity": {
+        "in": 50.1,
+        "out": 45.6,
+        "net": 4.5,
+        "both": 36.3
       }
     }
   ],
   "flows_markets": [
     {
       "itemID": 3,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "1",
+          "abs": "100%"
+        },
+        {
+          "item": "Market Share",
+          "index": "21.5",
+          "abs": "21.5%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "7.4",
+          "abs": "7.4%"
+        }
+      ],
       "churn": {
         "in": 42.7,
         "out": 35.2,
@@ -318,6 +1214,23 @@
     },
     {
       "itemID": 6,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "2",
+          "abs": "90%"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.8",
+          "abs": "9.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "7.7",
+          "abs": "7.7%"
+        }
+      ],
       "churn": {
         "in": 31.2,
         "out": 38.9,
@@ -339,6 +1252,23 @@
     },
     {
       "itemID": 7,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "3",
+          "abs": "80%"
+        },
+        {
+          "item": "Market Share",
+          "index": "6.8",
+          "abs": "6.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "13.3",
+          "abs": "13.3%"
+        }
+      ],
       "churn": {
         "in": 43.8,
         "out": 30.5,
@@ -360,6 +1290,23 @@
     },
     {
       "itemID": 1,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "4",
+          "abs": "70%"
+        },
+        {
+          "item": "Market Share",
+          "index": "11.6",
+          "abs": "11.6%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "6.7",
+          "abs": "6.7%"
+        }
+      ],
       "churn": {
         "in": 35.6,
         "out": 42.3,
@@ -381,6 +1328,23 @@
     },
     {
       "itemID": 9,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "5",
+          "abs": "60%"
+        },
+        {
+          "item": "Market Share",
+          "index": "10.8",
+          "abs": "10.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "12.6",
+          "abs": "12.6%"
+        }
+      ],
       "churn": {
         "in": 42.4,
         "out": 29.8,
@@ -402,6 +1366,23 @@
     },
     {
       "itemID": 8,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "6",
+          "abs": "50%"
+        },
+        {
+          "item": "Market Share",
+          "index": "4.8",
+          "abs": "4.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "6.7",
+          "abs": "6.7%"
+        }
+      ],
       "churn": {
         "in": 34.5,
         "out": 41.2,
@@ -423,6 +1404,23 @@
     },
     {
       "itemID": 0,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "7",
+          "abs": "40%"
+        },
+        {
+          "item": "Market Share",
+          "index": "22.1",
+          "abs": "22.1%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "12.3",
+          "abs": "12.3%"
+        }
+      ],
       "churn": {
         "in": 50.1,
         "out": 37.8,
