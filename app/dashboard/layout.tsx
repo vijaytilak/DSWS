@@ -39,10 +39,10 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [centreFlow, setCentreFlow] = useState(false);
-  const [flowType, setFlowType] = useState("all");
-  const [isMarketView, setIsMarketView] = useState(false);
-  const [flowOption, setFlowOption] = useState<FlowOption>("churn");
+  const [centreFlow, setCentreFlow] = useState(false); // false for Brands
+  const [flowType, setFlowType] = useState("outFlow only"); // "outFlow only" for Out
+  const [isMarketView, setIsMarketView] = useState(false); // false for Brands
+  const [flowOption, setFlowOption] = useState<FlowOption>("churn"); // "churn" for Churn
 
   const handleFlowOptionChange = (option: FlowOption) => {
     setFlowOption(option);
