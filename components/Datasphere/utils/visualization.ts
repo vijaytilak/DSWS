@@ -19,17 +19,15 @@ class VisualizationManager {
           const isDarkTheme = document.documentElement.classList.contains('dark');
           updateTooltipTheme(isDarkTheme);
           
-          const self = this; // Use 'self' instead of 'manager'
-          
           // Update all flow lines to match their source bubble colors
+          const self = this;
           this.svg.selectAll<SVGLineElement, Flow>("line.flow-line")
-            .each(function() {
+            .each(function(this: SVGLineElement) {
               const line = d3.select<SVGLineElement, Flow>(this);
               const flowDirection = line.attr("data-flow-direction");
 　
               // For center flows, use the source bubble color
-              const fromCenter = line.attr("data-from-center") === "true";
-              if (fromCenter) {
+              if (line.attr("data-from-center") === "true") {
                 const sourceColor = self.bubbles[0].color;
                 line.attr("stroke", sourceColor);
 				
@@ -43,7 +41,7 @@ class VisualizationManager {
 
                   // Update percentage labels for center flows
                   self.svg?.selectAll<SVGTextElement, unknown>("text")
-                    .filter(function() {
+                    .filter(function(this: SVGTextElement) {
                       const text = d3.select(this);
                       const x = parseFloat(text.attr("x"));
                       const y = parseFloat(text.attr("y"));
@@ -66,7 +64,7 @@ class VisualizationManager {
           
           // Update center bubble and its elements
           this.svg.selectAll<SVGCircleElement, Bubble>("circle")
-            .filter((d) => d.id === self.bubbles.length - 1)
+            .filter((d) => d.id === this.bubbles.length - 1)
             .attr("fill", isDarkTheme ? "#1a1a1a" : "#ffffff") 
             .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
             .attr("stroke-width", "2"); 
@@ -76,7 +74,7 @@ class VisualizationManager {
             .filter((d, i, nodes) => {
               const bubble = d3.select<SVGCircleElement, Bubble>(nodes[i]).datum();
               const isOuterRing = d3.select<SVGCircleElement, Bubble>(nodes[i]).attr("r") === bubble.outerRingRadius.toString();
-              return bubble.id === self.bubbles.length - 1 && isOuterRing;
+              return bubble.id === this.bubbles.length - 1 && isOuterRing;
             })
             .attr("fill", "none")
             .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
@@ -85,11 +83,12 @@ class VisualizationManager {
             
           // Update center bubble label with higher contrast
           this.svg.selectAll<SVGTextElement, Bubble>("text.bubble-label")
-            .filter((d) => d.id === self.bubbles.length - 1)
+            .filter((d) => d.id === this.bubbles.length - 1)
             .attr("fill", isDarkTheme ? "#ffffff" : "#000000")
             .attr("font-weight", "bold"); 
 
           // Also update any line markers from or to the center bubble
+          const bubbles = this.bubbles; // Capture bubbles reference
           this.svg.selectAll<SVGMarkerElement, unknown>("marker")
             .each(function() {
               const marker = d3.select(this);
@@ -101,8 +100,8 @@ class VisualizationManager {
               const toIdNum = parseInt(toId);
 　
               // Update marker color if it's connected to the center bubble
-              if (fromIdNum === self.bubbles.length - 1 || toIdNum === self.bubbles.length - 1) {
-                const sourceColor = self.bubbles[0].color;
+              if (fromIdNum === bubbles.length - 1 || toIdNum === bubbles.length - 1) {
+                const sourceColor = bubbles[0].color;
                 marker.selectAll("path, circle").attr("fill", sourceColor);
               }
             });
@@ -159,8 +158,6 @@ export function initializeBubbleVisualization(
   );
 
   // Calculate the radius of the circle on which bubbles are positioned
-  const maxRadius = Math.max(width, height) / 2;
-  const minRadius = Math.min(width, height) / 2;
   const positionCircleRadius = Math.min(width, height) / 2;
 
   // Prepare bubble data
@@ -184,10 +181,8 @@ export function drawBubbles(
   centerY: number,
   isMarketView: boolean = false
 ) {
-  const isDark = document.documentElement.classList.contains('dark');
-  const textColor = isDark ? 'white' : 'black';
-  
   // Create tooltip with current theme
+  const isDark = document.documentElement.classList.contains('dark');
   createTooltip(isDark);
 
   // Update visualization manager references
@@ -429,7 +424,7 @@ export function drawFlows(
             .attr('data-to-id', source.id.toString())
             .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
             .on('mouseout', hideTooltip)
-            .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, target, source));
+            .on('click', () => onFlowClick && onFlowClick(flow, target, source));
 
           // Add inflow marker
           createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowColor, 'inFlow');
@@ -452,7 +447,7 @@ export function drawFlows(
             .attr('data-to-id', target.id.toString())
             .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
             .on('mouseout', hideTooltip)
-            .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, source, target));
+            .on('click', () => onFlowClick && onFlowClick(flow, source, target));
 
           // Add outflow marker
           createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowColor, 'outFlow');
@@ -507,13 +502,15 @@ export function drawFlowLine(
   centreFlow: boolean = false,
   allBubbles: Bubble[],
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
-  isMarketView: boolean = false,
+  _isMarketView: boolean = false,
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
 ) {
-  const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow, centreFlow);
+  const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow);
   const lineThickness = calculateLineThickness(flow);
-  const markerSize = calculateMarkerSize(lineThickness);
-  const isDarkTheme = document.documentElement.classList.contains('dark');
+  const flowPath = d3.line()([
+    [points.start.x, points.start.y],
+    [points.end.x, points.end.y]
+  ]);
   
   // Determine colors based on whether this is a center flow or affinity
   const isFromCenter = startBubble.id === allBubbles.length - 1;
@@ -537,15 +534,12 @@ export function drawFlowLine(
 
   // Create marker for this specific flow
   const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-  createFlowMarker(svg, markerId, markerSize, markerColor, flowDirection);
+  createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), markerColor, flowDirection);
 
   // Draw the flow line
-  const path = svg.append("line")
+  const path = svg.append("path")
+    .attr("d", flowPath)
     .attr("class", "flow-line")
-    .attr("x1", points.start.x)
-    .attr("y1", points.start.y)
-    .attr("x2", points.end.x)
-    .attr("y2", points.end.y)
     .attr("stroke", lineColor)
     .attr("stroke-width", lineThickness)
     .attr("marker-end", `url(#${markerId})`)
@@ -559,7 +553,7 @@ export function drawFlowLine(
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
     .on("mouseout", hideTooltip)
-    .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, startBubble, endBubble));
+    .on('click', () => onFlowClick && onFlowClick(flow, startBubble, endBubble));
 
   // Calculate label position (midpoint of the line)
   const midX = (points.start.x + points.end.x) / 2;

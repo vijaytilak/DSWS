@@ -89,7 +89,6 @@ export function AppSidebar({
           setIsMarketView={setIsMarketView}
         />
         <NavOptions 
-          isMarketView={isMarketView} 
           onFlowOptionChange={onFlowOptionChange || (() => {})} 
           flowOption={flowOption}
         />

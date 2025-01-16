@@ -2,8 +2,6 @@
 
 import * as React from "react"
 import { Settings2 } from "lucide-react"
-import Link from "next/link"
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 import {
   Table,
   TableBody,

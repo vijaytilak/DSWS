@@ -11,7 +11,6 @@ import {
 type FlowOption = 'churn' | 'switching' | 'affinity';
 
 interface NavOptionsProps {
-  isMarketView: boolean;
   onFlowOptionChange: (option: FlowOption) => void;
   flowOption: FlowOption;
 }
@@ -34,7 +33,7 @@ const optionItems = [
   },
 ]
 
-export function NavOptions({ isMarketView, onFlowOptionChange, flowOption }: NavOptionsProps) {
+export function NavOptions({ onFlowOptionChange, flowOption }: NavOptionsProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Options</SidebarGroupLabel>
