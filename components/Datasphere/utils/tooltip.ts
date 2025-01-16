@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import type { Flow, Bubble } from '../types';
 import { formatNumber } from './format';
 
-type TooltipSelection = d3.Selection<HTMLDivElement, unknown, HTMLElement, any>;
+type TooltipSelection = d3.Selection<HTMLDivElement, unknown, HTMLElement, null>;
 let tooltip: TooltipSelection | undefined;
 
 export function createTooltip(isDark: boolean): TooltipSelection {
@@ -33,7 +33,7 @@ export function createTooltip(isDark: boolean): TooltipSelection {
   }
 
   // Create the tooltip
-  const parentSelection = d3.select(parentElement) as unknown as d3.Selection<HTMLElement, unknown, HTMLElement, any>;
+  const parentSelection = d3.select(parentElement) as d3.Selection<HTMLElement, unknown, HTMLElement, null>;
   tooltip = parentSelection
     .append<HTMLDivElement>("div")
     .attr("class", "tooltip")
@@ -55,7 +55,7 @@ export function createTooltip(isDark: boolean): TooltipSelection {
     .style("text-align", "left")
     .style("backdrop-filter", "blur(8px)")
     .style("-webkit-backdrop-filter", "blur(8px)")
-    .style("z-index", "1000") as unknown as TooltipSelection;
+    .style("z-index", "1000") as TooltipSelection;
 
   updateTooltipTheme(isDark);
   return tooltip;

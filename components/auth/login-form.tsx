@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/useAuth"
+import { FirebaseError } from "firebase/app"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -32,11 +33,11 @@ export function LoginForm() {
         title: "Success",
         description: "Successfully logged in!",
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to login",
+        description: error instanceof FirebaseError ? error.message : "Failed to login",
       })
     } finally {
       setIsLoading(false)

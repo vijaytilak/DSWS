@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 type YearRange = {
   fromYear: number;
@@ -53,7 +53,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     fromYear: currentYear // Second year (2025)
   });
 
-  const initialCurrentYear = currentYear;
   const generateTimelineData = (fromYear: number, toYear: number): MonthData[] => {
     const months: MonthData[] = [];
     [fromYear, toYear].forEach((year) => {  // Changed order to match display
@@ -91,9 +90,54 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     setTimelineData(generateTimelineData(yearRange.fromYear, yearRange.toYear));
   }, [yearRange.fromYear, yearRange.toYear]);
 
+  const getSelectionRanges = useCallback((): SelectionRanges => {
+    if ((!dragState.startMonth && dragState.startMonth !== 0) || dragState.currentMonth === null) {
+      return {
+        firstYear: { start: 0, end: 11 },    // Jan-Dec last year (2024)
+        secondYear: { start: 12, end: 23 }   // Jan-Dec current year (2025)
+      };
+    }
+
+    const isSecondYear = dragState.startMonth >= 12;
+    const fixedStart = dragState.startMonth;
+    const currentDrag = dragState.currentMonth;
+
+    if (isSecondYear) {
+      const constrainedStart = Math.max(12, Math.min(fixedStart, 23));
+      const constrainedEnd = Math.max(12, Math.min(currentDrag, 23));
+
+      const start = Math.min(constrainedStart, constrainedEnd);
+      const end = Math.max(constrainedStart, constrainedEnd);
+
+      // Calculate mirrored range for first year (0-11)
+      const mirroredStart = start - 12;
+      const mirroredEnd = end - 12;
+
+      return {
+        firstYear: { start: mirroredStart, end: mirroredEnd },
+        secondYear: { start, end }
+      };
+    } else {
+      const constrainedStart = Math.max(0, Math.min(fixedStart, 11));
+      const constrainedEnd = Math.max(0, Math.min(currentDrag, 11));
+
+      const start = Math.min(constrainedStart, constrainedEnd);
+      const end = Math.max(constrainedStart, constrainedEnd);
+
+      // Calculate mirrored range for second year (12-23)
+      const mirroredStart = start + 12;
+      const mirroredEnd = end + 12;
+
+      return {
+        firstYear: { start, end },
+        secondYear: { start: mirroredStart, end: mirroredEnd }
+      };
+    }
+  }, [dragState.startMonth, dragState.currentMonth]);
+
   useEffect(() => {
-    if (onChange) {
-      const ranges = getSelectionRanges();
+    const ranges = getSelectionRanges();
+    if (onChange && timelineData.length > 0) {
       const firstYearStart = new Date(timelineData[ranges.firstYear.start].year, timelineData[ranges.firstYear.start].month);
       const firstYearEnd = new Date(timelineData[ranges.firstYear.end].year, timelineData[ranges.firstYear.end].month);
       const secondYearStart = new Date(timelineData[ranges.secondYear.start].year, timelineData[ranges.secondYear.start].month);
@@ -104,7 +148,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
         secondYear: { start: secondYearStart, end: secondYearEnd }
       });
     }
-  }, [dragState, timelineData, onChange]);
+  }, [timelineData, onChange, getSelectionRanges]);
 
   const handleYearChange = (type: 'from' | 'to', yearStr: string) => {
     const numYear = parseInt(yearStr);
@@ -120,21 +164,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     return Math.min(Math.max(Math.floor(relativeX / monthWidth), 0), 23);
   };
 
-  const calculateMirroredRange = (start: number, end: number, isSecondYear: boolean): SelectionRange => {
-    if (isSecondYear) {
-      const relativeStart = start - 12;
-      const relativeEnd = end - 12;
-      return {
-        start: relativeStart,
-        end: relativeEnd
-      };
-    } else {
-      return {
-        start: start + 12,
-        end: end + 12
-      };
-    }
-  };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const monthIndex = getMonthFromClientX(e.currentTarget, e.clientX);
@@ -178,52 +207,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     }
   }, [dragState.isDragging]);
 
-  const getSelectionRanges = (): SelectionRanges => {
-    if ((!dragState.startMonth && dragState.startMonth !== 0) || dragState.currentMonth === null) {
-      return {
-        firstYear: { start: 0, end: 11 },    // Jan-Dec last year (2024)
-        secondYear: { start: 12, end: 23 }   // Jan-Dec current year (2025)
-      };
-    }
-
-    const isSecondYear = dragState.activeYear === 'second';
-    const yearStart = isSecondYear ? 12 : 0;
-    const yearEnd = isSecondYear ? 23 : 11;
-
-    const fixedStart = dragState.startMonth;
-    const currentDrag = dragState.currentMonth;
-
-    if (isSecondYear) {
-      const constrainedStart = Math.max(12, Math.min(fixedStart, 23));
-      const constrainedEnd = Math.max(12, Math.min(currentDrag, 23));
-
-      const start = Math.min(constrainedStart, constrainedEnd);
-      const end = Math.max(constrainedStart, constrainedEnd);
-
-      const primaryRange = { start, end };
-      const mirroredRange = calculateMirroredRange(start, end, true);
-      return {
-        firstYear: mirroredRange,
-        secondYear: primaryRange
-      };
-    } else {
-      const constrainedStart = Math.max(0, Math.min(fixedStart, 11));
-      const constrainedEnd = Math.max(0, Math.min(currentDrag, 11));
-
-      const start = Math.min(constrainedStart, constrainedEnd);
-      const end = Math.max(constrainedStart, constrainedEnd);
-
-      const primaryRange = { start, end };
-      const mirroredRange = calculateMirroredRange(start, end, false);
-      return {
-        firstYear: primaryRange,
-        secondYear: mirroredRange
-      };
-    }
-  };
-
-  const ranges = getSelectionRanges();
-
   const getSelectionStyle = (range: SelectionRange) => ({
     left: `${range.start * monthWidth}px`,
     width: `${(range.end - range.start + 1) * monthWidth}px`,
@@ -239,6 +222,8 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     const year = timelineData[startIndex].year;
     return `${startMonth}-${endMonth} ${year}`;
   };
+
+  const ranges = getSelectionRanges();
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mx-auto">

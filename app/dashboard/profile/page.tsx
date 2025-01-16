@@ -24,7 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -95,7 +94,7 @@ export default function ProfilePage() {
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -115,7 +114,7 @@ export default function ProfilePage() {
         description: "Your password has been updated successfully.",
       })
       passwordForm.reset()
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update password. Please ensure your current password is correct.",

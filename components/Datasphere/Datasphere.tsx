@@ -3,15 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import * as d3 from 'd3';
-import { CONFIG } from './constants/config';
 import type { FlowData, Bubble, Flow } from './types';
 import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/visualization';
 import { prepareFlowData } from './utils/flow';
 import { useDimensions } from './hooks/useDimensions';
 import { useCentreFlow } from '@/app/dashboard/layout';
 import { useTableData } from '@/app/contexts/table-data-context';
-
-type FlowOption = 'churn' | 'switching' | 'affinity';
 
 interface DataSphereProps {
   data: FlowData;
@@ -31,8 +28,6 @@ export default function DataSphere({
   const { resolvedTheme } = useTheme();
   const { isMarketView, flowOption } = useCentreFlow();
   const { setTableData, setSelectedItemLabel } = useTableData();
-  const [bubbles, setBubbles] = useState<Bubble[]>([]);
-  const [flows, setFlows] = useState<Flow[]>([]);
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
   const dimensions = useDimensions(containerRef);
 
@@ -63,18 +58,13 @@ export default function DataSphere({
       centerX,
       centerY
     );
-    setBubbles(initialBubbles);
 
     // Draw bubbles
     const handleBubbleClick = (bubble: Bubble) => {
-      if (bubble.id === bubbles.length) return; // Ignore center bubble click
+      if (bubble.id === initialBubbles.length) return; // Ignore center bubble click
       
       const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
       setFocusBubbleId(newFocusId);
-      setBubbles(bubbles.map(b => ({
-        ...b,
-        focus: b.id === bubble.id ? newFocusId !== null : false
-      })));
 
       // Update table data for the clicked bubble
       const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
@@ -85,7 +75,7 @@ export default function DataSphere({
     };
 
     // Handle flow click
-    const handleFlowClick = (flow: Flow, source: Bubble, target: Bubble) => {
+    const handleFlowClick = (flow: Flow) => {
       // Find the flow data
       if (isMarketView) {
         const marketFlows = data.flows_markets;
@@ -123,7 +113,6 @@ export default function DataSphere({
       isMarketView,
       flowOption
     );
-    setFlows(initialFlows);
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick);
   }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel]);
 

@@ -1,4 +1,4 @@
-export function calculateRelativeSizePercent<T extends Record<string, any>>(
+export function calculateRelativeSizePercent<T>(
   array: T[],
   sizeProperty: keyof T
 ): (T & { sizePercent: number })[] {
@@ -34,16 +34,16 @@ export function calculateRelativeSizePercent<T extends Record<string, any>>(
   });
 }
 
-export function calculatePercentRanks<T extends Record<string, any>>(
+export function calculatePercentRanks<T extends { sizePercent: number }>(
   array: T[],
 ): (T & { percentRank: number })[] {
   if (array.length === 0) return [];
 
-  const values = array.map(item => item.sizePercent as number);
+  const values = array.map(item => item.sizePercent);
   values.sort((a, b) => a - b);
   
   return array.map(item => {
-    const value = item.sizePercent as number;
+    const value = item.sizePercent;
     const rank = values.filter(v => v < value).length;
     return {
       ...item,

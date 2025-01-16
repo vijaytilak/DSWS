@@ -2,7 +2,6 @@ import * as d3 from 'd3';
 import { CONFIG } from '../constants/config';
 import type { FlowData, Bubble, Flow } from '../types';
 import { calculateRelativeSizePercent, calculatePercentRanks } from './calculations';
-import { formatNumber } from '../utils/format';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip, getFlowTooltip, updateTooltipTheme } from './tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from './bubble';
 

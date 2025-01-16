@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import { CONFIG } from '../constants/config';
 import type { FlowData, Bubble } from '../types';
 import { calculateRelativeSizePercent, calculatePercentRanks } from './calculations';
@@ -28,9 +27,9 @@ export function prepareBubbleData(
   );
 
   // Calculate relative sizes and percentile ranks
-  const itemsWithSizes = Object.entries(data.itemIDs).map(([id, item]) => ({
+  const itemsWithSizes = data.itemIDs.map(item => ({
     ...item,
-    itemID: parseInt(id)
+    itemID: item.itemID
   }));
   
   const itemsWithRanks = calculatePercentRanks(
@@ -74,12 +73,12 @@ export function prepareBubbleData(
       fontSize,
       outerRingRadius: scaledRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
       totalBubbles: noOfBubbles + 1, // Total including center bubble
-    };
+    } as Bubble;
   });
 
   // Add center bubble
   const isDark = document.documentElement.classList.contains('dark');
-  const centerBubble = {
+  const centerBubble: Bubble = {
     id: noOfBubbles,
     label: "Market",
     radius: 0.15 * positionCircleRadius,
