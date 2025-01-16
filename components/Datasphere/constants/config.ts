@@ -1,6 +1,6 @@
 export const CONFIG = {
   flow: {
-    minLineThickness: 2,
+    minLineThickness: 5,
     maxLineThickness: 9,
     parallelOffset: 5,
     minMarkerSize: 5,
