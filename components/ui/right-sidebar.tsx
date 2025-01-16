@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelRight } from "lucide-react"
 
@@ -124,7 +123,8 @@ export const RightSidebarProvider = React.forwardRef<
 )
 RightSidebarProvider.displayName = "RightSidebarProvider"
 
-const sidebarVariants = cva("", {
+// Used in type definition and styles
+export const sidebarVariants = cva("", {
   variants: {
     variant: {
       sidebar: "",
@@ -140,7 +140,7 @@ export const RightSidebar = React.forwardRef<
     VariantProps<typeof sidebarVariants> & {
       collapsible?: "icon" | "offcanvas" | "none"
     }
->(({ className, variant = "sidebar", collapsible = "none", ...props }, ref) => {
+>(({ className, collapsible = "none", ...props }, ref) => {
   const { open, openMobile, setOpenMobile, isMobile } = useRightSidebar()
 
   if (isMobile) {
@@ -177,18 +177,16 @@ export const RightSidebar = React.forwardRef<
         collapsible === "none" && "w-[var(--sidebar-width)]",
         className
       )}
-      style={
-        {
-          "--sidebar-width": RIGHT_SIDEBAR_WIDTH,
-          "--sidebar-width-mobile": RIGHT_SIDEBAR_WIDTH_MOBILE,
-          "--sidebar-width-icon": RIGHT_SIDEBAR_WIDTH_ICON,
-        } as React.CSSProperties
-      }
+      style={{
+        "--sidebar-width": RIGHT_SIDEBAR_WIDTH,
+        "--sidebar-width-mobile": RIGHT_SIDEBAR_WIDTH_MOBILE,
+        "--sidebar-width-icon": RIGHT_SIDEBAR_WIDTH_ICON,
+      } as React.CSSProperties}
       {...props}
     />
   )
 })
-RightSidebar.displayName = "RightSidebar"
+RightSidebar.displayName = "RightSidebarComponent"
 
 export const RightSidebarContent = React.forwardRef<
   HTMLDivElement,
@@ -258,3 +256,5 @@ export const RightSidebarTrigger = React.forwardRef<
     </Button>
   )
 })
+
+RightSidebarTrigger.displayName = "RightSidebarTrigger"

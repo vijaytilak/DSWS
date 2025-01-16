@@ -77,7 +77,6 @@ export default function DashboardLayout({
                     setCentreFlow={setCentreFlow} 
                     setFlowType={setFlowType}
                     flowType={flowType}
-                    isMarketView={isMarketView}
                     setIsMarketView={setIsMarketView}
                     onFlowOptionChange={handleFlowOptionChange}
                     flowOption={flowOption}

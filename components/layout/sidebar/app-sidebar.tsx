@@ -47,22 +47,20 @@ const data = {
   ],
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   setCentreFlow: (value: boolean) => void;
   setFlowType: (value: string) => void;
   flowType: string;
   onFlowOptionChange?: (option: FlowOption) => void;
-  isMarketView?: boolean;
   setIsMarketView: (value: boolean) => void;
   flowOption?: FlowOption;
-}
+};
 
 export function AppSidebar({ 
   setCentreFlow, 
   setFlowType, 
   flowType, 
-  onFlowOptionChange, 
-  isMarketView = false,
+  onFlowOptionChange,
   setIsMarketView,
   flowOption = 'churn',
   ...props 

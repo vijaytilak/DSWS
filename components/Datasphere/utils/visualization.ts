@@ -20,7 +20,8 @@ class VisualizationManager {
           updateTooltipTheme(isDarkTheme);
           
           // Update all flow lines to match their source bubble colors
-          const self = this;
+          const bubbles = this.bubbles;
+          const svgSelection = this.svg;
           this.svg.selectAll<SVGLineElement, Flow>("line.flow-line")
             .each(function(this: SVGLineElement) {
               const line = d3.select<SVGLineElement, Flow>(this);
@@ -28,7 +29,7 @@ class VisualizationManager {
 　
               // For center flows, use the source bubble color
               if (line.attr("data-from-center") === "true") {
-                const sourceColor = self.bubbles[0].color;
+                const sourceColor = bubbles[0].color;
                 line.attr("stroke", sourceColor);
 				
                 // Get from and to IDs from the line's data attributes
@@ -36,13 +37,13 @@ class VisualizationManager {
                 const toId = line.attr("data-to-id");
                 if (fromId && toId) {
                   const markerId = flowDirection + "-" + fromId + "-" + toId;
-                  self.svg?.select<SVGPathElement>(`#${markerId} path`)
+                  svgSelection?.select<SVGPathElement>(`#${markerId} path`)
                     .attr("fill", sourceColor);
 
                   // Update percentage labels for center flows
-                  self.svg?.selectAll<SVGTextElement, unknown>("text")
+                  svgSelection?.selectAll<SVGTextElement, unknown>("text")
                     .filter(function(this: SVGTextElement) {
-                      const text = d3.select(this);
+                      const text = d3.select<SVGTextElement, unknown>(this);
                       const x = parseFloat(text.attr("x"));
                       const y = parseFloat(text.attr("y"));
                       const lineX1 = parseFloat(line.attr("x1"));
@@ -88,21 +89,21 @@ class VisualizationManager {
             .attr("font-weight", "bold"); 
 
           // Also update any line markers from or to the center bubble
-          const bubbles = this.bubbles; // Capture bubbles reference
+          const bubbleCount = this.bubbles.length;
+          const centerBubbleColor = this.bubbles[0].color;
           this.svg.selectAll<SVGMarkerElement, unknown>("marker")
-            .each(function() {
+            .each(function(this: SVGMarkerElement) {
               const marker = d3.select(this);
               const markerId = marker.attr("id");
               if (!markerId) return;
 
-              const [direction, fromId, toId] = markerId.split("-");
+              const [_direction, fromId, toId] = markerId.split("-");
               const fromIdNum = parseInt(fromId);
               const toIdNum = parseInt(toId);
 　
               // Update marker color if it's connected to the center bubble
-              if (fromIdNum === bubbles.length - 1 || toIdNum === bubbles.length - 1) {
-                const sourceColor = bubbles[0].color;
-                marker.selectAll("path, circle").attr("fill", sourceColor);
+              if (fromIdNum === bubbleCount - 1 || toIdNum === bubbleCount - 1) {
+                marker.selectAll("path, circle").attr("fill", centerBubbleColor);
               }
             });
         }
@@ -137,11 +138,11 @@ class VisualizationManager {
   }
 }
 
-let isDarkTheme = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-let tooltipInstance = createTooltip(isDarkTheme);
+const isDarkTheme = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+createTooltip(isDarkTheme);
 
-export function updateTooltipWithTheme(isDark: boolean) {
-  tooltipInstance = createTooltip(isDark);
+export function updateTooltipWithTheme(isDark: boolean): void {
+  createTooltip(isDark);
 }
 
 export function initializeBubbleVisualization(
@@ -179,7 +180,7 @@ export function drawBubbles(
   onClick: (bubble: Bubble) => void,
   centerX: number,
   centerY: number,
-  isMarketView: boolean = false
+  _isMarketView: boolean = false
 ) {
   // Create tooltip with current theme
   const isDark = document.documentElement.classList.contains('dark');
@@ -201,12 +202,12 @@ export function drawBubbles(
     .attr("r", d => d.radius)
     .attr("fill", d => {
       if (d.id === bubbles.length - 1) {
-        return isMarketView ? "transparent" : "none";
+        return _isMarketView ? "transparent" : "none";
       }
       return d.color;
     })
     .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
-    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (isMarketView ? 4 : 0) : 0)
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (_isMarketView ? 4 : 0) : 0)
     .attr("cursor", d => d.id === bubbles.length - 1 ? "default" : "pointer")
     .on("click", (event: MouseEvent, d: Bubble) => {
       if (d.id !== bubbles.length - 1) {
@@ -254,11 +255,11 @@ export function drawBubbles(
     .attr("fill", "none")
     .attr("stroke", d => {
       if (d.id === bubbles.length - 1) {
-        return isMarketView ? (isDark ? "white" : "black") : "none";
+        return _isMarketView ? (isDark ? "white" : "black") : "none";
       }
       return d.color;
     })
-    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (isMarketView ? 1 : 0) : 1)
+    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (_isMarketView ? 1 : 0) : 1)
     .attr("stroke-dasharray", "5,5")
     .attr("opacity", 0.6);
 
@@ -280,13 +281,13 @@ export function drawBubbles(
     .attr("dominant-baseline", "middle")
     .attr("fill", d => {
       if (d.id === bubbles.length - 1) {
-        return isMarketView ? (isDark ? "white" : "black") : "none";
+        return _isMarketView ? (isDark ? "white" : "black") : "none";
       }
       return d.color;
     })
     .attr("font-size", d => d.fontSize)
     .attr("font-weight", d => d.id === bubbles.length - 1 ? "normal" : "bold")
-    .text(d => isMarketView || d.id !== bubbles.length - 1 ? d.label : "");
+    .text(d => _isMarketView || d.id !== bubbles.length - 1 ? d.label : "");
 }
 
 export function drawFlows(
@@ -295,14 +296,14 @@ export function drawFlows(
   bubbles: Bubble[],
   flowType: string,
   focusBubbleId: number | null = null,
-  centreFlow: boolean = false,
-  isMarketView: boolean = false,
+  _centreFlow: boolean = false,
+  _isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
 ) {
   console.log('DEBUG - drawFlows called with flowOption:', flowOption);
   // Filter flows based on focus bubble if any
-  let filteredFlows = focusBubbleId !== null 
+  const filteredFlows = focusBubbleId !== null 
     ? flows.filter(flow => flow.from === focusBubbleId || flow.to === focusBubbleId)
     : flows;
 
@@ -356,32 +357,32 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         }
         break;
       case 'interaction':
-        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+        drawFlowLine(svg, flow, 'interaction', source, target, flowType, _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         break;
       case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', _centreFlow, bubbles, flowOption, _isMarketView, onFlowClick);
         }
         break;
       case 'bi-directional':
@@ -391,7 +392,7 @@ export function drawFlows(
         const lineThickness = calculateLineThickness({ ...flow, absolute_netFlow: totalFlow });
         
         // Calculate points for the full line
-        const points = calculateFlowPoints(source, target, flowType, 'both', flow, centreFlow);
+        const points = calculateFlowPoints(source, target, flowType, 'both', flow, _centreFlow);
         const { start, end } = points;
         
         // Calculate the split point based on flow proportions
@@ -499,7 +500,7 @@ export function drawFlowLine(
   startBubble: Bubble,
   endBubble: Bubble,
   flowType: string,
-  centreFlow: boolean = false,
+  _centreFlow: boolean = false,
   allBubbles: Bubble[],
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
   _isMarketView: boolean = false,
@@ -513,18 +514,16 @@ export function drawFlowLine(
   ]);
   
   // Determine colors based on whether this is a center flow or affinity
-  const isFromCenter = startBubble.id === allBubbles.length - 1;
+  const fromCenter = startBubble.id === allBubbles.length - 1;
   
   // For affinity flows, always use target bubble's color
   // For all other flows, use source bubble's color if from center, otherwise source bubble's color
-  const lineColor = flowOption === 'affinity'
-    ? startBubble.color
-    : endBubble.color;
+  const lineColor = flowOption === 'affinity' ? endBubble.color : startBubble.color;
   const markerColor = lineColor;
 
   console.log('DEBUG - drawFlowLine color selection:', {
     flowOption,
-    isFromCenter,
+    fromCenter,
     startBubbleId: startBubble.id,
     endBubbleId: endBubble.id,
     startBubbleColor: startBubble.color,
@@ -537,7 +536,7 @@ export function drawFlowLine(
   createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), markerColor, flowDirection);
 
   // Draw the flow line
-  const path = svg.append("path")
+  svg.append("path")
     .attr("d", flowPath)
     .attr("class", "flow-line")
     .attr("stroke", lineColor)
@@ -545,12 +544,12 @@ export function drawFlowLine(
     .attr("marker-end", `url(#${markerId})`)
     .attr("opacity", 0.8)
     .attr("data-flow-direction", flowDirection)
-    .attr("data-from-center", isFromCenter.toString())
+    .attr("data-from-center", fromCenter.toString())
     .attr("data-from-id", startBubble.id.toString())
     .attr("data-to-id", endBubble.id.toString())
     .datum(flow)
     .on("mouseover", (event: MouseEvent) => {
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
+      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, _centreFlow));
     })
     .on("mouseout", hideTooltip)
     .on('click', () => onFlowClick && onFlowClick(flow, startBubble, endBubble));
@@ -635,7 +634,7 @@ function calculateFlowPoints(
   flowType: string,
   flowDirection: string,
   flow: Flow,
-  centreFlow: boolean = false
+  _centreFlow: boolean = false
 ) {
   // Calculate the angle between bubbles
   const angle = Math.atan2(target.y - source.y, target.x - source.x);
