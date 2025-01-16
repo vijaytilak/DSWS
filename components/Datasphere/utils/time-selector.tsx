@@ -44,15 +44,19 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   const totalMonths = 24;
   const containerWidth = monthWidth * totalMonths;
 
-  const initialCurrentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear(); // 2025
+  const lastYear = currentYear - 1; // 2024
+
+  // Set default years to last year and current year in correct order
   const [yearRange, setYearRange] = useState<YearRange>({
-    fromYear: initialCurrentYear - 1,
-    toYear: initialCurrentYear
+    toYear: lastYear,    // First year (2024)
+    fromYear: currentYear // Second year (2025)
   });
-  
+
+  const initialCurrentYear = currentYear;
   const generateTimelineData = (fromYear: number, toYear: number): MonthData[] => {
     const months: MonthData[] = [];
-    [toYear, fromYear].forEach((year) => {
+    [fromYear, toYear].forEach((year) => {  // Changed order to match display
       for (let i = 0; i < 12; i++) {
         months.push({
           id: `${year}-${i}`,
@@ -69,7 +73,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   const [timelineData, setTimelineData] = useState<MonthData[]>(
     generateTimelineData(yearRange.fromYear, yearRange.toYear)
   );
-  
+
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     startMonth: null,
@@ -80,8 +84,8 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   // Generate year options (10 years before current year up to current year)
   const yearOptions = Array.from(
     { length: 11 },
-    (_, i) => initialCurrentYear - 10 + i
-  ).filter(year => year <= initialCurrentYear);
+    (_, i) => currentYear - 10 + i
+  ).filter(year => year <= currentYear);
 
   useEffect(() => {
     setTimelineData(generateTimelineData(yearRange.fromYear, yearRange.toYear));
@@ -94,7 +98,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
       const firstYearEnd = new Date(timelineData[ranges.firstYear.end].year, timelineData[ranges.firstYear.end].month);
       const secondYearStart = new Date(timelineData[ranges.secondYear.start].year, timelineData[ranges.secondYear.start].month);
       const secondYearEnd = new Date(timelineData[ranges.secondYear.end].year, timelineData[ranges.secondYear.end].month);
-      
+
       onChange({
         firstYear: { start: firstYearStart, end: firstYearEnd },
         secondYear: { start: secondYearStart, end: secondYearEnd }
@@ -135,20 +139,20 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const monthIndex = getMonthFromClientX(e.currentTarget, e.clientX);
     const isSecondYear = monthIndex >= 12;
-    
+
     setDragState({
       isDragging: true,
       startMonth: monthIndex,
       currentMonth: monthIndex,
       activeYear: isSecondYear ? 'second' : 'first'
     });
-    
+
     e.preventDefault();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragState.isDragging) return;
-    
+
     const monthIndex = getMonthFromClientX(e.currentTarget, e.clientX);
     setDragState(prev => ({
       ...prev,
@@ -177,8 +181,8 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   const getSelectionRanges = (): SelectionRanges => {
     if ((!dragState.startMonth && dragState.startMonth !== 0) || dragState.currentMonth === null) {
       return {
-        firstYear: { start: 0, end: 2 },
-        secondYear: { start: 12, end: 14 }
+        firstYear: { start: 0, end: 11 },    // Jan-Dec last year (2024)
+        secondYear: { start: 12, end: 23 }   // Jan-Dec current year (2025)
       };
     }
 
@@ -192,7 +196,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     if (isSecondYear) {
       const constrainedStart = Math.max(12, Math.min(fixedStart, 23));
       const constrainedEnd = Math.max(12, Math.min(currentDrag, 23));
-      
+
       const start = Math.min(constrainedStart, constrainedEnd);
       const end = Math.max(constrainedStart, constrainedEnd);
 
@@ -205,7 +209,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     } else {
       const constrainedStart = Math.max(0, Math.min(fixedStart, 11));
       const constrainedEnd = Math.max(0, Math.min(currentDrag, 11));
-      
+
       const start = Math.min(constrainedStart, constrainedEnd);
       const end = Math.max(constrainedStart, constrainedEnd);
 
@@ -229,7 +233,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
   const formatPeriodLabel = (range: SelectionRange) => {
     const startIndex = Math.max(0, Math.min(range.start, timelineData.length - 1));
     const endIndex = Math.max(0, Math.min(range.end, timelineData.length - 1));
-    
+
     const startMonth = timelineData[startIndex].fullLabel;
     const endMonth = timelineData[endIndex].fullLabel;
     const year = timelineData[startIndex].year;
@@ -253,7 +257,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
             </select>
             
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Selected periods: {formatPeriodLabel(ranges.firstYear)} and {formatPeriodLabel(ranges.secondYear)}
+              Selected periods: {formatPeriodLabel(ranges.secondYear)} and {formatPeriodLabel(ranges.firstYear)}
             </div>
 
             <select 
@@ -263,24 +267,24 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
             >
               {yearOptions.map(year => (
                 <option key={`from-${year}`} value={year}>{year}</option>
-              ))}
+              )).reverse()}
             </select>
           </div>
-          
+
           <div className="relative h-16">
             {/* Main background */}
             <div className="absolute inset-0 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600" />
-            
+
             {/* Year divider */}
-            <div 
+            <div
               className="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600"
               style={{ left: `${12 * monthWidth}px` }}
             />
-            
+
             {/* Month labels */}
             <div className="absolute top-2 left-0 right-0 flex">
               {timelineData.map((month) => (
-                <div 
+                <div
                   key={month.id}
                   className="flex-shrink-0 text-xs text-center text-gray-500 dark:text-gray-400 font-medium"
                   style={{ width: `${monthWidth}px` }}
@@ -290,21 +294,21 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
                 </div>
               ))}
             </div>
-            
+
             {/* Selection area */}
-            <div 
+            <div
               className="absolute top-6 left-0 right-0 h-8 cursor-pointer"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
             >
               {/* Selection rectangles */}
               <div
-                className="absolute h-full bg-blue-100 dark:bg-blue-900/50 rounded shadow-sm"
-                style={getSelectionStyle(ranges.firstYear)}
+                className="absolute h-full bg-blue-100 dark:bg-blue-500/50 rounded shadow-sm"
+                style={getSelectionStyle(ranges.secondYear)}
               />
               <div
-                className="absolute h-full bg-green-100 dark:bg-green-900/50 rounded shadow-sm"
-                style={getSelectionStyle(ranges.secondYear)}
+                className="absolute h-full bg-green-100 dark:bg-green-500/50 rounded shadow-sm"
+                style={getSelectionStyle(ranges.firstYear)}
               />
             </div>
           </div>
