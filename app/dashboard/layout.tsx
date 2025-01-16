@@ -10,6 +10,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { RightSidebarProvider } from "@/components/ui/right-sidebar"
+import { TableDataProvider } from "@/app/contexts/table-data-context";
 
 type FlowOption = 'churn' | 'switching' | 'affinity';
 
@@ -70,23 +71,25 @@ export default function DashboardLayout({
         >
           <SidebarProvider>
             <CentreFlowContext.Provider value={value}>
-              <div className="flex flex-1">
-                <AppSidebar 
-                  setCentreFlow={setCentreFlow} 
-                  setFlowType={setFlowType}
-                  flowType={flowType}
-                  isMarketView={isMarketView}
-                  setIsMarketView={setIsMarketView}
-                  onFlowOptionChange={handleFlowOptionChange}
-                  flowOption={flowOption}
-                />
-                <main className="flex-1">
-                  <SidebarInset>
-                    {children}
-                  </SidebarInset>
-                </main>
-                <AppRightSidebar />
-              </div>
+              <TableDataProvider>
+                <div className="flex flex-1">
+                  <AppSidebar 
+                    setCentreFlow={setCentreFlow} 
+                    setFlowType={setFlowType}
+                    flowType={flowType}
+                    isMarketView={isMarketView}
+                    setIsMarketView={setIsMarketView}
+                    onFlowOptionChange={handleFlowOptionChange}
+                    flowOption={flowOption}
+                  />
+                  <main className="flex-1">
+                    <SidebarInset>
+                      {children}
+                    </SidebarInset>
+                  </main>
+                  <AppRightSidebar />
+                </div>
+              </TableDataProvider>
             </CentreFlowContext.Provider>
           </SidebarProvider>
         </RightSidebarProvider>

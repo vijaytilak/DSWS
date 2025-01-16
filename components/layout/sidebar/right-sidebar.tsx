@@ -19,25 +19,14 @@ import {
   RightSidebarFooter,
   RightSidebarHeader,
 } from "@/components/ui/right-sidebar"
-
-// Generate sample data
-const generateSampleData = () => {
-  const data = []
-  for (let i = 1; i <= 20; i++) {
-    data.push({
-      item: `Item ${i}`,
-      abs: (Math.random() * 100).toFixed(1) + '%',
-      index: Math.floor(Math.random() * 200),
-    })
-  }
-  return data
-}
-
-const sampleData = generateSampleData()
+import { useTableData } from "@/app/contexts/table-data-context"
+import { TableDataItem } from "@/components/Datasphere/types"
 
 export function AppRightSidebar({
   ...props
 }: React.ComponentProps<typeof RightSidebar>) {
+  const { tableData, selectedItemLabel } = useTableData();
+
   return (
     <RightSidebar
       collapsible="icon"
@@ -49,32 +38,38 @@ export function AppRightSidebar({
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <Settings2 />
           </div>
-          <span className="font-semibold">Data Table</span>
+          <span className="font-semibold">{selectedItemLabel || 'Data Table'}</span>
         </div>
       </RightSidebarHeader>
       <RightSidebarContent className="flex-1 overflow-y-auto p-4">
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-b">
-              <TableHead className="font-bold bg-muted/50">Item</TableHead>
-              <TableHead className="text-right font-bold bg-muted/50">Index</TableHead>
-              <TableHead className="text-right font-bold bg-muted/50">ABS</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sampleData.map((item) => (
-              <TableRow key={item.item} className="hover:bg-muted/50 border-b">
-                <TableCell className="font-medium">{item.item}</TableCell>
-                <TableCell className="text-right">{item.index}</TableCell>
-                <TableCell className="text-right">{item.abs}</TableCell>
+        {tableData.length > 0 ? (
+          <Table className="w-full">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-b">
+                <TableHead className="font-bold bg-muted/50">Item</TableHead>
+                <TableHead className="text-right font-bold bg-muted/50">Index</TableHead>
+                <TableHead className="text-right font-bold bg-muted/50">ABS</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {tableData.map((item: TableDataItem, index: number) => (
+                <TableRow key={index} className="hover:bg-muted/50 border-b">
+                  <TableCell className="font-medium">{item.item}</TableCell>
+                  <TableCell className="text-right">{item.index}</TableCell>
+                  <TableCell className="text-right">{item.abs}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            Click a bubble or flow to view its data
+          </div>
+        )}
       </RightSidebarContent>
       <RightSidebarFooter className="flex-none border-t border-sidebar-border p-2">
         <div className="text-xs text-muted-foreground">
-          {sampleData.length} items
+          {tableData.length} items
         </div>
       </RightSidebarFooter>
     </RightSidebar>

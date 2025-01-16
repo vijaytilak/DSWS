@@ -1,35 +1,48 @@
+export interface TableDataItem {
+  item: string;
+  index: string | number;
+  abs: string;
+}
+
+export interface BrandFlow {
+  from: number;
+  to: number;
+  outFlow: number;
+  inFlow: number;
+  interaction: number;
+  tabledata?: TableDataItem[];
+}
+
+export interface MarketFlow {
+  itemID: number;
+  churn: {
+    in: number;
+    out: number;
+    net: number;
+  };
+  switching: {
+    in: number;
+    out: number;
+    net: number;
+  };
+  affinity: {
+    in: number;
+    out: number;
+    net: number;
+  };
+  tabledata?: TableDataItem[];
+}
+
 export interface FlowData {
   itemIDs: Array<{
     itemID: number;
     itemLabel: string;
     itemSize_absolute: number;
     itemSize_relative: number;
+    tabledata: TableDataItem[];
   }>;
-  flows_brands: Array<{
-    from: number;
-    to: number;
-    outFlow: number;
-    inFlow: number;
-    interaction: number;
-  }>;
-  flows_markets: Array<{
-    itemID: number;
-    churn: {
-      in: number;
-      out: number;
-      net: number;
-    };
-    switching: {
-      in: number;
-      out: number;
-      net: number;
-    };
-    affinity: {
-      in: number;
-      out: number;
-      net: number;
-    };
-  }>;
+  flows_brands: BrandFlow[];
+  flows_markets: MarketFlow[];
 }
 
 export interface Bubble {

@@ -303,7 +303,8 @@ export function drawFlows(
   focusBubbleId: number | null = null,
   centreFlow: boolean = false,
   isMarketView: boolean = false,
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
+  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
 ) {
   console.log('DEBUG - drawFlows called with flowOption:', flowOption);
   // Filter flows based on focus bubble if any
@@ -361,32 +362,32 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         }
         break;
       case 'interaction':
-        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView);
+        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         break;
       case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
         }
         break;
       case 'bi-directional':
@@ -428,7 +429,8 @@ export function drawFlows(
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
             .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
-            .on('mouseout', hideTooltip);
+            .on('mouseout', hideTooltip)
+            .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, target, source));
 
           // Add inflow marker
           createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowColor, 'inFlow');
@@ -450,7 +452,8 @@ export function drawFlows(
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
             .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
-            .on('mouseout', hideTooltip);
+            .on('mouseout', hideTooltip)
+            .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, source, target));
 
           // Add outflow marker
           createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowColor, 'outFlow');
@@ -505,7 +508,8 @@ export function drawFlowLine(
   centreFlow: boolean = false,
   allBubbles: Bubble[],
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
-  isMarketView: boolean = false
+  isMarketView: boolean = false,
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
 ) {
   const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow, centreFlow);
   const lineThickness = calculateLineThickness(flow);
@@ -555,7 +559,8 @@ export function drawFlowLine(
     .on("mouseover", (event: MouseEvent) => {
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
-    .on("mouseout", hideTooltip);
+    .on("mouseout", hideTooltip)
+    .on('click', (event: MouseEvent) => onFlowClick && onFlowClick(flow, startBubble, endBubble));
 
   // Calculate label position (midpoint of the line)
   const midX = (points.start.x + points.end.x) / 2;

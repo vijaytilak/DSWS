@@ -9,6 +9,7 @@ import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/v
 import { prepareFlowData } from './utils/flow';
 import { useDimensions } from './hooks/useDimensions';
 import { useCentreFlow } from '@/app/dashboard/layout';
+import { useTableData } from '@/app/contexts/table-data-context';
 
 type FlowOption = 'churn' | 'switching' | 'affinity';
 
@@ -29,6 +30,7 @@ export default function DataSphere({
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
   const { isMarketView, flowOption } = useCentreFlow();
+  const { setTableData, setSelectedItemLabel } = useTableData();
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [flows, setFlows] = useState<Flow[]>([]);
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
@@ -73,7 +75,43 @@ export default function DataSphere({
         ...b,
         focus: b.id === bubble.id ? newFocusId !== null : false
       })));
+
+      // Update table data for the clicked bubble
+      const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
+      if (bubbleData && bubbleData.tabledata) {
+        setTableData(bubbleData.tabledata);
+        setSelectedItemLabel(bubbleData.itemLabel);
+      }
     };
+
+    // Handle flow click
+    const handleFlowClick = (flow: Flow, source: Bubble, target: Bubble) => {
+      // Find the flow data
+      if (isMarketView) {
+        const marketFlows = data.flows_markets;
+        const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
+        
+        if (selectedFlow?.tabledata) {
+          setTableData(selectedFlow.tabledata);
+          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+          setSelectedItemLabel(`Market: ${sourceBubble?.itemLabel || 'Unknown'}`);
+        }
+      } else {
+        const brandFlows = data.flows_brands;
+        const selectedFlow = brandFlows.find(f => 
+          (f.from === flow.from && f.to === flow.to) || 
+          (f.from === flow.to && f.to === flow.from)
+        );
+
+        if (selectedFlow?.tabledata) {
+          setTableData(selectedFlow.tabledata);
+          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+          const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
+          setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
+        }
+      }
+    };
+
     drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY, isMarketView);
 
     const initialFlows = prepareFlowData(
@@ -86,8 +124,8 @@ export default function DataSphere({
       flowOption
     );
     setFlows(initialFlows);
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption]);
+    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
