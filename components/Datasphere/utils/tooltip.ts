@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import type { Flow, Bubble } from '../types';
 import { formatNumber } from './format';
 
-type TooltipSelection = d3.Selection<HTMLDivElement, unknown, HTMLElement, null>;
+type TooltipSelection = d3.Selection<HTMLDivElement, unknown, null, undefined>;
 let tooltip: TooltipSelection | undefined;
 
 export function createTooltip(isDark: boolean): TooltipSelection {
@@ -14,10 +14,10 @@ export function createTooltip(isDark: boolean): TooltipSelection {
   const svgElement = svg.node();
   if (!svgElement) {
     console.warn("SVG container not found, falling back to body");
-    const bodySelection = d3.select<HTMLBodyElement, unknown>("body");
+    const bodySelection = d3.select("body");
     tooltip = bodySelection
       .append<HTMLDivElement>("div")
-      .attr("class", "tooltip") as TooltipSelection;
+      .attr("class", "tooltip");
     return tooltip;
   }
   
@@ -25,15 +25,15 @@ export function createTooltip(isDark: boolean): TooltipSelection {
   const parentElement = svgElement.parentElement;
   if (!parentElement) {
     console.warn("SVG parent container not found, falling back to body");
-    const bodySelection = d3.select<HTMLBodyElement, unknown>("body");
+    const bodySelection = d3.select("body");
     tooltip = bodySelection
       .append<HTMLDivElement>("div")
-      .attr("class", "tooltip") as TooltipSelection;
+      .attr("class", "tooltip");
     return tooltip;
   }
 
   // Create the tooltip
-  const parentSelection = d3.select(parentElement) as d3.Selection<HTMLElement, unknown, HTMLElement, null>;
+  const parentSelection = d3.select(parentElement);
   tooltip = parentSelection
     .append<HTMLDivElement>("div")
     .attr("class", "tooltip")
@@ -55,7 +55,7 @@ export function createTooltip(isDark: boolean): TooltipSelection {
     .style("text-align", "left")
     .style("backdrop-filter", "blur(8px)")
     .style("-webkit-backdrop-filter", "blur(8px)")
-    .style("z-index", "1000") as TooltipSelection;
+    .style("z-index", "1000");
 
   updateTooltipTheme(isDark);
   return tooltip;

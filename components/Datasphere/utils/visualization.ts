@@ -19,18 +19,18 @@ class VisualizationManager {
           const isDarkTheme = document.documentElement.classList.contains('dark');
           updateTooltipTheme(isDarkTheme);
           
-          const manager = this; // Capture this for inner scopes
+          const self = this; // Use 'self' instead of 'manager'
           
           // Update all flow lines to match their source bubble colors
           this.svg.selectAll<SVGLineElement, Flow>("line.flow-line")
             .each(function() {
               const line = d3.select<SVGLineElement, Flow>(this);
-              const isFromCenter = line.attr("data-from-center") === "true";
               const flowDirection = line.attr("data-flow-direction");
 　
               // For center flows, use the source bubble color
-              if (isFromCenter) {
-                const sourceColor = manager.bubbles[0].color;
+              const fromCenter = line.attr("data-from-center") === "true";
+              if (fromCenter) {
+                const sourceColor = self.bubbles[0].color;
                 line.attr("stroke", sourceColor);
 				
                 // Get from and to IDs from the line's data attributes
@@ -38,11 +38,11 @@ class VisualizationManager {
                 const toId = line.attr("data-to-id");
                 if (fromId && toId) {
                   const markerId = flowDirection + "-" + fromId + "-" + toId;
-                  manager.svg?.select<SVGPathElement>(`#${markerId} path`)
+                  self.svg?.select<SVGPathElement>(`#${markerId} path`)
                     .attr("fill", sourceColor);
 
                   // Update percentage labels for center flows
-                  manager.svg?.selectAll<SVGTextElement, unknown>("text")
+                  self.svg?.selectAll<SVGTextElement, unknown>("text")
                     .filter(function() {
                       const text = d3.select(this);
                       const x = parseFloat(text.attr("x"));
@@ -66,7 +66,7 @@ class VisualizationManager {
           
           // Update center bubble and its elements
           this.svg.selectAll<SVGCircleElement, Bubble>("circle")
-            .filter((d) => d.id === manager.bubbles.length - 1)
+            .filter((d) => d.id === self.bubbles.length - 1)
             .attr("fill", isDarkTheme ? "#1a1a1a" : "#ffffff") 
             .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
             .attr("stroke-width", "2"); 
@@ -76,7 +76,7 @@ class VisualizationManager {
             .filter((d, i, nodes) => {
               const bubble = d3.select<SVGCircleElement, Bubble>(nodes[i]).datum();
               const isOuterRing = d3.select<SVGCircleElement, Bubble>(nodes[i]).attr("r") === bubble.outerRingRadius.toString();
-              return bubble.id === manager.bubbles.length - 1 && isOuterRing;
+              return bubble.id === self.bubbles.length - 1 && isOuterRing;
             })
             .attr("fill", "none")
             .attr("stroke", isDarkTheme ? "#ffffff" : "#000000")
@@ -85,7 +85,7 @@ class VisualizationManager {
             
           // Update center bubble label with higher contrast
           this.svg.selectAll<SVGTextElement, Bubble>("text.bubble-label")
-            .filter((d) => d.id === manager.bubbles.length - 1)
+            .filter((d) => d.id === self.bubbles.length - 1)
             .attr("fill", isDarkTheme ? "#ffffff" : "#000000")
             .attr("font-weight", "bold"); 
 
@@ -101,8 +101,8 @@ class VisualizationManager {
               const toIdNum = parseInt(toId);
 　
               // Update marker color if it's connected to the center bubble
-              if (fromIdNum === manager.bubbles.length - 1 || toIdNum === manager.bubbles.length - 1) {
-                const sourceColor = manager.bubbles[0].color;
+              if (fromIdNum === self.bubbles.length - 1 || toIdNum === self.bubbles.length - 1) {
+                const sourceColor = self.bubbles[0].color;
                 marker.selectAll("path, circle").attr("fill", sourceColor);
               }
             });
@@ -139,10 +139,10 @@ class VisualizationManager {
 }
 
 let isDarkTheme = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-let tooltip = createTooltip(isDarkTheme);
+let tooltipInstance = createTooltip(isDarkTheme);
 
 export function updateTooltipWithTheme(isDark: boolean) {
-  tooltip = createTooltip(isDark);
+  tooltipInstance = createTooltip(isDark);
 }
 
 export function initializeBubbleVisualization(
@@ -343,7 +343,7 @@ export function drawFlows(
   svg.selectAll("line").remove();
   svg.selectAll("marker").remove();
 
-  flowsWithMetrics.forEach((flow) => {
+  filteredFlows.forEach((flow) => {
     const source = bubbles.find(b => b.id === flow.from);
     const target = bubbles.find(b => b.id === flow.to);
 

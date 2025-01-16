@@ -1,5 +1,4 @@
-import { type LucideIcon, Activity, Repeat, Heart } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Activity, Repeat, Heart } from "lucide-react"
 
 import {
   SidebarGroup,
