@@ -2,78 +2,91 @@ import * as d3 from 'd3';
 import type { Flow, Bubble } from '../types';
 import { formatNumber } from './format';
 
-type TooltipSelection = d3.Selection<HTMLDivElement, unknown, null, undefined>;
-let tooltip: TooltipSelection | undefined;
+type TooltipDatum = {
+  content?: string;
+};
 
-export function createTooltip(isDark: boolean): TooltipSelection {
-  // Remove any existing tooltip
-  if (tooltip) tooltip.remove();
-  
-  // Find the SVG container
-  const svg = d3.select<SVGSVGElement, unknown>("svg");
+type TooltipSelection = d3.Selection<HTMLDivElement, TooltipDatum, null | HTMLElement, undefined>;
+let tooltip: TooltipSelection;
+
+export function createTooltip(isDarkTheme: boolean): TooltipSelection {
+  // Remove existing tooltip if any
+  d3.select(".tooltip").remove();
+
+  // Try to find SVG container
+  const svg = d3.select<SVGSVGElement, undefined>("svg");
   const svgElement = svg.node();
-  if (!svgElement) {
-    console.warn("SVG container not found, falling back to body");
-    const bodySelection = d3.select("body");
-    tooltip = bodySelection
-      .append<HTMLDivElement>("div")
-      .attr("class", "tooltip");
-    return tooltip;
-  }
   
-  // Get the SVG's parent container
-  const parentElement = svgElement.parentElement;
-  if (!parentElement) {
-    console.warn("SVG parent container not found, falling back to body");
-    const bodySelection = d3.select("body");
-    tooltip = bodySelection
+  if (svgElement && svgElement.parentElement) {
+    tooltip = d3.select(svgElement.parentElement)
       .append<HTMLDivElement>("div")
-      .attr("class", "tooltip");
-    return tooltip;
+      .datum<TooltipDatum>({ content: '' })
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("padding", "6px 10px")
+      .style("border-radius", "4px")
+      .style("pointer-events", "none")
+      .style("font-size", "12px")
+      .style("font-weight", "400")
+      .style("line-height", "1.3")
+      .style("letter-spacing", "0.01em")
+      .style("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)")
+      .style("min-width", "200px")
+      .style("max-width", "300px")
+      .style("width", "auto")
+      .style("white-space", "normal")
+      .style("word-wrap", "break-word")
+      .style("text-align", "left")
+      .style("backdrop-filter", "blur(8px)")
+      .style("-webkit-backdrop-filter", "blur(8px)")
+      .style("z-index", "1000") as TooltipSelection;
+  } else {
+    console.warn("SVG container not found, falling back to body");
+    tooltip = d3.select("body")
+      .append<HTMLDivElement>("div")
+      .datum<TooltipDatum>({ content: '' })
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("padding", "6px 10px")
+      .style("border-radius", "4px")
+      .style("pointer-events", "none")
+      .style("font-size", "12px")
+      .style("font-weight", "400")
+      .style("line-height", "1.3")
+      .style("letter-spacing", "0.01em")
+      .style("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)")
+      .style("min-width", "200px")
+      .style("max-width", "300px")
+      .style("width", "auto")
+      .style("white-space", "normal")
+      .style("word-wrap", "break-word")
+      .style("text-align", "left")
+      .style("backdrop-filter", "blur(8px)")
+      .style("-webkit-backdrop-filter", "blur(8px)")
+      .style("z-index", "1000") as TooltipSelection;
   }
 
-  // Create the tooltip
-  const parentSelection = d3.select(parentElement);
-  tooltip = parentSelection
-    .append<HTMLDivElement>("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0)
-    .style("position", "absolute")
-    .style("padding", "6px 10px")
-    .style("border-radius", "4px")
-    .style("pointer-events", "none")
-    .style("font-size", "12px")
-    .style("font-weight", "400")
-    .style("line-height", "1.3")
-    .style("letter-spacing", "0.01em")
-    .style("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)")
-    .style("min-width", "200px")
-    .style("max-width", "300px")
-    .style("width", "auto")
-    .style("white-space", "normal")
-    .style("word-wrap", "break-word")
-    .style("text-align", "left")
-    .style("backdrop-filter", "blur(8px)")
-    .style("-webkit-backdrop-filter", "blur(8px)")
-    .style("z-index", "1000");
-
-  updateTooltipTheme(isDark);
+  // Update tooltip theme
+  updateTooltipTheme(isDarkTheme);
+  
   return tooltip;
 }
 
-export function updateTooltipTheme(isDark: boolean) {
+export function updateTooltipTheme(isDarkTheme: boolean) {
   if (!tooltip) return;
-  
+
   tooltip
-    .style("background", isDark ? "rgba(23, 23, 23, 0.85)" : "rgba(255, 255, 255, 0.85)")
-    .style("color", isDark ? "rgba(229, 231, 235, 1)" : "rgba(17, 24, 39, 1)")
-    .style("border", isDark ? "1px solid rgba(75, 85, 99, 0.1)" : "1px solid rgba(229, 231, 235, 0.1)");
+    .style("background-color", isDarkTheme ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.8)")
+    .style("color", isDarkTheme ? "#fff" : "#000")
+    .style("border", `1px solid ${isDarkTheme ? "#333" : "#ddd"}`);
 }
 
 export function showTooltip(event: MouseEvent, content: string) {
   if (!tooltip) return;
 
-  const svg = d3.select<SVGSVGElement, unknown>("svg");
+  const svg = d3.select<SVGSVGElement, undefined>("svg");
   const svgElement = svg.node();
   if (!svgElement) return;
 
@@ -81,17 +94,21 @@ export function showTooltip(event: MouseEvent, content: string) {
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
+  tooltip.datum({ content });
   tooltip.transition()
     .duration(200)
     .style("opacity", 0.9);
-  
-  tooltip.html(content)
+
+  tooltip
+    .html(d => d.content || '')
     .style("left", `${x + 10}px`)
     .style("top", `${y - 28}px`);
 }
 
 export function hideTooltip() {
-  tooltip?.transition()
+  if (!tooltip) return;
+  
+  tooltip.transition()
     .duration(500)
     .style("opacity", 0);
 }

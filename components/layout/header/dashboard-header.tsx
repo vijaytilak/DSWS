@@ -14,11 +14,19 @@ const ThemeToggleClient = dynamic(
 interface DashboardHeaderProps {
   threshold: number;
   setThreshold: (value: number) => void;
+  flowType: string;
+  setFlowType: (value: string) => void;
+  centreFlow: boolean;
+  setCentreFlow: (value: boolean) => void;
 }
 
 export function DashboardHeader({
   threshold,
-  setThreshold
+  setThreshold,
+  flowType,
+  setFlowType,
+  centreFlow,
+  setCentreFlow
 }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
@@ -28,11 +36,15 @@ export function DashboardHeader({
         <Controls
           threshold={threshold}
           setThreshold={setThreshold}
+          flowType={flowType}
+          setFlowType={setFlowType}
+          centreFlow={centreFlow}
+          setCentreFlow={setCentreFlow}
         />
         <div className="flex-1" />
         <ThemeToggleClient />
         <RightSidebarTrigger />
       </div>
     </header>
-  )
+  );
 }
