@@ -607,7 +607,7 @@ export function drawFlowLine(
       .attr("dominant-baseline", "middle")
       .attr("fill", lineColor)
       .attr("font-size", "12px")
-      .text(`${value.toFixed(1)}%`);
+      .text(`${Math.abs(value).toFixed(1)}%`);
   }
 }
 
