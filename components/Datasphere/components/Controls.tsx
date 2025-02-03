@@ -2,6 +2,16 @@
 
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import {
+  Drawer,
+  DrawerTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription
+} from "@/components/ui/drawer";
+import MonthSelector from "../utils/time-selector";
 
 interface ControlsProps {
   threshold: number;
@@ -11,6 +21,10 @@ interface ControlsProps {
   centreFlow: boolean;
   setCentreFlow: (value: boolean) => void;
   className?: string;
+  onTimeChange?: (selection: {
+    firstYear: { start: Date; end: Date };
+    secondYear: { start: Date; end: Date };
+  }) => void;
 }
 
 export function Controls({
@@ -20,8 +34,11 @@ export function Controls({
   setFlowType,
   centreFlow,
   setCentreFlow,
-  className
+  className,
+  onTimeChange
 }: ControlsProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Dummy usage to satisfy linter
   if (false && flowType && centreFlow) {
     setFlowType('');
@@ -44,6 +61,26 @@ export function Controls({
           <span className="text-sm text-muted-foreground min-w-[32px]">{threshold}%</span>
         </div>
       </div>
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} modal={true}>
+        <DrawerTrigger asChild>
+          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg">
+            Settings
+          </button>
+        </DrawerTrigger>
+        <DrawerContent className="focus:outline-none">
+          <DrawerHeader>
+            <DrawerTitle>Time Selector</DrawerTitle>
+            <DrawerDescription>
+              Adjust time range
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-4 flex flex-col gap-4">
+            <div>
+              <MonthSelector onChange={onTimeChange} />
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
