@@ -2,15 +2,6 @@
 
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
-import MonthSelector from "../utils/time-selector";
 
 interface ControlsProps {
   threshold: number;
@@ -29,15 +20,8 @@ interface ControlsProps {
 export function Controls({
   threshold,
   setThreshold,
-  flowType,
-  setFlowType,
-  centreFlow,
-  setCentreFlow,
-  className,
-  onTimeChange
+  className
 }: ControlsProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
   return (
     <div className={cn("flex items-center", className)}>
       <div className="flex items-center gap-2">
