@@ -1,10 +1,8 @@
 export const CONFIG = {
   flow: {
     minLineThickness: 5,
-    maxLineThickness: 9,
-    parallelOffset: 5,
-    minMarkerSize: 5,
-    maxMarkerSize: 15
+    maxLineThickness: 8,
+    parallelOffset: 5
   },
   bubble: {
     minDistanceBetweenRings: 30,

@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import { CONFIG } from '../constants/config';
 import type { FlowData, Bubble, Flow } from '../types';
-import { calculateRelativeSizePercent, calculatePercentRanks } from './calculations';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip, getFlowTooltip, updateTooltipTheme } from './tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from './bubble';
 
@@ -308,31 +307,61 @@ export function drawFlows(
     ? flows.filter(flow => flow.from === focusBubbleId || flow.to === focusBubbleId)
     : flows;
 
-  // Calculate percentages and ranks for flows
-  console.log('DEBUG - Before Metrics Calculation:', {
-    flowType,
-    flows: filteredFlows.map(f => ({
-      from: f.from,
-      to: f.to,
-      absolute_inFlow: f.absolute_inFlow,
-      absolute_outFlow: f.absolute_outFlow
-    }))
-  });
+  // Get the appropriate flow value based on flow type
+  const getFlowValue = (flow: Flow) => {
+    switch (flowType) {
+      case 'netFlow':
+        return flow.absolute_netFlow;
+      case 'inFlow only':
+        return flow.absolute_inFlow;
+      case 'outFlow only':
+        return flow.absolute_outFlow;
+      case 'both':
+      case 'bi-directional':
+        return Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
+      default:
+        return flow.absolute_inFlow;
+    }
+  };
 
-  const flowsWithMetrics = calculatePercentRanks(calculateRelativeSizePercent(filteredFlows, 
-    flowType === 'netFlow' ? 'absolute_netFlow' : 
-    flowType === 'inFlow only' ? 'absolute_inFlow' :
-    flowType === 'outFlow only' ? 'absolute_outFlow' :
-    'absolute_inFlow'  // Default to inFlow for other cases
-  ));
+  // Calculate percentages based on the actual flow values
+  const flowsWithValues = filteredFlows.map(flow => ({
+    ...flow,
+    value: getFlowValue(flow)
+  }));
+
+  // Sort values for percentile calculation
+  const sortedValues = [...flowsWithValues.map(f => f.value)].sort((a, b) => a - b);
+  
+  // Calculate percentile ranks
+  const flowsWithMetrics = flowsWithValues.map(flow => {
+    // Count how many values are less than current value
+    const lessThanCount = sortedValues.filter(v => v < flow.value).length;
+    // Calculate percentile rank: (number of values less than x) / (total number of values - 1) * 100
+    const percentRank = sortedValues.length <= 1 
+      ? 100 
+      : (lessThanCount / (sortedValues.length - 1)) * 100;
+
+    console.log('DEBUG - Percentile Calculation:', {
+      value: flow.value,
+      lessThanCount,
+      totalValues: sortedValues.length,
+      percentRank
+    });
+
+    return {
+      ...flow,
+      percentRank
+    };
+  });
 
   console.log('DEBUG - After Metrics Calculation:', {
     flowType,
     flows: flowsWithMetrics.map(f => ({
       from: f.from,
       to: f.to,
-      absolute_inFlow: f.absolute_inFlow,
-      absolute_outFlow: f.absolute_outFlow
+      value: f.value,
+      percentRank: f.percentRank
     }))
   });
 
@@ -340,7 +369,7 @@ export function drawFlows(
   svg.selectAll("line").remove();
   svg.selectAll("marker").remove();
 
-  filteredFlows.forEach((flow) => {
+  flowsWithMetrics.forEach((flow) => {
     const source = bubbles.find(b => b.id === flow.from);
     const target = bubbles.find(b => b.id === flow.to);
 
@@ -348,11 +377,11 @@ export function drawFlows(
     
     console.log('DEBUG - Processing flow:', { 
       from: source.id, 
-      to: target.id, 
+      to: target.id,
+      value: flow.value,
+      percentRank: flow.percentRank,
       flowType,
-      flowOption,
-      sourceColor: source.color,
-      targetColor: target.color
+      flowOption
     });
 
     switch (flowType) {
@@ -707,13 +736,25 @@ function calculateFlowPoints(
 }
 
 function calculateLineThickness(flow: Flow): number {
-  if (!flow.percentRank) return CONFIG.flow.minLineThickness;
+  console.log('DEBUG - Flow Input:', flow);
   
-  const scale = d3.scalePow()
-    .exponent(0.5)
+  // Check if percentRank is undefined
+  if (typeof flow.percentRank === 'undefined') {
+    console.log('DEBUG - Using min thickness due to undefined percentRank');
+    return CONFIG.flow.minLineThickness;
+  }
+  
+  const scale = d3.scaleLinear()
     .domain([0, 100])
-    .range([CONFIG.flow.minLineThickness, CONFIG.flow.maxLineThickness * 0.8])
+    .range([CONFIG.flow.minLineThickness, CONFIG.flow.maxLineThickness])
     .clamp(true);
+  
+  console.log('DEBUG - Line Thickness:', {
+    percentRank: flow.percentRank,
+    thickness: scale(flow.percentRank),
+    minThickness: CONFIG.flow.minLineThickness,
+    maxThickness: CONFIG.flow.maxLineThickness
+  });
     
   return scale(flow.percentRank);
 }
