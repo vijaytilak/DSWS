@@ -29,7 +29,7 @@ const data = {
     {
       name: "DataSphere",
       logo: GalleryVerticalEnd,
-      plan: "Dashboard",
+      plan: "SphereCo Ltd.",
     }
   ],
   navMain: [
