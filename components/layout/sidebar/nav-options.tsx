@@ -9,10 +9,12 @@ import {
 } from "@/components/ui/sidebar"
 
 type FlowOption = 'churn' | 'switching' | 'affinity';
+type View = 'Markets' | 'Brands';
 
 interface NavOptionsProps {
   onFlowOptionChange: (option: FlowOption) => void;
   flowOption: FlowOption;
+  selectedView: View;
 }
 
 const optionItems = [
@@ -30,25 +32,28 @@ const optionItems = [
     title: "Affinity",
     value: "affinity" as FlowOption,
     icon: Heart,
+    brandsOnly: true, // Only show for Brands view
   },
 ]
 
-export function NavOptions({ onFlowOptionChange, flowOption }: NavOptionsProps) {
+export function NavOptions({ onFlowOptionChange, flowOption, selectedView }: NavOptionsProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Options</SidebarGroupLabel>
       <SidebarMenu>
-        {optionItems.map((item) => (
-          <SidebarMenuItem key={item.value}>
-            <SidebarMenuButton
-              isActive={flowOption === item.value}
-              onClick={() => onFlowOptionChange(item.value)}
-            >
-              {item.icon && <item.icon />}
-              <span>{item.title}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+        {optionItems
+          .filter(item => !item.brandsOnly || selectedView === 'Brands')
+          .map((item) => (
+            <SidebarMenuItem key={item.value}>
+              <SidebarMenuButton
+                isActive={flowOption === item.value}
+                onClick={() => onFlowOptionChange(item.value)}
+              >
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
       </SidebarMenu>
     </SidebarGroup>
   )
