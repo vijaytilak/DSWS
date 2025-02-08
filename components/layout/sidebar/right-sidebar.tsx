@@ -46,7 +46,7 @@ export function AppRightSidebar({
               <TableRow className="hover:bg-transparent border-b">
                 <TableHead className="font-bold bg-muted/50 py-2 px-2">Item</TableHead>
                 <TableHead className="text-right font-bold bg-muted/50 py-2 px-2">Index</TableHead>
-                <TableHead className="text-right font-bold bg-muted/50 py-2 px-2">ABS</TableHead>
+                <TableHead className="text-right font-bold bg-muted/50 py-2 px-2">%</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
