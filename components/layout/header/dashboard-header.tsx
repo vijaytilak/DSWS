@@ -2,7 +2,6 @@
 
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { RightSidebarTrigger } from "@/components/ui/right-sidebar"
 import { Button } from "@/components/ui/button"
 import { Settings } from "lucide-react"
 import {
@@ -92,7 +91,6 @@ export function DashboardHeader({
           </Drawer>
         </div>
         <ThemeToggleClient />
-        <RightSidebarTrigger />
       </div>
     </header>
   );
