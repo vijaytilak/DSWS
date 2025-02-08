@@ -38,6 +38,26 @@ export function prepareBubbleData(
 
   // Create bubbles for all items except center
   const bubbles = itemsWithRanks.map((item, index) => {
+    // Format label with line breaks for words longer than 3 letters
+    const formatLabel = (label: string) => {
+      const words = label.split(' ');
+      let formattedLabel = '';
+      let currentLine = '';
+      
+      words.forEach((word, i) => {
+        if (word.length > 3 && currentLine) {
+          formattedLabel += currentLine + '\n' + word;
+          currentLine = '';
+        } else {
+          if (currentLine) currentLine += ' ';
+          currentLine += word;
+          if (i === words.length - 1) formattedLabel += (formattedLabel ? '\n' : '') + currentLine;
+        }
+      });
+      
+      return formattedLabel || currentLine;
+    };
+
     // Scale the bubble radius based on percentile rank
     const scaledRadius = Math.max(
       minBubbleRadius + (maxBubbleRadius - minBubbleRadius) * (item.percentRank / 100),
@@ -49,17 +69,18 @@ export function prepareBubbleData(
     const x = positionCircleRadius * Math.cos(angle);
     const y = positionCircleRadius * Math.sin(angle);
     
-    // Calculate text position with offset
-    const textOffset = scaledRadius + CONFIG.bubble.labelOffset;
-    const textX = x + textOffset * Math.cos(angle);
-    const textY = y + textOffset * Math.sin(angle);
+    // Calculate text position with consistent radial offset from outer ring
+    const outerRingRadius = scaledRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing;
+    const labelOffset = CONFIG.bubble.labelOffset + outerRingRadius;
+    const textX = x + labelOffset * Math.cos(angle);
+    const textY = y + labelOffset * Math.sin(angle);
     
     // Calculate font size based on bubble radius
     const fontSize = Math.max(scaledRadius * 0.8, CONFIG.bubble.minFontSize);
 
     return {
       id: item.itemID,
-      label: item.itemLabel,
+      label: formatLabel(item.itemLabel),
       radius: scaledRadius,
       x,
       y,
@@ -71,7 +92,7 @@ export function prepareBubbleData(
       color: CONFIG.colors[item.itemID % CONFIG.colors.length],
       focus: false,
       fontSize,
-      outerRingRadius: scaledRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
+      outerRingRadius,
       totalBubbles: noOfBubbles + 1, // Total including center bubble
     } as Bubble;
   });

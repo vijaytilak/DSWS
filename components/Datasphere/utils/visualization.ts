@@ -292,8 +292,16 @@ export function drawBubbles(
     .attr("y", (d) => d.textY)
     .attr("text-anchor", (d) => {
       if (d.id === bubbles.length - 1) return "middle";
+      // Calculate angle relative to center for text alignment
       const angle = Math.atan2(d.y - centerY, d.x - centerX);
-      if (Math.abs(angle) < Math.PI / 4) return "start";
+      // Convert angle to degrees for easier calculation
+      const degrees = (angle * 180) / Math.PI;
+      
+      // Right side of the circle (-45 to 45 degrees)
+      if (degrees > -45 && degrees <= 45) return "start";
+      // Left side of the circle (135 to -135 degrees)
+      if (degrees > 135 || degrees <= -135) return "end";
+      // Top and bottom (-45 to 135 degrees)
       return "middle";
     })
     .attr("dominant-baseline", "middle")
@@ -306,7 +314,20 @@ export function drawBubbles(
     })
     .attr("font-size", (d) => d.fontSize)
     .attr("font-weight", "bold")
-    .text((d) => d.label);
+    .each(function(d) {
+      const lines = d.label.split('\n');
+      const text = d3.select(this);
+      const lineHeight = d.fontSize * 1.2; // 120% of font size for line height
+      
+      text.selectAll('*').remove(); // Clear any existing tspans
+      
+      lines.forEach((line, i) => {
+        const tspan = text.append('tspan')
+          .attr('x', d.textX)
+          .attr('dy', i === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight)
+          .text(line);
+      });
+    });
 }
 
 export function drawFlows(
