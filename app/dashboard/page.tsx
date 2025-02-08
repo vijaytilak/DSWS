@@ -26,7 +26,7 @@ export default function Page() {
       />
       <div className="overflow-hidden">
         <div className="h-full p-4 pt-0">
-          <div className="h-full rounded-xl bg-muted/50 p-4">
+          <div className="h-full bg-muted/0 p-4">
             <DataSphere 
               data={sampleData}
               flowType={flowType}
