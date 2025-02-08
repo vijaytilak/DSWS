@@ -11,7 +11,13 @@ export const CONFIG = {
     labelOffset: 20,
     maxOuterRingRadius: 100,
     minBubbleRadius: 6,
-    minFontSize: 16
+    minFontSize: 16,
+    outerRing: {
+      show: false,
+      strokeWidth: 1,
+      strokeDasharray: "3,3",
+      opacity: 0.5
+    }
   },
   visualization: {
     minWidth: 320,

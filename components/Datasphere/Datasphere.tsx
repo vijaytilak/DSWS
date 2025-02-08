@@ -15,13 +15,20 @@ interface DataSphereProps {
   flowType: string;
   centreFlow: boolean;
   threshold: number;
+  outerRingConfig?: {
+    show?: boolean;
+    strokeWidth?: number;
+    strokeDasharray?: string;
+    opacity?: number;
+  };
 }
 
 export default function DataSphere({ 
   data,
   flowType,
   centreFlow,
-  threshold
+  threshold,
+  outerRingConfig,
 }: DataSphereProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,6 +65,20 @@ export default function DataSphere({
       centerX,
       centerY
     );
+
+    // Update config with custom outer ring settings if provided
+    if (outerRingConfig) {
+      const CONFIG = {
+        bubble: {
+          outerRing: {
+            show: outerRingConfig.show !== undefined ? outerRingConfig.show : true,
+            strokeWidth: outerRingConfig.strokeWidth !== undefined ? outerRingConfig.strokeWidth : 1,
+            strokeDasharray: outerRingConfig.strokeDasharray !== undefined ? outerRingConfig.strokeDasharray : 'none',
+            opacity: outerRingConfig.opacity !== undefined ? outerRingConfig.opacity : 1,
+          }
+        }
+      };
+    }
 
     // Draw bubbles
     const handleBubbleClick = (bubble: Bubble) => {
@@ -129,7 +150,7 @@ export default function DataSphere({
       flowOption
     );
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme]);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

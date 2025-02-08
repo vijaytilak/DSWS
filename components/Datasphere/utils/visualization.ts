@@ -214,9 +214,21 @@ export function drawBubbles(
     .attr("class", "bubble")
     .attr("transform", (d) => `translate(${d.x},${d.y})`);
 
-  // Add circles
-  bubbleGroups
-    .append("circle")
+  // Add outer rings if enabled
+  if (CONFIG.bubble.outerRing.show) {
+    bubbleGroups.append("circle")
+      .attr("class", "outer-ring")
+      .attr("r", (d) => d.outerRingRadius)
+      .attr("fill", "none")
+      .attr("stroke", (d) => d.color)
+      .attr("stroke-width", CONFIG.bubble.outerRing.strokeWidth)
+      .attr("stroke-dasharray", CONFIG.bubble.outerRing.strokeDasharray)
+      .attr("opacity", CONFIG.bubble.outerRing.opacity);
+  }
+
+  // Add the main bubble circles
+  bubbleGroups.append("circle")
+    .attr("class", "bubble-circle")
     .attr("r", (d) => d.radius)
     .attr("fill", (d) => {
       if (d.id === bubbles.length - 1) {
@@ -262,24 +274,6 @@ export function drawBubbles(
           .attr("stroke-width", 0);
       }
       hideTooltip();
-    });
-
-  // Add outer rings
-  bubbleGroups
-    .append("circle")
-    .attr("r", (d) => d.outerRingRadius)
-    .attr("fill", "none")
-    .attr("stroke", (d) => {
-      if (d.id === bubbles.length - 1) {
-        return isDark ? "#ffffff" : "#000000";
-      }
-      return d.color;
-    })
-    .attr("stroke-width", (d) => d.id === bubbles.length - 1 ? 1.5 : 1)
-    .attr("stroke-dasharray", "5,5")
-    .attr("opacity", (d) => {
-      if (d.id === bubbles.length - 1) return isMarketView ? 1 : 0;  // Show ring only in market view
-      return 0.6;
     });
 
   // Add labels separately from bubbles
