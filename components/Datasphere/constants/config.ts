@@ -1,6 +1,6 @@
 export const CONFIG = {
   flow: {
-    minLineThickness: 5,
+    minLineThickness: 4,
     maxLineThickness: 8,
     parallelOffset: 5
   },
@@ -13,10 +13,10 @@ export const CONFIG = {
     minBubbleRadius: 6,
     minFontSize: 16,
     outerRing: {
-      show: false,
+      show: true,
       strokeWidth: 1,
       strokeDasharray: "3,3",
-      opacity: 0.5
+      opacity: 0.3
     }
   },
   visualization: {

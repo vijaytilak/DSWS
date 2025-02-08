@@ -762,7 +762,7 @@ export function drawFlowLine(
       
       if (!focusedFlow || isFocused) {
         path.attr("opacity", 1)
-           .attr("stroke-width", lineThickness * 1.5);
+           .attr("stroke-width", lineThickness * 1.1);
       }
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
@@ -773,7 +773,7 @@ export function drawFlowLine(
         ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
          (flow.from === focusedFlow.to && flow.to === focusedFlow.from)));
       
-      path.attr("stroke-width", isFocused ? lineThickness * 1.5 : lineThickness);
+      path.attr("stroke-width", isFocused ? lineThickness * 1.1 : lineThickness);
       path.attr("opacity", isFocused ? 1 : (focusedFlow ? 0.3 : 0.8));
       hideTooltip();
     })
@@ -900,6 +900,10 @@ function calculateLineThickness(flow: Flow): number {
 }
 
 function calculateMarkerSize(lineThickness: number): number {
-  // Make marker size proportional to line thickness, but with a smaller ratio
-  return lineThickness * 0.5;
+  const scale = d3.scaleLinear()
+    .domain([CONFIG.flow.minLineThickness, CONFIG.flow.maxLineThickness])
+    .range([3, 4])
+    .clamp(true);
+  
+  return scale(lineThickness);
 }
