@@ -11,8 +11,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 const RIGHT_SIDEBAR_COOKIE_NAME = "right-sidebar:state"
 const RIGHT_SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const RIGHT_SIDEBAR_WIDTH = "20rem"
-const RIGHT_SIDEBAR_WIDTH_MOBILE = "20rem"
+const RIGHT_SIDEBAR_WIDTH = "22rem"
+const RIGHT_SIDEBAR_WIDTH_MOBILE = "22rem"
 const RIGHT_SIDEBAR_WIDTH_ICON = "3rem"
 const RIGHT_SIDEBAR_KEYBOARD_SHORTCUT = "n"
 
