@@ -66,20 +66,6 @@ export default function DataSphere({
       centerY
     );
 
-    // Update config with custom outer ring settings if provided
-    if (outerRingConfig) {
-      const CONFIG = {
-        bubble: {
-          outerRing: {
-            show: outerRingConfig.show !== undefined ? outerRingConfig.show : true,
-            strokeWidth: outerRingConfig.strokeWidth !== undefined ? outerRingConfig.strokeWidth : 1,
-            strokeDasharray: outerRingConfig.strokeDasharray !== undefined ? outerRingConfig.strokeDasharray : 'none',
-            opacity: outerRingConfig.opacity !== undefined ? outerRingConfig.opacity : 1,
-          }
-        }
-      };
-    }
-
     // Draw bubbles
     const handleBubbleClick = (bubble: Bubble) => {
       if (bubble.id === initialBubbles.length) return; // Ignore center bubble click
@@ -129,16 +115,30 @@ export default function DataSphere({
       }
     };
 
-    drawBubbles(
-      svg,
-      initialBubbles,
-      resolvedTheme === 'dark',
-      isMarketView,
-      centerX,
-      centerY,
-      focusBubbleId,
-      handleBubbleClick
-    );
+    if (outerRingConfig) {
+      drawBubbles(
+        svg,
+        initialBubbles,
+        resolvedTheme === 'dark',
+        isMarketView,
+        centerX,
+        centerY,
+        focusBubbleId,
+        handleBubbleClick,
+        outerRingConfig
+      );
+    } else {
+      drawBubbles(
+        svg,
+        initialBubbles,
+        resolvedTheme === 'dark',
+        isMarketView,
+        centerX,
+        centerY,
+        focusBubbleId,
+        handleBubbleClick
+      );
+    }
 
     const initialFlows = prepareFlowData(
       data, 

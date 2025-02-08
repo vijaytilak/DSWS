@@ -199,13 +199,28 @@ export function drawBubbles(
   centerX: number,
   centerY: number,
   focusedBubbleId: number | null,
-  onClick: (bubble: Bubble) => void
-): void {
+  onClick: (bubble: Bubble) => void,
+  outerRingConfig?: {
+    show?: boolean;
+    strokeWidth?: number;
+    strokeDasharray?: string;
+    opacity?: number;
+  }
+) {
+  // Create visualization manager instance
+  const visualizationManager = VisualizationManager.getInstance();
+  visualizationManager.updateReferences(svg, bubbles, isMarketView);
+
+  // Update CONFIG with custom outer ring settings if provided
+  if (outerRingConfig) {
+    CONFIG.bubble.outerRing = {
+      ...CONFIG.bubble.outerRing,
+      ...outerRingConfig
+    };
+  }
+
   // Create tooltip if it doesn't exist
   createTooltip(isDark);
-
-  // Update visualization manager references
-  VisualizationManager.getInstance().updateReferences(svg, bubbles, isMarketView);
 
   const bubbleGroups = svg
     .selectAll<SVGGElement, Bubble>("g.bubble")
@@ -223,7 +238,13 @@ export function drawBubbles(
       .attr("stroke", (d) => d.color)
       .attr("stroke-width", CONFIG.bubble.outerRing.strokeWidth)
       .attr("stroke-dasharray", CONFIG.bubble.outerRing.strokeDasharray)
-      .attr("opacity", CONFIG.bubble.outerRing.opacity);
+      .attr("opacity", (d) => {
+        // Hide outer ring for center bubble in brands view
+        if (d.id === bubbles.length - 1 && !isMarketView) {
+          return 0;
+        }
+        return CONFIG.bubble.outerRing.opacity;
+      });
   }
 
   // Add the main bubble circles
@@ -316,7 +337,7 @@ export function drawBubbles(
       text.selectAll('*').remove(); // Clear any existing tspans
       
       lines.forEach((line, i) => {
-        const tspan = text.append('tspan')
+        text.append('tspan')
           .attr('x', d.textX)
           .attr('dy', i === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight)
           .text(line);
