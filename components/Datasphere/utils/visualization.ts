@@ -294,7 +294,8 @@ export function drawFlows(
   centreFlow: boolean = false,
   isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
-  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
+  focusedFlow: { from: number, to: number } | null = null
 ) {
   console.log('DEBUG - drawFlows called with flowOption:', flowOption);
   // Filter flows based on focus bubble if any
@@ -364,6 +365,23 @@ export function drawFlows(
   svg.selectAll("line").remove();
   svg.selectAll("marker").remove();
 
+  // First, update all existing flow lines to have reduced opacity if there's a focused flow
+  if (focusedFlow) {
+    svg.selectAll<SVGPathElement | SVGLineElement, Flow>(".flow-line")
+      .attr("opacity", function() {
+        const line = d3.select(this);
+        const fromId = parseInt(line.attr("data-from-id") || "-1");
+        const toId = parseInt(line.attr("data-to-id") || "-1");
+        
+        // Check if this line is part of the focused flow
+        const isPartOfFocusedFlow = 
+          (fromId === focusedFlow.from && toId === focusedFlow.to) ||
+          (fromId === focusedFlow.to && toId === focusedFlow.from);
+        
+        return isPartOfFocusedFlow ? 1 : 0.3;
+      });
+  }
+
   flowsWithMetrics.forEach((flow) => {
     const source = bubbles.find(b => b.id === flow.from);
     const target = bubbles.find(b => b.id === flow.to);
@@ -382,32 +400,32 @@ export function drawFlows(
     switch (flowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         }
         break;
       case 'outFlow only':
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         }
         break;
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'netFlow', target, source, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         } else {
-          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'netFlow', source, target, 'netFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         }
         break;
       case 'interaction':
-        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+        drawFlowLine(svg, flow, 'interaction', source, target, flowType, centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         break;
       case 'two-way flows':
         // Draw inflow line (from target to source)
         if (flow.absolute_inFlow > 0) {
-          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         }
         // Draw outflow line (from source to target)
         if (flow.absolute_outFlow > 0) {
-          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick);
+          drawFlowLine(svg, flow, 'outFlow', source, target, 'outFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
         }
         break;
       case 'bi-directional':
@@ -451,8 +469,63 @@ export function drawFlows(
             .attr('data-from-center', target.id === bubbles.length - 1)
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
-            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow')))
-            .on('mouseout', hideTooltip)
+            .attr("data-focused", focusedFlow && focusedFlow.from === flow.from && focusedFlow.to === flow.to ? "true" : null)
+            .attr("opacity", () => {
+              if (focusedFlow) {
+                const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                        (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+                return isThisFlowFocused ? 1 : 0.3;
+              }
+              return 0.8;
+            })
+            .datum(flow) // Set the flow data before event handlers
+            .on('mouseover', (event: MouseEvent) => {
+              const lineElement = event.currentTarget as SVGLineElement;
+              const line = d3.select<SVGLineElement, Flow>(lineElement);
+              const isFocused = line.attr("data-focused") === "true";
+              
+              // Only show hover effect if the flow is not focused
+              if (!focusedFlow || isFocused) {
+                // Highlight both parts of the flow
+                svg.selectAll<SVGLineElement, Flow>(".flow-line")
+                  .filter(function() {
+                    const el = d3.select(this);
+                    const fromId = el.attr("data-from-id");
+                    const toId = el.attr("data-to-id");
+                    return (fromId === target.id.toString() && toId === source.id.toString()) ||
+                           (fromId === source.id.toString() && toId === target.id.toString());
+                  })
+                  .attr("opacity", 1)
+                  .attr("stroke-width", lineThickness * 1.5);
+              }
+              showTooltip(event, getFlowTooltip(flow, target, source, 'inFlow', centreFlow));
+            })
+            .on('mouseout', (event: MouseEvent) => {
+              const lineElement = event.currentTarget as SVGLineElement;
+              const line = d3.select<SVGLineElement, Flow>(lineElement);
+              const isFocused = line.attr("data-focused") === "true";
+              
+              // Only remove hover effect if the flow is not focused
+              if (!focusedFlow || isFocused) {
+                // Reset both parts of the flow
+                svg.selectAll<SVGLineElement, Flow>(".flow-line")
+                  .filter(function() {
+                    const el = d3.select(this);
+                    const fromId = el.attr("data-from-id");
+                    const toId = el.attr("data-to-id");
+                    return (fromId === target.id.toString() && toId === source.id.toString()) ||
+                           (fromId === source.id.toString() && toId === target.id.toString());
+                  })
+                  .attr("stroke-width", lineThickness)
+                  .attr("opacity", () => {
+                    if (focusedFlow) {
+                      return isFocused ? 1 : 0.3;
+                    }
+                    return 0.8;
+                  });
+              }
+              hideTooltip();
+            })
             .on('click', () => onFlowClick && onFlowClick(flow, target, source));
 
           // Add inflow marker
@@ -474,8 +547,62 @@ export function drawFlows(
             .attr('data-from-center', source.id === bubbles.length - 1)
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
-            .on('mouseover', (event: MouseEvent) => showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow')))
-            .on('mouseout', hideTooltip)
+            .attr("data-focused", focusedFlow && focusedFlow.from === flow.from && focusedFlow.to === flow.to ? "true" : null)
+            .attr("opacity", () => {
+              if (focusedFlow) {
+                const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                        (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+                return isThisFlowFocused ? 1 : 0.3;
+              }
+              return 0.8;
+            })
+            .datum(flow) // Set the flow data before event handlers
+            .on('mouseover', (event: MouseEvent) => {
+              const lineElement = event.currentTarget as SVGLineElement;
+              const line = d3.select<SVGLineElement, Flow>(lineElement);
+              const isFocused = line.attr("data-focused") === "true";
+              
+              if (!focusedFlow || isFocused) {
+                // Highlight both parts of the flow
+                svg.selectAll<SVGLineElement, Flow>(".flow-line")
+                  .filter(function() {
+                    const el = d3.select(this);
+                    const fromId = el.attr("data-from-id");
+                    const toId = el.attr("data-to-id");
+                    return (fromId === source.id.toString() && toId === target.id.toString()) ||
+                           (fromId === target.id.toString() && toId === source.id.toString());
+                  })
+                  .attr("opacity", 1)
+                  .attr("stroke-width", lineThickness * 1.5);
+              }
+              showTooltip(event, getFlowTooltip(flow, source, target, 'outFlow', centreFlow));
+            })
+            .on('mouseout', (event: MouseEvent) => {
+              const lineElement = event.currentTarget as SVGLineElement;
+              const line = d3.select<SVGLineElement, Flow>(lineElement);
+              const isFocused = line.attr("data-focused") === "true";
+              
+              // Only remove hover effect if the flow is not focused
+              if (!focusedFlow || isFocused) {
+                // Reset both parts of the flow
+                svg.selectAll<SVGLineElement, Flow>(".flow-line")
+                  .filter(function() {
+                    const el = d3.select(this);
+                    const fromId = el.attr("data-from-id");
+                    const toId = el.attr("data-to-id");
+                    return (fromId === source.id.toString() && toId === target.id.toString()) ||
+                           (fromId === target.id.toString() && toId === source.id.toString());
+                  })
+                  .attr("stroke-width", lineThickness)
+                  .attr("opacity", () => {
+                    if (focusedFlow) {
+                      return isFocused ? 1 : 0.3;
+                    }
+                    return 0.8;
+                  });
+              }
+              hideTooltip();
+            })
             .on('click', () => onFlowClick && onFlowClick(flow, source, target));
 
           // Add outflow marker
@@ -532,10 +659,11 @@ export function drawFlowLine(
   allBubbles: Bubble[],
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
   isMarketView: boolean = false,
-  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
+  focusedFlow: { from: number, to: number } | null = null
 ) {
   // Dummy usage to satisfy linter
-  if (false && isMarketView && centreFlow) { console.log(''); }
+  if (false && centreFlow) { console.log(''); }
 
   const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow);
   const lineThickness = calculateLineThickness(flow);
@@ -579,16 +707,50 @@ export function drawFlowLine(
     .attr("stroke", lineColor)
     .attr("stroke-width", lineThickness)
     .attr("marker-end", `url(#${markerId})`)
-    .attr("opacity", 0.8)
+    .attr("opacity", () => {
+      if (focusedFlow) {
+        const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                 (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+        return isThisFlowFocused ? 1 : 0.3;
+      }
+      return 0.8;
+    })
     .attr("data-flow-direction", flowDirection)
     .attr("data-from-center", fromCenter.toString())
     .attr("data-from-id", startBubble.id.toString())
     .attr("data-to-id", endBubble.id.toString())
+    .attr("data-focused", () => {
+      const isThisFlowFocused = (flow.from === focusedFlow?.from && flow.to === focusedFlow?.to) ||
+                               (flow.from === focusedFlow?.to && flow.to === focusedFlow?.from);
+      return isThisFlowFocused ? "true" : null;
+    })
     .datum(flow)
     .on("mouseover", (event: MouseEvent) => {
+      const target = event.currentTarget as SVGPathElement;
+      const path = d3.select(target);
+      const isFocused = path.attr("data-focused") === "true";
+      
+      // Show hover effect if there's no focused flow, or if this is the focused flow
+      if (!focusedFlow || isFocused) {
+        path.attr("opacity", 1)
+           .attr("stroke-width", lineThickness * 1.5);
+      }
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
     })
-    .on("mouseout", hideTooltip)
+    .on("mouseout", (event: MouseEvent) => {
+      const target = event.currentTarget as SVGPathElement;
+      const path = d3.select(target);
+      const isFocused = path.attr("data-focused") === "true";
+      
+      // Reset opacity based on focus state
+      path.attr("stroke-width", lineThickness);
+      if (focusedFlow) {
+        path.attr("opacity", isFocused ? 1 : 0.3);
+      } else {
+        path.attr("opacity", 0.8);
+      }
+      hideTooltip();
+    })
     .on('click', () => onFlowClick && onFlowClick(flow, startBubble, endBubble));
 
   // Calculate label position (midpoint of the line)
