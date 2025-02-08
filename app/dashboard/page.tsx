@@ -32,12 +32,6 @@ export default function Page() {
               flowType={flowType}
               centreFlow={centreFlow}
               threshold={threshold}
-              outerRingConfig={{
-                show: true,
-                strokeWidth: 1,
-                strokeDasharray: "3,3",
-                opacity: 0.6
-              }}
             />
           </div>
         </div>
