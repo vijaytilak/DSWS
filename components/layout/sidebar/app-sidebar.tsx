@@ -22,6 +22,7 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 
 type FlowOption = 'churn' | 'switching' | 'affinity';
+type View = 'Markets' | 'Brands';
 
 // This is sample data.
 const data = {
@@ -29,7 +30,7 @@ const data = {
     {
       name: "DataSphere",
       logo: GalleryVerticalEnd,
-      plan: "Dashboard",
+      plan: "SphereCo Ltd.",
     }
   ],
   navMain: [
@@ -66,6 +67,7 @@ export function AppSidebar({
   ...props 
 }: AppSidebarProps) {
   const { user } = useAuth()
+  const [selectedView, setSelectedView] = React.useState<View>('Markets')
 
   if (!user) return null
 
@@ -74,6 +76,17 @@ export function AppSidebar({
     email: user.email || '',
     avatar: user.photoURL || ''
   }
+
+  const handleViewChange = (view: string) => {
+    const isMarkets = view === 'Markets';
+    setSelectedView(view as View);
+    setCentreFlow(isMarkets);
+    setIsMarketView(isMarkets);
+    
+    // Reset to Churn and netFlow when view changes
+    onFlowOptionChange?.('churn');
+    setFlowType('netFlow');
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -85,12 +98,26 @@ export function AppSidebar({
           items={data.navMain} 
           setCentreFlow={setCentreFlow}
           setIsMarketView={setIsMarketView}
+          onViewChange={handleViewChange}
         />
         <NavOptions 
-          onFlowOptionChange={onFlowOptionChange || (() => {})} 
+          onFlowOptionChange={(option) => {
+            onFlowOptionChange?.(option);
+            // When Affinity is selected, force netFlow type
+            if (option === 'affinity') {
+              setFlowType('netFlow');
+            }
+          }} 
           flowOption={flowOption}
+          selectedView={selectedView}
         />
-        <NavFlowTypes setFlowType={setFlowType} currentFlowType={flowType} />
+        {/* Only show flow types if not using Affinity */}
+        {flowOption !== 'affinity' && (
+          <NavFlowTypes 
+            setFlowType={setFlowType} 
+            currentFlowType={flowType}
+          />
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />

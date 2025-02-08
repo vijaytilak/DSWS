@@ -1,10 +1,8 @@
 export const CONFIG = {
   flow: {
-    minLineThickness: 5,
-    maxLineThickness: 9,
-    parallelOffset: 5,
-    minMarkerSize: 5,
-    maxMarkerSize: 15
+    minLineThickness: 4,
+    maxLineThickness: 8,
+    parallelOffset: 5
   },
   bubble: {
     minDistanceBetweenRings: 30,
@@ -13,7 +11,13 @@ export const CONFIG = {
     labelOffset: 20,
     maxOuterRingRadius: 100,
     minBubbleRadius: 6,
-    minFontSize: 16
+    minFontSize: 16,
+    outerRing: {
+      show: true,
+      strokeWidth: 1,
+      strokeDasharray: "3,3",
+      opacity: 0.3
+    }
   },
   visualization: {
     minWidth: 320,

@@ -11,28 +11,22 @@ interface ControlsProps {
   centreFlow: boolean;
   setCentreFlow: (value: boolean) => void;
   className?: string;
+  onTimeChange?: (selection: {
+    firstYear: { start: Date; end: Date };
+    secondYear: { start: Date; end: Date };
+  }) => void;
 }
 
 export function Controls({
   threshold,
   setThreshold,
-  flowType,
-  setFlowType,
-  centreFlow,
-  setCentreFlow,
   className
 }: ControlsProps) {
-  // Dummy usage to satisfy linter
-  if (false && flowType && centreFlow) {
-    setFlowType('');
-    setCentreFlow(false);
-  }
-
   return (
-    <div className={cn("flex items-center gap-4", className)}>
-      <div className="flex items-center gap-3 min-w-[200px]">
+    <div className={cn("flex items-center", className)}>
+      <div className="flex items-center gap-2">
         <span className="text-sm font-medium">Filter:</span>
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-2">
           <Slider
             value={[threshold]}
             onValueChange={([value]: number[]) => setThreshold(value)}
@@ -41,7 +35,7 @@ export function Controls({
             step={1}
             className="w-[140px]"
           />
-          <span className="text-sm text-muted-foreground min-w-[32px]">{threshold}%</span>
+          <span className="text-sm text-muted-foreground">{threshold}%</span>
         </div>
       </div>
     </div>

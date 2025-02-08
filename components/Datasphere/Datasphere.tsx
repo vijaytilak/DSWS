@@ -15,13 +15,20 @@ interface DataSphereProps {
   flowType: string;
   centreFlow: boolean;
   threshold: number;
+  outerRingConfig?: {
+    show?: boolean;
+    strokeWidth?: number;
+    strokeDasharray?: string;
+    opacity?: number;
+  };
 }
 
 export default function DataSphere({ 
   data,
   flowType,
   centreFlow,
-  threshold
+  threshold,
+  outerRingConfig,
 }: DataSphereProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,14 +36,14 @@ export default function DataSphere({
   const { isMarketView, flowOption } = useCentreFlow();
   const { setTableData, setSelectedItemLabel } = useTableData();
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
+  const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
 
   useEffect(() => {
     if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
 
     const svg = d3.select(svgRef.current);
-    svg.style("background", resolvedTheme === 'dark' ? "black" : "white")
-      .attr("width", "100%")
+    svg.attr("width", "100%")
       .attr("height", "100%")
       .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
@@ -63,6 +70,9 @@ export default function DataSphere({
     const handleBubbleClick = (bubble: Bubble) => {
       if (bubble.id === initialBubbles.length) return; // Ignore center bubble click
       
+      // Clear focused flow when clicking a bubble
+      setFocusedFlow(null);
+      
       const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
       setFocusBubbleId(newFocusId);
 
@@ -76,6 +86,9 @@ export default function DataSphere({
 
     // Handle flow click
     const handleFlowClick = (flow: Flow) => {
+      // Set focused flow state
+      setFocusedFlow(focusedFlow?.from === flow.from && focusedFlow?.to === flow.to ? null : { from: flow.from, to: flow.to });
+      
       // Find the flow data
       if (isMarketView) {
         const marketFlows = data.flows_markets;
@@ -102,7 +115,30 @@ export default function DataSphere({
       }
     };
 
-    drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY, isMarketView);
+    if (outerRingConfig) {
+      drawBubbles(
+        svg,
+        initialBubbles,
+        resolvedTheme === 'dark',
+        isMarketView,
+        centerX,
+        centerY,
+        focusBubbleId,
+        handleBubbleClick,
+        outerRingConfig
+      );
+    } else {
+      drawBubbles(
+        svg,
+        initialBubbles,
+        resolvedTheme === 'dark',
+        isMarketView,
+        centerX,
+        centerY,
+        focusBubbleId,
+        handleBubbleClick
+      );
+    }
 
     const initialFlows = prepareFlowData(
       data, 
@@ -113,8 +149,8 @@ export default function DataSphere({
       isMarketView,
       flowOption
     );
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, resolvedTheme, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel]);
+    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

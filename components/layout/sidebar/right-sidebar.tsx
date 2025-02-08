@@ -27,7 +27,7 @@ export function AppRightSidebar({
 
   return (
     <RightSidebar
-      collapsible="icon"
+      collapsible="none"
       className="sticky top-0 h-svh border-l flex flex-col overflow-hidden"
       {...props}
     >
@@ -39,22 +39,22 @@ export function AppRightSidebar({
           <span className="font-semibold">{selectedItemLabel || 'Data Table'}</span>
         </div>
       </RightSidebarHeader>
-      <RightSidebarContent className="flex-1 overflow-y-auto p-4">
+      <RightSidebarContent className="flex-1 overflow-y-auto p-2">
         {tableData.length > 0 ? (
-          <Table className="w-full">
+          <Table className="w-full text-xs">
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b">
-                <TableHead className="font-bold bg-muted/50">Item</TableHead>
-                <TableHead className="text-right font-bold bg-muted/50">Index</TableHead>
-                <TableHead className="text-right font-bold bg-muted/50">ABS</TableHead>
+                <TableHead className="font-bold bg-muted/50 py-2 px-2">Item</TableHead>
+                <TableHead className="text-right font-bold bg-muted/50 py-2 px-2">Index</TableHead>
+                <TableHead className="text-right font-bold bg-muted/50 py-2 px-2">%</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tableData.map((item: TableDataItem, index: number) => (
                 <TableRow key={index} className="hover:bg-muted/50 border-b">
-                  <TableCell className="font-medium">{item.item}</TableCell>
-                  <TableCell className="text-right">{item.index}</TableCell>
-                  <TableCell className="text-right">{item.abs}</TableCell>
+                  <TableCell className="font-medium py-1.5 px-2">{item.item}</TableCell>
+                  <TableCell className="text-right py-1.5 px-2">{item.index}</TableCell>
+                  <TableCell className="text-right py-1.5 px-2">{item.abs}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

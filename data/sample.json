@@ -1056,12 +1056,12 @@
         {
           "item": "Customer Overlap",
           "index": "111101",
-          "abs": "11.1%"
+          "abs": "80.1%"
         },
         {
           "item": "Share of Switches",
           "index": "543210",
-          "abs": "5.4%"
+          "abs": "95.4%"
         },
         {
           "item": "Return Rate",
@@ -1070,10 +1070,10 @@
         }
       ],
       "churn": {
-        "in": 39.8,
-        "out": 36.5,
-        "net": 3.3,
-        "both": 27.4
+        "in": 80.8,
+        "out": 90.5,
+        "net": 99.3,
+        "both": 85.4
       },
       "switching": {
         "in": 46.2,
@@ -1196,7 +1196,7 @@
       "churn": {
         "in": 42.7,
         "out": 35.2,
-        "net": 7.5,
+        "net": -7.5,
         "both": 12.8
       },
       "switching": {
@@ -1208,7 +1208,7 @@
       "affinity": {
         "in": 32.1,
         "out": 45.3,
-        "net": 13.2,
+        "net": -13.2,
         "both": 24.2
       }
     },
@@ -1240,7 +1240,7 @@
       "switching": {
         "in": 43.2,
         "out": 34.5,
-        "net": 8.7,
+        "net": -8.7,
         "both": 22.1
       },
       "affinity": {
@@ -1316,7 +1316,7 @@
       "switching": {
         "in": 46.7,
         "out": 38.9,
-        "net": 7.8,
+        "net": -7.8,
         "both": 28.1
       },
       "affinity": {
