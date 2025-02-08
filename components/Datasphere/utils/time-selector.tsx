@@ -36,6 +36,8 @@ interface TimelineSelectorProps {
   onChange?: (selection: {
     firstYear: { start: Date; end: Date };
     secondYear: { start: Date; end: Date };
+    market?: string;
+    category?: string;
   }) => void;
 }
 
@@ -52,6 +54,12 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
     toYear: lastYear,    // First year (2024)
     fromYear: currentYear // Second year (2025)
   });
+
+  const [selectedMarket, setSelectedMarket] = useState<string>('Australia');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Fast Food Outlets');
+
+  const marketOptions = ['Australia', 'New Zealand', 'United States', 'United Kingdom'];
+  const categoryOptions = ['Fast Food Outlets', 'Restaurants', 'Cafes', 'Retail Stores'];
 
   const generateTimelineData = (fromYear: number, toYear: number): MonthData[] => {
     const months: MonthData[] = [];
@@ -145,10 +153,12 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
 
       onChange({
         firstYear: { start: firstYearStart, end: firstYearEnd },
-        secondYear: { start: secondYearStart, end: secondYearEnd }
+        secondYear: { start: secondYearStart, end: secondYearEnd },
+        market: selectedMarket,
+        category: selectedCategory
       });
     }
-  }, [timelineData, onChange, getSelectionRanges]);
+  }, [timelineData, onChange, getSelectionRanges, selectedMarket, selectedCategory]);
 
   const handleYearChange = (type: 'from' | 'to', yearStr: string) => {
     const numYear = parseInt(yearStr);
@@ -225,76 +235,128 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
 
   const ranges = getSelectionRanges();
 
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mx-auto">
-      <div className="overflow-x-auto mx-auto">
-        <div className="relative mx-auto" style={{ width: `${containerWidth}px` }}>
-          {/* Year labels/dropdowns */}
-          <div className="flex justify-between items-center mb-2">
-            <select 
-              value={yearRange.toYear}
-              onChange={(e) => handleYearChange('to', e.target.value)}
-              className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
+  const renderDropdowns = () => {
+    return (
+      <div className="w-full max-w-xl mx-auto space-y-4">
+        <div className="w-full">
+          <label className="text-base text-gray-300 mb-2 block">Market</label>
+          <div className="relative">
+            <select
+              value={selectedMarket}
+              onChange={(e) => setSelectedMarket(e.target.value)}
+              className="w-full bg-[#0D1117] text-white text-base py-2.5 px-3 rounded appearance-none border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-gray-600 transition-colors cursor-pointer"
             >
-              {yearOptions.map(year => (
-                <option key={`to-${year}`} value={year}>{year}</option>
+              {marketOptions.map((market) => (
+                <option key={market} value={market} className="bg-[#0D1117]">
+                  {market}
+                </option>
               ))}
             </select>
-            
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Selected periods: {formatPeriodLabel(ranges.secondYear)} and {formatPeriodLabel(ranges.firstYear)}
+            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
-
-            <select 
-              value={yearRange.fromYear}
-              onChange={(e) => handleYearChange('from', e.target.value)}
-              className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
-            >
-              {yearOptions.map(year => (
-                <option key={`from-${year}`} value={year}>{year}</option>
-              )).reverse()}
-            </select>
           </div>
-
-          <div className="relative h-16">
-            {/* Main background */}
-            <div className="absolute inset-0 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600" />
-
-            {/* Year divider */}
-            <div
-              className="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600"
-              style={{ left: `${12 * monthWidth}px` }}
-            />
-
-            {/* Month labels */}
-            <div className="absolute top-2 left-0 right-0 flex">
-              {timelineData.map((month) => (
-                <div
-                  key={month.id}
-                  className="flex-shrink-0 text-xs text-center text-gray-500 dark:text-gray-400 font-medium"
-                  style={{ width: `${monthWidth}px` }}
-                  title={`${month.fullLabel} ${month.year}`}
-                >
-                  {month.label}
-                </div>
+        </div>
+        <div className="w-full">
+          <label className="text-base text-gray-300 mb-2 block">Category</label>
+          <div className="relative">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full bg-[#0D1117] text-white text-base py-2.5 px-3 rounded appearance-none border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-gray-600 transition-colors cursor-pointer"
+            >
+              {categoryOptions.map((category) => (
+                <option key={category} value={category} className="bg-[#0D1117]">
+                  {category}
+                </option>
               ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-[#0D1117] rounded-lg shadow-lg p-6">
+      {renderDropdowns()}
+      <div className="mt-6">
+        <div className="overflow-x-auto mx-auto">
+          <div className="relative mx-auto" style={{ width: `${containerWidth}px` }}>
+            {/* Year labels/dropdowns */}
+            <div className="flex justify-between items-center mb-2">
+              <select 
+                value={yearRange.toYear}
+                onChange={(e) => handleYearChange('to', e.target.value)}
+                className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
+              >
+                {yearOptions.map(year => (
+                  <option key={`to-${year}`} value={year}>{year}</option>
+                ))}
+              </select>
+              
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Selected periods: {formatPeriodLabel(ranges.secondYear)} and {formatPeriodLabel(ranges.firstYear)}
+              </div>
+
+              <select 
+                value={yearRange.fromYear}
+                onChange={(e) => handleYearChange('from', e.target.value)}
+                className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
+              >
+                {yearOptions.map(year => (
+                  <option key={`from-${year}`} value={year}>{year}</option>
+                )).reverse()}
+              </select>
             </div>
 
-            {/* Selection area */}
-            <div
-              className="absolute top-6 left-0 right-0 h-8 cursor-pointer"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-            >
-              {/* Selection rectangles */}
+            <div className="relative h-16">
+              {/* Main background */}
+              <div className="absolute inset-0 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600" />
+
+              {/* Year divider */}
               <div
-                className="absolute h-full bg-blue-100 dark:bg-blue-500/50 rounded shadow-sm"
-                style={getSelectionStyle(ranges.secondYear)}
+                className="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600"
+                style={{ left: `${12 * monthWidth}px` }}
               />
+
+              {/* Month labels */}
+              <div className="absolute top-2 left-0 right-0 flex">
+                {timelineData.map((month) => (
+                  <div
+                    key={month.id}
+                    className="flex-shrink-0 text-xs text-center text-gray-500 dark:text-gray-400 font-medium"
+                    style={{ width: `${monthWidth}px` }}
+                    title={`${month.fullLabel} ${month.year}`}
+                  >
+                    {month.label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Selection area */}
               <div
-                className="absolute h-full bg-green-100 dark:bg-green-500/50 rounded shadow-sm"
-                style={getSelectionStyle(ranges.firstYear)}
-              />
+                className="absolute top-6 left-0 right-0 h-8 cursor-pointer"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+              >
+                {/* Selection rectangles */}
+                <div
+                  className="absolute h-full bg-blue-100 dark:bg-blue-500/50 rounded shadow-sm"
+                  style={getSelectionStyle(ranges.secondYear)}
+                />
+                <div
+                  className="absolute h-full bg-green-100 dark:bg-green-500/50 rounded shadow-sm"
+                  style={getSelectionStyle(ranges.firstYear)}
+                />
+              </div>
             </div>
           </div>
         </div>
