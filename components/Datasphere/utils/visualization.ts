@@ -563,7 +563,7 @@ export function drawFlows(
 
         // Add event handlers to both lines
         const updateBothLines = (isHighlighted: boolean) => {
-          const strokeWidth = isHighlighted ? lineThickness * 1.5 : lineThickness;
+          const strokeWidth = isHighlighted ? lineThickness * 1.1 : lineThickness;
           const opacity = isHighlighted ? 1 : (focusedFlow ? 0.3 : 0.8);
           inFlowLine.attr("stroke-width", strokeWidth).attr("opacity", opacity);
           outFlowLine.attr("stroke-width", strokeWidth).attr("opacity", opacity);
