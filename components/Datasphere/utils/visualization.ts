@@ -180,7 +180,8 @@ export function drawBubbles(
   onClick: (bubble: Bubble) => void,
   centerX: number,
   centerY: number,
-  isMarketView: boolean = false
+  isMarketView: boolean = false,
+  focusedBubbleId: number | null = null
 ) {
   // Create tooltip with current theme
   const isDark = document.documentElement.classList.contains('dark');
@@ -206,44 +207,38 @@ export function drawBubbles(
       }
       return d.color;
     })
-    .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
-    .attr("stroke-width", d => d.id === bubbles.length - 1 ? (isMarketView ? 4 : 0) : 0)
+    .attr("stroke", d => {
+      if (d.id === bubbles.length - 1) return isDark ? "white" : "black";
+      if (focusedBubbleId === d.id) return isDark ? "#ffffff" : "#000000";
+      return "none";
+    })
+    .attr("stroke-width", d => {
+      if (d.id === bubbles.length - 1) return isMarketView ? 4 : 0;
+      if (focusedBubbleId === d.id) return 4;
+      return 0;
+    })
     .attr("cursor", d => d.id === bubbles.length - 1 ? "default" : "pointer")
     .on("click", (event: MouseEvent, d: Bubble) => {
       if (d.id !== bubbles.length - 1) {
-        // Remove highlight from all bubbles
-        bubbleGroups.selectAll<SVGCircleElement, Bubble>("circle")
-          .attr("stroke", d => d.id === bubbles.length - 1 ? (isDark ? "white" : "black") : "none")
-          .attr("stroke-width", d => d.id === bubbles.length - 1 ? 4 : 0);
-        
-        // Add highlight to clicked bubble
-        const target = event.currentTarget as SVGCircleElement;
-        d3.select<SVGCircleElement, Bubble>(target)
-          .attr("stroke", isDark ? "white" : "black")
-          .attr("stroke-width", 2);
-          
         onClick(d);
       }
     })
     .on("mouseover", (event: MouseEvent, d: Bubble) => {
-      if (d.id !== bubbles.length - 1) {
+      if (d.id !== bubbles.length - 1 && d.id !== focusedBubbleId) {
         const target = event.currentTarget as SVGCircleElement;
         d3.select<SVGCircleElement, Bubble>(target)
-          .attr("stroke", isDark ? "white" : "black")
-          .attr("stroke-width", 2);
+          .attr("stroke", isDark ? "#ffffff" : "#000000")
+          .attr("stroke-width", 2)
+          .raise();
         showTooltip(event, getBubbleTooltip(d));
       }
     })
     .on("mouseout", (event: MouseEvent, d: Bubble) => {
-      if (d.id !== bubbles.length - 1) {
-        // Only remove highlight if this bubble wasn't clicked
+      if (d.id !== bubbles.length - 1 && d.id !== focusedBubbleId) {
         const target = event.currentTarget as SVGCircleElement;
-        const isClicked = d3.select<SVGCircleElement, Bubble>(target).attr("stroke-width") === "2";
-        if (!isClicked) {
-          d3.select<SVGCircleElement, Bubble>(target)
-            .attr("stroke", "none")
-            .attr("stroke-width", 0);
-        }
+        d3.select<SVGCircleElement, Bubble>(target)
+          .attr("stroke", "none")
+          .attr("stroke-width", 0);
       }
       hideTooltip();
     });

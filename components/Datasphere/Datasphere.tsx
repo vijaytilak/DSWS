@@ -102,7 +102,15 @@ export default function DataSphere({
       }
     };
 
-    drawBubbles(svg, initialBubbles, handleBubbleClick, centerX, centerY, isMarketView);
+    drawBubbles(
+      svg,
+      initialBubbles,
+      handleBubbleClick,
+      centerX,
+      centerY,
+      isMarketView,
+      focusBubbleId
+    );
 
     const initialFlows = prepareFlowData(
       data, 
