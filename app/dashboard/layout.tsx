@@ -42,7 +42,7 @@ export default function DashboardLayout({
 }) {
   const [centreFlow, setCentreFlow] = useState(false); // false for Brands
   const [flowType, setFlowType] = useState("outFlow only"); // "outFlow only" for Out
-  const [isMarketView, setIsMarketView] = useState(false); // false for Brands
+  const [isMarketView, setIsMarketView] = useState(true); // true for Markets as default
   const [flowOption, setFlowOption] = useState<FlowOption>("churn"); // "churn" for Churn
 
   const handleFlowOptionChange = (option: FlowOption) => {

@@ -36,8 +36,7 @@ export default function DataSphere({
     if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
 
     const svg = d3.select(svgRef.current);
-    svg.style("background", resolvedTheme === 'dark' ? "black" : "white")
-      .attr("width", "100%")
+    svg.attr("width", "100%")
       .attr("height", "100%")
       .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
@@ -112,11 +111,12 @@ export default function DataSphere({
     drawBubbles(
       svg,
       initialBubbles,
-      handleBubbleClick,
+      resolvedTheme === 'dark',
+      isMarketView,
       centerX,
       centerY,
-      isMarketView,
-      focusBubbleId
+      focusBubbleId,
+      handleBubbleClick
     );
 
     const initialFlows = prepareFlowData(
@@ -129,7 +129,7 @@ export default function DataSphere({
       flowOption
     );
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, resolvedTheme, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel]);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
