@@ -1,365 +1,423 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 
-type YearRange = {
-  fromYear: number;
-  toYear: number;
-};
-
-type MonthData = {
-  id: string;
-  year: number;
-  month: number;
-  label: string;
-  fullLabel: string;
-};
-
-type DragState = {
-  isDragging: boolean;
-  startMonth: number | null;
-  currentMonth: number | null;
-  activeYear: 'first' | 'second' | null;
-};
-
-type SelectionRange = {
-  start: number;
-  end: number;
-};
-
-type SelectionRanges = {
-  firstYear: SelectionRange;
-  secondYear: SelectionRange;
-};
-
-interface TimelineSelectorProps {
-  onChange?: (selection: {
+type TimelineSelectorProps = {
+  onChange: (selection: {
     firstYear: { start: Date; end: Date };
     secondYear: { start: Date; end: Date };
     market?: string;
     category?: string;
   }) => void;
-}
-
-const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
-  const monthWidth = 33;
-  const totalMonths = 24;
-  const containerWidth = monthWidth * totalMonths;
-
-  const currentYear = new Date().getFullYear(); // 2025
-  const lastYear = currentYear - 1; // 2024
-
-  // Set default years to last year and current year in correct order
-  const [yearRange, setYearRange] = useState<YearRange>({
-    toYear: lastYear,    // First year (2024)
-    fromYear: currentYear // Second year (2025)
-  });
-
-  const [selectedMarket, setSelectedMarket] = useState<string>('Australia');
-  const [selectedCategory, setSelectedCategory] = useState<string>('Fast Food Outlets');
-
-  const marketOptions = ['Australia', 'New Zealand', 'United States', 'United Kingdom'];
-  const categoryOptions = ['Fast Food Outlets', 'Restaurants', 'Cafes', 'Retail Stores'];
-
-  const generateTimelineData = (fromYear: number, toYear: number): MonthData[] => {
-    const months: MonthData[] = [];
-    [fromYear, toYear].forEach((year) => {  // Changed order to match display
-      for (let i = 0; i < 12; i++) {
-        months.push({
-          id: `${year}-${i}`,
-          year,
-          month: i,
-          label: new Date(year, i).toLocaleString('default', { month: 'short' }).charAt(0),
-          fullLabel: new Date(year, i).toLocaleString('default', { month: 'short' })
-        });
-      }
-    });
-    return months;
+  onClose?: () => void;
+  initialSelection?: {
+    firstYear: {
+      year: number;
+      selectedMonths: number[];
+    };
+    secondYear: {
+      year: number;
+      selectedMonths: number[];
+    };
+    market?: string;
+    category?: string;
   };
+};
 
-  const [timelineData, setTimelineData] = useState<MonthData[]>(
-    generateTimelineData(yearRange.fromYear, yearRange.toYear)
+type YearSelectionState = {
+  year: number;
+  selectedMonths: number[];
+};
+
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, initialSelection }) => {
+  // Get current date to determine default years
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  
+  // Refs to track if we're in the middle of updating
+  const isUpdatingRef = useRef(false);
+  
+  // Initialize with default values or values from initialSelection
+  const [selectedMarket, setSelectedMarket] = useState(
+    initialSelection?.market || 'Australia'
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialSelection?.category || 'Fast Food Outlets'
   );
 
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    startMonth: null,
-    currentMonth: null,
-    activeYear: null
+  // Initialize month selections from initialSelection or defaults
+  const [firstYearSelection, setFirstYearSelection] = useState<YearSelectionState>({
+    year: initialSelection?.firstYear.year || currentYear,
+    selectedMonths: initialSelection?.firstYear.selectedMonths || [0, 1, 2, 3, 4, 5] // Jan-Jun by default
   });
 
-  // Generate year options (10 years before current year up to current year)
-  const yearOptions = Array.from(
-    { length: 11 },
-    (_, i) => currentYear - 10 + i
-  ).filter(year => year <= currentYear);
+  const [secondYearSelection, setSecondYearSelection] = useState<YearSelectionState>({
+    year: initialSelection?.secondYear.year || currentYear - 1,
+    selectedMonths: initialSelection?.secondYear.selectedMonths || [8, 9, 10, 11] // Sep-Dec by default
+  });
 
-  useEffect(() => {
-    setTimelineData(generateTimelineData(yearRange.fromYear, yearRange.toYear));
-  }, [yearRange.fromYear, yearRange.toYear]);
+  // State to track which selection is being modified
+  const [selectionMode, setSelectionMode] = useState<'first' | 'second' | null>(null);
+  const [selectionStart, setSelectionStart] = useState<number | null>(null);
+  const [hoverMonth, setHoverMonth] = useState<number | null>(null);
 
-  const getSelectionRanges = useCallback((): SelectionRanges => {
-    if ((!dragState.startMonth && dragState.startMonth !== 0) || dragState.currentMonth === null) {
-      return {
-        firstYear: { start: 0, end: 11 },    // Jan-Dec last year (2024)
-        secondYear: { start: 12, end: 23 }   // Jan-Dec current year (2025)
-      };
-    }
-
-    const isSecondYear = dragState.startMonth >= 12;
-    const fixedStart = dragState.startMonth;
-    const currentDrag = dragState.currentMonth;
-
-    if (isSecondYear) {
-      const constrainedStart = Math.max(12, Math.min(fixedStart, 23));
-      const constrainedEnd = Math.max(12, Math.min(currentDrag, 23));
-
-      const start = Math.min(constrainedStart, constrainedEnd);
-      const end = Math.max(constrainedStart, constrainedEnd);
-
-      // Calculate mirrored range for first year (0-11)
-      const mirroredStart = start - 12;
-      const mirroredEnd = end - 12;
-
-      return {
-        firstYear: { start: mirroredStart, end: mirroredEnd },
-        secondYear: { start, end }
-      };
+  // Function to handle mouse down on a month
+  const handleMonthClick = (year: 'first' | 'second', month: number) => {
+    // If we already have a selection start, this is the end of the selection
+    if (selectionStart !== null && selectionMode === year) {
+      // Calculate the range of months to select
+      const startMonth = Math.min(selectionStart, month);
+      const endMonth = Math.max(selectionStart, month);
+      
+      // Create an array of selected months
+      const selectedMonths: number[] = [];
+      for (let i = startMonth; i <= endMonth; i++) {
+        selectedMonths.push(i);
+      }
+      
+      // Update the appropriate year's selection
+      if (year === 'first') {
+        setFirstYearSelection(prev => ({
+          ...prev,
+          selectedMonths
+        }));
+      } else {
+        setSecondYearSelection(prev => ({
+          ...prev,
+          selectedMonths
+        }));
+      }
+      
+      // Reset selection state
+      setSelectionStart(null);
+      setSelectionMode(null);
+      setHoverMonth(null);
+      
+      // Trigger the onChange callback
+      triggerOnChange();
     } else {
-      const constrainedStart = Math.max(0, Math.min(fixedStart, 11));
-      const constrainedEnd = Math.max(0, Math.min(currentDrag, 11));
-
-      const start = Math.min(constrainedStart, constrainedEnd);
-      const end = Math.max(constrainedStart, constrainedEnd);
-
-      // Calculate mirrored range for second year (12-23)
-      const mirroredStart = start + 12;
-      const mirroredEnd = end + 12;
-
-      return {
-        firstYear: { start, end },
-        secondYear: { start: mirroredStart, end: mirroredEnd }
-      };
+      // This is the start of a new selection
+      setSelectionStart(month);
+      setSelectionMode(year);
+      setHoverMonth(month);
+      
+      // Clear existing selection for this year
+      if (year === 'first') {
+        setFirstYearSelection(prev => ({
+          ...prev,
+          selectedMonths: [month]
+        }));
+      } else {
+        setSecondYearSelection(prev => ({
+          ...prev,
+          selectedMonths: [month]
+        }));
+      }
     }
-  }, [dragState.startMonth, dragState.currentMonth]);
+  };
 
-  useEffect(() => {
-    const ranges = getSelectionRanges();
-    if (onChange && timelineData.length > 0) {
-      const firstYearStart = new Date(timelineData[ranges.firstYear.start].year, timelineData[ranges.firstYear.start].month);
-      const firstYearEnd = new Date(timelineData[ranges.firstYear.end].year, timelineData[ranges.firstYear.end].month);
-      const secondYearStart = new Date(timelineData[ranges.secondYear.start].year, timelineData[ranges.secondYear.start].month);
-      const secondYearEnd = new Date(timelineData[ranges.secondYear.end].year, timelineData[ranges.secondYear.end].month);
+  // Function to handle mouse over a month during selection
+  const handleMonthHover = (year: 'first' | 'second', month: number) => {
+    // Only update hover state if we're in selection mode for this year
+    if (selectionMode === year && selectionStart !== null) {
+      setHoverMonth(month);
+      
+      // Show preview of selection
+      const startMonth = Math.min(selectionStart, month);
+      const endMonth = Math.max(selectionStart, month);
+      
+      // Create an array of selected months for preview
+      const selectedMonths: number[] = [];
+      for (let i = startMonth; i <= endMonth; i++) {
+        selectedMonths.push(i);
+      }
+      
+      // Update the appropriate year's selection preview
+      if (year === 'first') {
+        setFirstYearSelection(prev => ({
+          ...prev,
+          selectedMonths
+        }));
+      } else {
+        setSecondYearSelection(prev => ({
+          ...prev,
+          selectedMonths
+        }));
+      }
+    }
+  };
 
-      onChange({
-        firstYear: { start: firstYearStart, end: firstYearEnd },
-        secondYear: { start: secondYearStart, end: secondYearEnd },
-        market: selectedMarket,
-        category: selectedCategory
+  // Function to handle mouse leave from the grid
+  const handleMouseLeave = () => {
+    // If we were in the middle of a selection but didn't complete it,
+    // reset to the initial selection start
+    if (selectionStart !== null && selectionMode !== null) {
+      if (selectionMode === 'first') {
+        setFirstYearSelection(prev => ({
+          ...prev,
+          selectedMonths: [selectionStart]
+        }));
+      } else {
+        setSecondYearSelection(prev => ({
+          ...prev,
+          selectedMonths: [selectionStart]
+        }));
+      }
+    }
+  };
+
+  // Function to render a month grid for a specific year
+  const renderMonthGrid = (year: 'first' | 'second', yearState: YearSelectionState) => {
+    const yearValue = year === 'first' ? firstYearSelection.year : secondYearSelection.year;
+    
+    const handleYearChange = (newYear: number) => {
+      console.log(`Changing ${year} year to ${newYear}`);
+      
+      // Update the year in the appropriate state
+      if (year === 'first') {
+        // Create a new object to ensure React detects the state change
+        const updatedSelection = {
+          ...firstYearSelection,
+          year: newYear
+        };
+        setFirstYearSelection(updatedSelection);
+      } else {
+        // Create a new object to ensure React detects the state change
+        const updatedSelection = {
+          ...secondYearSelection,
+          year: newYear
+        };
+        setSecondYearSelection(updatedSelection);
+      }
+      
+      // Force immediate update of the display - use requestAnimationFrame for browser to process state update
+      requestAnimationFrame(() => {
+        // Directly create and pass the updated data to onChange
+        const updatedFirstYear = year === 'first' ? newYear : firstYearSelection.year;
+        const updatedSecondYear = year === 'second' ? newYear : secondYearSelection.year;
+        
+        // Helper function to convert month index to Date object
+        const getDateFromMonthIndex = (year: number, monthIndex: number) => {
+          return new Date(year, monthIndex, 1);
+        };
+        
+        // Get the current month selections
+        const firstMonths = [...firstYearSelection.selectedMonths].sort((a, b) => a - b);
+        const secondMonths = [...secondYearSelection.selectedMonths].sort((a, b) => a - b);
+        
+        // Ensure we have at least one month selected
+        const firstMonthsToUse = firstMonths.length > 0 ? firstMonths : [0];
+        const secondMonthsToUse = secondMonths.length > 0 ? secondMonths : [0];
+        
+        // Create date objects with the updated years
+        const firstStart = getDateFromMonthIndex(updatedFirstYear, firstMonthsToUse[0]);
+        const firstEnd = getDateFromMonthIndex(updatedFirstYear, firstMonthsToUse[firstMonthsToUse.length - 1]);
+        const secondStart = getDateFromMonthIndex(updatedSecondYear, secondMonthsToUse[0]);
+        const secondEnd = getDateFromMonthIndex(updatedSecondYear, secondMonthsToUse[secondMonthsToUse.length - 1]);
+        
+        // Call onChange with the updated data
+        onChange({
+          firstYear: { start: firstStart, end: firstEnd },
+          secondYear: { start: secondStart, end: secondEnd },
+          market: selectedMarket,
+          category: selectedCategory
+        });
       });
-    }
-  }, [timelineData, onChange, getSelectionRanges, selectedMarket, selectedCategory]);
-
-  const handleYearChange = (type: 'from' | 'to', yearStr: string) => {
-    const numYear = parseInt(yearStr);
-    setYearRange(prev => ({
-      ...prev,
-      [type === 'from' ? 'fromYear' : 'toYear']: numYear
-    }));
-  };
-
-  const getMonthFromClientX = (element: HTMLElement, clientX: number): number => {
-    const rect = element.getBoundingClientRect();
-    const relativeX = clientX - rect.left;
-    return Math.min(Math.max(Math.floor(relativeX / monthWidth), 0), 23);
-  };
-
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    const monthIndex = getMonthFromClientX(e.currentTarget, e.clientX);
-    const isSecondYear = monthIndex >= 12;
-
-    setDragState({
-      isDragging: true,
-      startMonth: monthIndex,
-      currentMonth: monthIndex,
-      activeYear: isSecondYear ? 'second' : 'first'
-    });
-
-    e.preventDefault();
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragState.isDragging) return;
-
-    const monthIndex = getMonthFromClientX(e.currentTarget, e.clientX);
-    setDragState(prev => ({
-      ...prev,
-      currentMonth: monthIndex
-    }));
-  };
-
-  const handleMouseUp = () => {
-    setDragState(prev => ({
-      ...prev,
-      isDragging: false
-    }));
-  };
-
-  useEffect(() => {
-    if (dragState.isDragging) {
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('mouseleave', handleMouseUp);
-      return () => {
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('mouseleave', handleMouseUp);
-      };
-    }
-  }, [dragState.isDragging]);
-
-  const getSelectionStyle = (range: SelectionRange) => ({
-    left: `${range.start * monthWidth}px`,
-    width: `${(range.end - range.start + 1) * monthWidth}px`,
-    transition: dragState.isDragging ? 'none' : 'all 0.15s ease-in-out'
-  });
-
-  const formatPeriodLabel = (range: SelectionRange) => {
-    const startIndex = Math.max(0, Math.min(range.start, timelineData.length - 1));
-    const endIndex = Math.max(0, Math.min(range.end, timelineData.length - 1));
-
-    const startMonth = timelineData[startIndex].fullLabel;
-    const endMonth = timelineData[endIndex].fullLabel;
-    const year = timelineData[startIndex].year;
-    return `${startMonth}-${endMonth} ${year}`;
-  };
-
-  const ranges = getSelectionRanges();
-
-  const renderDropdowns = () => {
+    };
+    
+    const isFirstPeriod = year === 'first';
+    const title = isFirstPeriod ? 'First Period' : 'Second Period';
+    const selectionColor = isFirstPeriod ? 'bg-green-500' : 'bg-blue-500';
+    const hoverColor = isFirstPeriod ? 'hover:bg-green-600' : 'hover:bg-blue-600';
+    
+    // Generate years from current year backwards for 10 years
+    const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - i);
+    
     return (
-      <div className="w-full max-w-xl mx-auto space-y-4">
-        <div className="w-full">
-          <label className="text-base text-gray-300 mb-2 block">Market</label>
-          <div className="relative">
-            <select
-              value={selectedMarket}
-              onChange={(e) => setSelectedMarket(e.target.value)}
-              className="w-full bg-[#0D1117] text-white text-base py-2.5 px-3 rounded appearance-none border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-gray-600 transition-colors cursor-pointer"
-            >
-              {marketOptions.map((market) => (
-                <option key={market} value={market} className="bg-[#0D1117]">
-                  {market}
-                </option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-white font-medium text-xs">{title}</h3>
+          <select
+            className="bg-gray-700 text-white rounded-md p-1.5 text-xs border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            value={yearValue}
+            onChange={(e) => handleYearChange(parseInt(e.target.value))}
+          >
+            {yearOptions.map(year => (
+              <option key={year} value={year} className="bg-gray-700">{year}</option>
+            ))}
+          </select>
         </div>
-        <div className="w-full">
-          <label className="text-base text-gray-300 mb-2 block">Category</label>
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-[#0D1117] text-white text-base py-2.5 px-3 rounded appearance-none border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-gray-600 transition-colors cursor-pointer"
-            >
-              {categoryOptions.map((category) => (
-                <option key={category} value={category} className="bg-[#0D1117]">
-                  {category}
-                </option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
+        
+        <div className="grid grid-cols-4 gap-2">
+          {monthNames.map((month, index) => {
+            const isSelected = yearState.selectedMonths.includes(index);
+            const isSelectionStart = selectionMode === year && selectionStart === index;
+            const isHovered = selectionMode === year && hoverMonth === index;
+            
+            return (
+              <div
+                key={month}
+                className={`
+                  flex items-center justify-center p-3 rounded-md cursor-pointer transition-all duration-150
+                  ${isSelected ? selectionColor : 'bg-gray-700'} 
+                  ${!isSelected ? hoverColor : ''}
+                  ${isSelectionStart ? 'ring-2 ring-white' : ''}
+                  ${isHovered ? 'ring-1 ring-gray-300' : ''}
+                  ${isSelected ? 'shadow-md transform hover:scale-[1.02]' : ''}
+                  font-medium text-white text-xs
+                `}
+                onClick={() => handleMonthClick(year, index)}
+                onMouseEnter={() => handleMonthHover(year, index)}
+              >
+                {month}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   };
 
+  // Notify parent component when selections change
+  const triggerOnChange = () => {
+    if (isUpdatingRef.current) return;
+    isUpdatingRef.current = true;
+    
+    try {
+      // Helper function to convert month index to Date object
+      const getDateFromMonthIndex = (year: number, monthIndex: number) => {
+        return new Date(year, monthIndex, 1);
+      };
+      
+      // Sort the selected months for both years
+      const sortedFirstMonths = [...firstYearSelection.selectedMonths].sort((a, b) => a - b);
+      const sortedSecondMonths = [...secondYearSelection.selectedMonths].sort((a, b) => a - b);
+      
+      // Ensure we have at least one month selected for each year
+      const firstMonths = sortedFirstMonths.length > 0 ? sortedFirstMonths : [0]; // Default to January
+      const secondMonths = sortedSecondMonths.length > 0 ? sortedSecondMonths : [0]; // Default to January
+      
+      // Create Date objects for the start and end of each period
+      const firstYearStart = getDateFromMonthIndex(firstYearSelection.year, firstMonths[0]);
+      const firstYearEnd = getDateFromMonthIndex(firstYearSelection.year, firstMonths[firstMonths.length - 1]);
+      const secondYearStart = getDateFromMonthIndex(secondYearSelection.year, secondMonths[0]);
+      const secondYearEnd = getDateFromMonthIndex(secondYearSelection.year, secondMonths[secondMonths.length - 1]);
+      
+      // Call the onChange prop with the dates
+      onChange({
+        firstYear: { 
+          start: firstYearStart, 
+          end: firstYearEnd 
+        },
+        secondYear: { 
+          start: secondYearStart, 
+          end: secondYearEnd 
+        },
+        market: selectedMarket,
+        category: selectedCategory
+      });
+    } catch (error) {
+      console.error('Error updating time selection:', error);
+    } finally {
+      // Reset the updating flag immediately
+      isUpdatingRef.current = false;
+    }
+  };
+
+  // Function to format selected period for display
+  const formatPeriodDisplay = (selection: YearSelectionState) => {
+    if (selection.selectedMonths.length === 0) return 'No months selected';
+    
+    const sortedMonths = [...selection.selectedMonths].sort((a, b) => a - b);
+    const firstMonth = sortedMonths[0];
+    const lastMonth = sortedMonths[sortedMonths.length - 1];
+    
+    // Check if months are consecutive
+    const isConsecutive = sortedMonths.length === (lastMonth - firstMonth + 1);
+    
+    if (!isConsecutive) {
+      // For non-consecutive selections, show comma-separated list
+      return `${sortedMonths.map(m => monthNames[m]).join(', ')} ${selection.year}`;
+    }
+    
+    // For consecutive selections, show range
+    return `${monthNames[firstMonth]}-${monthNames[lastMonth]} ${selection.year}`;
+  };
+
+  const handleMarketChange = (market: string) => {
+    setSelectedMarket(market);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
   return (
-    <div className="bg-[#0D1117] rounded-lg shadow-lg p-6">
-      {renderDropdowns()}
-      <div className="mt-6">
-        <div className="overflow-x-auto mx-auto">
-          <div className="relative mx-auto" style={{ width: `${containerWidth}px` }}>
-            {/* Year labels/dropdowns */}
-            <div className="flex justify-between items-center mb-2">
-              <select 
-                value={yearRange.toYear}
-                onChange={(e) => handleYearChange('to', e.target.value)}
-                className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
-              >
-                {yearOptions.map(year => (
-                  <option key={`to-${year}`} value={year}>{year}</option>
-                ))}
-              </select>
-              
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Selected periods: {formatPeriodLabel(ranges.secondYear)} and {formatPeriodLabel(ranges.firstYear)}
-              </div>
-
-              <select 
-                value={yearRange.fromYear}
-                onChange={(e) => handleYearChange('from', e.target.value)}
-                className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded px-2 py-1"
-              >
-                {yearOptions.map(year => (
-                  <option key={`from-${year}`} value={year}>{year}</option>
-                )).reverse()}
-              </select>
-            </div>
-
-            <div className="relative h-16">
-              {/* Main background */}
-              <div className="absolute inset-0 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600" />
-
-              {/* Year divider */}
-              <div
-                className="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600"
-                style={{ left: `${12 * monthWidth}px` }}
-              />
-
-              {/* Month labels */}
-              <div className="absolute top-2 left-0 right-0 flex">
-                {timelineData.map((month) => (
-                  <div
-                    key={month.id}
-                    className="flex-shrink-0 text-xs text-center text-gray-500 dark:text-gray-400 font-medium"
-                    style={{ width: `${monthWidth}px` }}
-                    title={`${month.fullLabel} ${month.year}`}
-                  >
-                    {month.label}
-                  </div>
-                ))}
-              </div>
-
-              {/* Selection area */}
-              <div
-                className="absolute top-6 left-0 right-0 h-8 cursor-pointer"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-              >
-                {/* Selection rectangles */}
-                <div
-                  className="absolute h-full bg-blue-100 dark:bg-blue-500/50 rounded shadow-sm"
-                  style={getSelectionStyle(ranges.secondYear)}
-                />
-                <div
-                  className="absolute h-full bg-green-100 dark:bg-green-500/50 rounded shadow-sm"
-                  style={getSelectionStyle(ranges.firstYear)}
-                />
-              </div>
-            </div>
+    <div 
+      className="p-6 w-[900px] bg-gray-900 border-2 border-gray-700 rounded-lg shadow-xl"
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="mb-6 grid grid-cols-2 gap-6">
+        <div>
+          <label className="block mb-2 text-xs font-medium text-gray-300">Market</label>
+          <select
+            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            value={selectedMarket}
+            onChange={(e) => handleMarketChange(e.target.value)}
+          >
+            {['Australia', 'New Zealand', 'United States', 'United Kingdom'].map(option => (
+              <option key={option} value={option} className="bg-gray-800">{option}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block mb-2 text-xs font-medium text-gray-300">Category</label>
+          <select
+            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            value={selectedCategory}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+          >
+            {['Fast Food Outlets', 'Cafes', 'Restaurants', 'Bars'].map(option => (
+              <option key={option} value={option} className="bg-gray-800">{option}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        {renderMonthGrid('first', firstYearSelection)}
+        {renderMonthGrid('second', secondYearSelection)}
+      </div>
+      
+      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-700">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center">
+            <span className="inline-block w-3 h-3 bg-green-600 rounded-full mr-2"></span> 
+            <span className="text-white font-medium text-xs">{formatPeriodDisplay(firstYearSelection)}</span>
+          </div>
+          <span className="text-gray-500 text-xs">and</span>
+          <div className="flex items-center">
+            <span className="inline-block w-3 h-3 bg-blue-600 rounded-full mr-2"></span>
+            <span className="text-white font-medium text-xs">{formatPeriodDisplay(secondYearSelection)}</span>
           </div>
         </div>
+        
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-xs"
+          onClick={() => {
+            // Call the onClose prop if it exists
+            if (onClose) {
+              onClose();
+            } else {
+              // Fallback to clicking the body to close the popup
+              document.body.click();
+            }
+          }}
+        >
+          Apply
+        </button>
       </div>
     </div>
   );

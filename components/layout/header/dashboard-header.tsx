@@ -33,7 +33,21 @@ export function DashboardHeader({
   setCentreFlow
 }: DashboardHeaderProps) {
   const [timeSelectOpen, setTimeSelectOpen] = useState(false);
-  const [selectedPeriods, setSelectedPeriods] = useState("Jan-Dec 2024 and Jan-Dec 2025");
+  const [selectedPeriods, setSelectedPeriods] = useState("Jan-Jun 2025 and Sep-Dec 2024");
+  
+  // Store the actual selection data to pass back to the time selector
+  const [timeSelection, setTimeSelection] = useState({
+    firstYear: {
+      year: 2025,
+      selectedMonths: [0, 1, 2, 3, 4, 5] // Jan-Jun by default
+    },
+    secondYear: {
+      year: 2024,
+      selectedMonths: [8, 9, 10, 11] // Sep-Dec by default
+    },
+    market: 'Australia',
+    category: 'Fast Food Outlets'
+  });
 
   const handleTimeChange = (selection: {
     firstYear: { start: Date; end: Date };
@@ -42,66 +56,109 @@ export function DashboardHeader({
     category?: string;
   }) => {
     // Format the selected periods for display
-    const formatDate = (date: Date) => {
-      return date.toLocaleString('default', { month: 'short' });
+    const formatMonthName = (date: Date) => {
+      // Use the same abbreviations as in the time selector
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return monthNames[date.getMonth()];
     };
     
-    const firstYearStart = formatDate(selection.firstYear.start);
-    const firstYearEnd = formatDate(selection.firstYear.end);
+    // Get the data for both years
+    const firstYearStart = formatMonthName(selection.firstYear.start);
+    const firstYearEnd = formatMonthName(selection.firstYear.end);
     const firstYear = selection.firstYear.start.getFullYear();
     
-    const secondYearStart = formatDate(selection.secondYear.start);
-    const secondYearEnd = formatDate(selection.secondYear.end);
+    const secondYearStart = formatMonthName(selection.secondYear.start);
+    const secondYearEnd = formatMonthName(selection.secondYear.end);
     const secondYear = selection.secondYear.start.getFullYear();
     
-    setSelectedPeriods(`${firstYearStart}-${firstYearEnd} ${firstYear} and ${secondYearStart}-${secondYearEnd} ${secondYear}`);
+    // Always display the first period first, then the second period
+    const formattedPeriods = `${firstYearStart}-${firstYearEnd} ${firstYear} and ${secondYearStart}-${secondYearEnd} ${secondYear}`;
+    
+    // Update the displayed periods
+    setSelectedPeriods(formattedPeriods);
+    
+    // Store the selection data
+    // Calculate the selected months for the first year
+    const firstYearMonths = [];
+    const firstStartMonth = selection.firstYear.start.getMonth();
+    const firstEndMonth = selection.firstYear.end.getMonth();
+    for (let i = firstStartMonth; i <= firstEndMonth; i++) {
+      firstYearMonths.push(i);
+    }
+    
+    // Calculate the selected months for the second year
+    const secondYearMonths = [];
+    const secondStartMonth = selection.secondYear.start.getMonth();
+    const secondEndMonth = selection.secondYear.end.getMonth();
+    for (let i = secondStartMonth; i <= secondEndMonth; i++) {
+      secondYearMonths.push(i);
+    }
+    
+    // Update the time selection state with the new year values
+    const updatedTimeSelection = {
+      firstYear: {
+        year: firstYear,
+        selectedMonths: firstYearMonths
+      },
+      secondYear: {
+        year: secondYear,
+        selectedMonths: secondYearMonths
+      },
+      market: selection.market || 'Australia',
+      category: selection.category || 'Fast Food Outlets'
+    };
+    
+    setTimeSelection(updatedTimeSelection);
+    
+    // Log the updated selection for debugging
+    console.log('Updated time selection:', {
+      firstYear: `${firstYearStart}-${firstYearEnd} ${firstYear}`,
+      secondYear: `${secondYearStart}-${secondYearEnd} ${secondYear}`
+    });
   };
 
   return (
     <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
-      <div className="flex flex-1 items-center gap-2 px-3">
-        <SidebarTrigger />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Controls
-          threshold={threshold}
-          setThreshold={setThreshold}
-          flowType={flowType}
-          setFlowType={setFlowType}
-          centreFlow={centreFlow}
-          setCentreFlow={setCentreFlow}
-          className="flex-1"
-        />
-        
-        <div className="relative">
+      <div className="flex flex-1 items-center justify-between space-x-2 px-4">
+        <div className="flex items-center space-x-2">
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Controls
+            threshold={threshold}
+            setThreshold={setThreshold}
+            flowType={flowType}
+            setFlowType={setFlowType}
+            centreFlow={centreFlow}
+            setCentreFlow={setCentreFlow}
+            className="flex-1"
+          />
+        </div>
+        <div className="flex items-center space-x-4">
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-3 text-xs flex items-center gap-1.5"
+            className="h-8 gap-1"
             onClick={() => setTimeSelectOpen(!timeSelectOpen)}
           >
             <CalendarDays className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{selectedPeriods}</span>
+            <span className="text-xs">{selectedPeriods}</span>
           </Button>
-          
           {timeSelectOpen && (
-            <div className="absolute right-0 top-full mt-1 z-50 w-[880px] shadow-lg rounded-lg overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 z-50 w-[900px] shadow-lg rounded-lg overflow-hidden">
               <div className="bg-background border border-border rounded-lg">
-                <MonthSelector onChange={handleTimeChange} />
-                <div className="p-2 bg-background border-t border-border flex justify-end">
-                  <Button 
-                    size="sm" 
-                    onClick={() => setTimeSelectOpen(false)}
-                  >
-                    Apply
-                  </Button>
-                </div>
+                <MonthSelector 
+                  onChange={handleTimeChange} 
+                  onClose={() => setTimeSelectOpen(false)}
+                  initialSelection={timeSelection}
+                />
               </div>
             </div>
           )}
+          <div className="flex items-center space-x-2">
+            <ThemeToggleClient />
+            <RightSidebarTrigger />
+          </div>
         </div>
-        
-        <ThemeToggleClient />
-        <RightSidebarTrigger />
       </div>
     </header>
   );
