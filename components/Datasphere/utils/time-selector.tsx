@@ -238,9 +238,9 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
     return (
       <div className="bg-gray-800 p-4 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-white font-medium text-xs">{title}</h3>
+          <h3 className="text-white font-medium text-sm">{title}</h3>
           <select
-            className="bg-gray-700 text-white rounded-md p-1.5 text-xs border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="bg-gray-700 text-white rounded-md p-1.5 text-sm border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             value={yearValue}
             onChange={(e) => handleYearChange(parseInt(e.target.value))}
           >
@@ -260,13 +260,13 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
               <div
                 key={month}
                 className={`
-                  flex items-center justify-center p-3 rounded-md cursor-pointer transition-all duration-150
+                  flex items-center justify-center p-3 px-1 rounded-md cursor-pointer transition-all duration-150
                   ${isSelected ? selectionColor : 'bg-gray-700'} 
                   ${!isSelected ? hoverColor : ''}
                   ${isSelectionStart ? 'ring-2 ring-white' : ''}
                   ${isHovered ? 'ring-1 ring-gray-300' : ''}
                   ${isSelected ? 'shadow-md transform hover:scale-[1.02]' : ''}
-                  font-medium text-white text-xs
+                  font-medium text-white text-sm
                 `}
                 onClick={() => handleMonthClick(year, index)}
                 onMouseEnter={() => handleMonthHover(year, index)}
@@ -361,9 +361,9 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
     >
       <div className="mb-6 grid grid-cols-2 gap-6">
         <div>
-          <label className="block mb-2 text-xs font-medium text-gray-300">Market</label>
+          <label className="block mb-2 text-sm font-medium text-gray-300">Market</label>
           <select
-            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             value={selectedMarket}
             onChange={(e) => handleMarketChange(e.target.value)}
           >
@@ -373,9 +373,9 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
           </select>
         </div>
         <div>
-          <label className="block mb-2 text-xs font-medium text-gray-300">Category</label>
+          <label className="block mb-2 text-sm font-medium text-gray-300">Category</label>
           <select
-            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full bg-gray-800 border border-gray-700 rounded-md p-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             value={selectedCategory}
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
@@ -395,17 +395,17 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <span className="inline-block w-3 h-3 bg-green-600 rounded-full mr-2"></span> 
-            <span className="text-white font-medium text-xs">{formatPeriodDisplay(firstYearSelection)}</span>
+            <span className="text-white font-medium text-sm">{formatPeriodDisplay(firstYearSelection)}</span>
           </div>
-          <span className="text-gray-500 text-xs">and</span>
+          <span className="text-gray-500 text-sm">and</span>
           <div className="flex items-center">
             <span className="inline-block w-3 h-3 bg-blue-600 rounded-full mr-2"></span>
-            <span className="text-white font-medium text-xs">{formatPeriodDisplay(secondYearSelection)}</span>
+            <span className="text-white font-medium text-sm">{formatPeriodDisplay(secondYearSelection)}</span>
           </div>
         </div>
         
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-xs"
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-sm"
           onClick={() => {
             // Call the onClose prop if it exists
             if (onClose) {
