@@ -42,7 +42,7 @@ interface TimelineSelectorProps {
 }
 
 const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange }) => {
-  const monthWidth = 35;
+  const monthWidth = 33;
   const totalMonths = 24;
   const containerWidth = monthWidth * totalMonths;
 

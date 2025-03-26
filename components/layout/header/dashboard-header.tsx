@@ -4,15 +4,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { RightSidebarTrigger } from "@/components/ui/right-sidebar"
 import { Button } from "@/components/ui/button"
-import { Settings } from "lucide-react"
-import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer"
+import { CalendarDays } from "lucide-react"
 import dynamic from 'next/dynamic'
 import { Controls } from "@/components/Datasphere/components/Controls"
 import { useState } from "react"
@@ -40,7 +32,30 @@ export function DashboardHeader({
   centreFlow,
   setCentreFlow
 }: DashboardHeaderProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [timeSelectOpen, setTimeSelectOpen] = useState(false);
+  const [selectedPeriods, setSelectedPeriods] = useState("Jan-Dec 2024 and Jan-Dec 2025");
+
+  const handleTimeChange = (selection: {
+    firstYear: { start: Date; end: Date };
+    secondYear: { start: Date; end: Date };
+    market?: string;
+    category?: string;
+  }) => {
+    // Format the selected periods for display
+    const formatDate = (date: Date) => {
+      return date.toLocaleString('default', { month: 'short' });
+    };
+    
+    const firstYearStart = formatDate(selection.firstYear.start);
+    const firstYearEnd = formatDate(selection.firstYear.end);
+    const firstYear = selection.firstYear.start.getFullYear();
+    
+    const secondYearStart = formatDate(selection.secondYear.start);
+    const secondYearEnd = formatDate(selection.secondYear.end);
+    const secondYear = selection.secondYear.start.getFullYear();
+    
+    setSelectedPeriods(`${firstYearStart}-${firstYearEnd} ${firstYear} and ${secondYearStart}-${secondYearEnd} ${secondYear}`);
+  };
 
   return (
     <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
@@ -56,41 +71,35 @@ export function DashboardHeader({
           setCentreFlow={setCentreFlow}
           className="flex-1"
         />
-        <div>
-          <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} modal={true}>
-            <DrawerTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                title="Time Settings"
-                onBlur={(e) => {
-                  if (drawerOpen) {
-                    e.preventDefault();
-                    e.currentTarget.focus();
-                  }
-                }}
-              >
-                <Settings className="h-[1.2rem] w-[1.2rem]" />
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="focus:outline-none">
-              <div onFocus={(e) => e.stopPropagation()}>
-                <DrawerHeader>
-                  <DrawerTitle>Time Selector</DrawerTitle>
-                  <DrawerDescription>
-                    Adjust time range
-                  </DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 flex flex-col gap-4">
-                  <div>
-                    <MonthSelector />
-                  </div>
+        
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 px-3 text-xs flex items-center gap-1.5"
+            onClick={() => setTimeSelectOpen(!timeSelectOpen)}
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{selectedPeriods}</span>
+          </Button>
+          
+          {timeSelectOpen && (
+            <div className="absolute right-0 top-full mt-1 z-50 w-[880px] shadow-lg rounded-lg overflow-hidden">
+              <div className="bg-background border border-border rounded-lg">
+                <MonthSelector onChange={handleTimeChange} />
+                <div className="p-2 bg-background border-t border-border flex justify-end">
+                  <Button 
+                    size="sm" 
+                    onClick={() => setTimeSelectOpen(false)}
+                  >
+                    Apply
+                  </Button>
                 </div>
               </div>
-            </DrawerContent>
-          </Drawer>
+            </div>
+          )}
         </div>
+        
         <ThemeToggleClient />
         <RightSidebarTrigger />
       </div>
