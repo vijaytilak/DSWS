@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 
 type TimelineSelectorProps = {
   onChange: (selection: {
@@ -19,14 +19,14 @@ type TimelineSelectorProps = {
       year: number;
       selectedMonths: number[];
     };
-    market?: string;
-    category?: string;
+    market: string;
+    category: string;
   };
 };
 
 type YearSelectionState = {
   year: number;
-  selectedMonths: number[];
+  selectedMonths: Set<number>;
 };
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -36,135 +36,123 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   
-  // Refs to track if we're in the middle of updating
-  const isUpdatingRef = useRef(false);
+  // Initialize with default values or provided initialSelection
+  const [firstYearSelection, setFirstYearSelection] = useState<YearSelectionState>(() => {
+    if (initialSelection?.firstYear) {
+      return {
+        year: initialSelection.firstYear.year,
+        selectedMonths: new Set(initialSelection.firstYear.selectedMonths)
+      };
+    }
+    return {
+      year: currentYear,
+      selectedMonths: new Set([0, 1, 2, 3, 4, 5]) // Jan-Jun by default
+    };
+  });
   
-  // Initialize with default values or values from initialSelection
-  const [selectedMarket, setSelectedMarket] = useState(
-    initialSelection?.market || 'Australia'
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    initialSelection?.category || 'Fast Food Outlets'
-  );
-
-  // Initialize month selections from initialSelection or defaults
-  const [firstYearSelection, setFirstYearSelection] = useState<YearSelectionState>({
-    year: initialSelection?.firstYear.year || currentYear,
-    selectedMonths: initialSelection?.firstYear.selectedMonths || [0, 1, 2, 3, 4, 5] // Jan-Jun by default
+  const [secondYearSelection, setSecondYearSelection] = useState<YearSelectionState>(() => {
+    if (initialSelection?.secondYear) {
+      return {
+        year: initialSelection.secondYear.year,
+        selectedMonths: new Set(initialSelection.secondYear.selectedMonths)
+      };
+    }
+    return {
+      year: currentYear - 1,
+      selectedMonths: new Set([8, 9, 10, 11]) // Sep-Dec by default
+    };
   });
-
-  const [secondYearSelection, setSecondYearSelection] = useState<YearSelectionState>({
-    year: initialSelection?.secondYear.year || currentYear - 1,
-    selectedMonths: initialSelection?.secondYear.selectedMonths || [8, 9, 10, 11] // Sep-Dec by default
-  });
-
-  // State to track which selection is being modified
+  
+  // State for the currently selected market and category
+  const [selectedMarket, setSelectedMarket] = useState<string>(initialSelection?.market || 'Australia');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialSelection?.category || 'Fast Food Outlets');
+  
+  // Track selection mode
   const [selectionMode, setSelectionMode] = useState<'first' | 'second' | null>(null);
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [hoverMonth, setHoverMonth] = useState<number | null>(null);
 
-  // Function to handle mouse down on a month
-  const handleMonthClick = (year: 'first' | 'second', month: number) => {
-    // If we already have a selection start, this is the end of the selection
-    if (selectionStart !== null && selectionMode === year) {
-      // Calculate the range of months to select
-      const startMonth = Math.min(selectionStart, month);
-      const endMonth = Math.max(selectionStart, month);
-      
-      // Create an array of selected months
-      const selectedMonths: number[] = [];
-      for (let i = startMonth; i <= endMonth; i++) {
-        selectedMonths.push(i);
-      }
-      
-      // Update the appropriate year's selection
-      if (year === 'first') {
-        setFirstYearSelection(prev => ({
-          ...prev,
-          selectedMonths
-        }));
-      } else {
-        setSecondYearSelection(prev => ({
-          ...prev,
-          selectedMonths
-        }));
-      }
-      
-      // Reset selection state
-      setSelectionStart(null);
-      setSelectionMode(null);
-      setHoverMonth(null);
-      
-      // Trigger the onChange callback
-      triggerOnChange();
-    } else {
-      // This is the start of a new selection
-      setSelectionStart(month);
-      setSelectionMode(year);
-      setHoverMonth(month);
-      
-      // Clear existing selection for this year
-      if (year === 'first') {
-        setFirstYearSelection(prev => ({
-          ...prev,
-          selectedMonths: [month]
-        }));
-      } else {
-        setSecondYearSelection(prev => ({
-          ...prev,
-          selectedMonths: [month]
-        }));
-      }
-    }
-  };
-
-  // Function to handle mouse over a month during selection
-  const handleMonthHover = (year: 'first' | 'second', month: number) => {
-    // Only update hover state if we're in selection mode for this year
+  // Handle month clicks to start or complete a selection
+  const handleMonthClick = (year: 'first' | 'second', monthIndex: number) => {
     if (selectionMode === year && selectionStart !== null) {
-      setHoverMonth(month);
+      // Complete selection
+      const yearState = year === 'first' ? firstYearSelection : secondYearSelection;
+      const setYearState = year === 'first' ? setFirstYearSelection : setSecondYearSelection;
       
-      // Show preview of selection
-      const startMonth = Math.min(selectionStart, month);
-      const endMonth = Math.max(selectionStart, month);
+      // Calculate the range between selectionStart and current month
+      const start = Math.min(selectionStart, monthIndex);
+      const end = Math.max(selectionStart, monthIndex);
       
-      // Create an array of selected months for preview
-      const selectedMonths: number[] = [];
-      for (let i = startMonth; i <= endMonth; i++) {
-        selectedMonths.push(i);
+      // Create a new set for selected months
+      const newSelection = new Set<number>();
+      for (let i = start; i <= end; i++) {
+        newSelection.add(i);
       }
       
-      // Update the appropriate year's selection preview
-      if (year === 'first') {
-        setFirstYearSelection(prev => ({
-          ...prev,
-          selectedMonths
-        }));
-      } else {
-        setSecondYearSelection(prev => ({
-          ...prev,
-          selectedMonths
-        }));
-      }
+      // Update the state with the new selection
+      setYearState({
+        ...yearState,
+        selectedMonths: newSelection
+      });
+      
+      // Reset selection mode
+      setSelectionMode(null);
+      setSelectionStart(null);
+      setHoverMonth(null);
+    } else {
+      // Start new selection
+      setSelectionMode(year);
+      setSelectionStart(monthIndex);
+      setHoverMonth(monthIndex);
     }
   };
-
-  // Function to handle mouse leave from the grid
+  
+  // Handle mouse hover to preview selection
+  const handleMonthHover = (year: 'first' | 'second', monthIndex: number) => {
+    if (selectionMode === year && selectionStart !== null) {
+      setHoverMonth(monthIndex);
+    }
+  };
+  
+  // Clear hover state when mouse leaves
   const handleMouseLeave = () => {
-    // If we were in the middle of a selection but didn't complete it,
-    // reset to the initial selection start
-    if (selectionStart !== null && selectionMode !== null) {
-      if (selectionMode === 'first') {
-        setFirstYearSelection(prev => ({
-          ...prev,
-          selectedMonths: [selectionStart]
-        }));
-      } else {
-        setSecondYearSelection(prev => ({
-          ...prev,
-          selectedMonths: [selectionStart]
-        }));
-      }
+    if (selectionMode && selectionStart !== null) {
+      setHoverMonth(selectionStart);
+    }
+  };
+  
+  // Apply selection changes and send data to the parent component
+  const handleApply = () => {
+    // Helper function to convert month index to Date object
+    const getDateFromMonthIndex = (year: number, monthIndex: number) => {
+      return new Date(year, monthIndex, 1);
+    };
+    
+    // Get the current month selections
+    const firstMonths = [...firstYearSelection.selectedMonths].sort((a, b) => a - b);
+    const secondMonths = [...secondYearSelection.selectedMonths].sort((a, b) => a - b);
+    
+    // Ensure we have at least one month selected
+    const firstMonthsToUse = firstMonths.length > 0 ? firstMonths : [0];
+    const secondMonthsToUse = secondMonths.length > 0 ? secondMonths : [0];
+    
+    // Create date objects with the years
+    const firstStart = getDateFromMonthIndex(firstYearSelection.year, firstMonthsToUse[0]);
+    const firstEnd = getDateFromMonthIndex(firstYearSelection.year, firstMonthsToUse[firstMonthsToUse.length - 1]);
+    const secondStart = getDateFromMonthIndex(secondYearSelection.year, secondMonthsToUse[0]);
+    const secondEnd = getDateFromMonthIndex(secondYearSelection.year, secondMonthsToUse[secondMonthsToUse.length - 1]);
+    
+    // Call onChange with the updated data
+    onChange({
+      firstYear: { start: firstStart, end: firstEnd },
+      secondYear: { start: secondStart, end: secondEnd },
+      market: selectedMarket,
+      category: selectedCategory
+    });
+    
+    // Close the selector
+    if (onClose) {
+      onClose();
     }
   };
 
@@ -191,40 +179,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
         };
         setSecondYearSelection(updatedSelection);
       }
-      
-      // Force immediate update of the display - use requestAnimationFrame for browser to process state update
-      requestAnimationFrame(() => {
-        // Directly create and pass the updated data to onChange
-        const updatedFirstYear = year === 'first' ? newYear : firstYearSelection.year;
-        const updatedSecondYear = year === 'second' ? newYear : secondYearSelection.year;
-        
-        // Helper function to convert month index to Date object
-        const getDateFromMonthIndex = (year: number, monthIndex: number) => {
-          return new Date(year, monthIndex, 1);
-        };
-        
-        // Get the current month selections
-        const firstMonths = [...firstYearSelection.selectedMonths].sort((a, b) => a - b);
-        const secondMonths = [...secondYearSelection.selectedMonths].sort((a, b) => a - b);
-        
-        // Ensure we have at least one month selected
-        const firstMonthsToUse = firstMonths.length > 0 ? firstMonths : [0];
-        const secondMonthsToUse = secondMonths.length > 0 ? secondMonths : [0];
-        
-        // Create date objects with the updated years
-        const firstStart = getDateFromMonthIndex(updatedFirstYear, firstMonthsToUse[0]);
-        const firstEnd = getDateFromMonthIndex(updatedFirstYear, firstMonthsToUse[firstMonthsToUse.length - 1]);
-        const secondStart = getDateFromMonthIndex(updatedSecondYear, secondMonthsToUse[0]);
-        const secondEnd = getDateFromMonthIndex(updatedSecondYear, secondMonthsToUse[secondMonthsToUse.length - 1]);
-        
-        // Call onChange with the updated data
-        onChange({
-          firstYear: { start: firstStart, end: firstEnd },
-          secondYear: { start: secondStart, end: secondEnd },
-          market: selectedMarket,
-          category: selectedCategory
-        });
-      });
     };
     
     const isFirstPeriod = year === 'first';
@@ -252,7 +206,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
         
         <div className="grid grid-cols-4 gap-2">
           {monthNames.map((month, index) => {
-            const isSelected = yearState.selectedMonths.includes(index);
+            const isSelected = yearState.selectedMonths.has(index);
             const isSelectionStart = selectionMode === year && selectionStart === index;
             const isHovered = selectionMode === year && hoverMonth === index;
             
@@ -280,55 +234,9 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
     );
   };
 
-  // Notify parent component when selections change
-  const triggerOnChange = () => {
-    if (isUpdatingRef.current) return;
-    isUpdatingRef.current = true;
-    
-    try {
-      // Helper function to convert month index to Date object
-      const getDateFromMonthIndex = (year: number, monthIndex: number) => {
-        return new Date(year, monthIndex, 1);
-      };
-      
-      // Sort the selected months for both years
-      const sortedFirstMonths = [...firstYearSelection.selectedMonths].sort((a, b) => a - b);
-      const sortedSecondMonths = [...secondYearSelection.selectedMonths].sort((a, b) => a - b);
-      
-      // Ensure we have at least one month selected for each year
-      const firstMonths = sortedFirstMonths.length > 0 ? sortedFirstMonths : [0]; // Default to January
-      const secondMonths = sortedSecondMonths.length > 0 ? sortedSecondMonths : [0]; // Default to January
-      
-      // Create Date objects for the start and end of each period
-      const firstYearStart = getDateFromMonthIndex(firstYearSelection.year, firstMonths[0]);
-      const firstYearEnd = getDateFromMonthIndex(firstYearSelection.year, firstMonths[firstMonths.length - 1]);
-      const secondYearStart = getDateFromMonthIndex(secondYearSelection.year, secondMonths[0]);
-      const secondYearEnd = getDateFromMonthIndex(secondYearSelection.year, secondMonths[secondMonths.length - 1]);
-      
-      // Call the onChange prop with the dates
-      onChange({
-        firstYear: { 
-          start: firstYearStart, 
-          end: firstYearEnd 
-        },
-        secondYear: { 
-          start: secondYearStart, 
-          end: secondYearEnd 
-        },
-        market: selectedMarket,
-        category: selectedCategory
-      });
-    } catch (error) {
-      console.error('Error updating time selection:', error);
-    } finally {
-      // Reset the updating flag immediately
-      isUpdatingRef.current = false;
-    }
-  };
-
   // Function to format selected period for display
   const formatPeriodDisplay = (selection: YearSelectionState) => {
-    if (selection.selectedMonths.length === 0) return 'No months selected';
+    if (selection.selectedMonths.size === 0) return 'No months selected';
     
     const sortedMonths = [...selection.selectedMonths].sort((a, b) => a - b);
     const firstMonth = sortedMonths[0];
@@ -406,15 +314,7 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
         
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-sm"
-          onClick={() => {
-            // Call the onClose prop if it exists
-            if (onClose) {
-              onClose();
-            } else {
-              // Fallback to clicking the body to close the popup
-              document.body.click();
-            }
-          }}
+          onClick={handleApply}
         >
           Apply
         </button>

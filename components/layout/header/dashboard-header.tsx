@@ -34,6 +34,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const [timeSelectOpen, setTimeSelectOpen] = useState(false);
   const [selectedPeriods, setSelectedPeriods] = useState("Jan-Jun 2025 and Sep-Dec 2024");
+  const [isLoading, setIsLoading] = useState(false);
   
   // Store the actual selection data to pass back to the time selector
   const [timeSelection, setTimeSelection] = useState({
@@ -49,7 +50,7 @@ export function DashboardHeader({
     category: 'Fast Food Outlets'
   });
 
-  const handleTimeChange = (selection: {
+  const handleTimeChange = async (selection: {
     firstYear: { start: Date; end: Date };
     secondYear: { start: Date; end: Date };
     market?: string;
@@ -110,11 +111,54 @@ export function DashboardHeader({
     
     setTimeSelection(updatedTimeSelection);
     
-    // Log the updated selection for debugging
-    console.log('Updated time selection:', {
-      firstYear: `${firstYearStart}-${firstYearEnd} ${firstYear}`,
-      secondYear: `${secondYearStart}-${secondYearEnd} ${secondYear}`
-    });
+    // Close the time selector
+    setTimeSelectOpen(false);
+    
+    // Set loading state
+    setIsLoading(true);
+    
+    try {
+      // Fetch new data from the API with the updated selection parameters
+      // This is where you would make an API call to fetch the data based on the selected periods
+      // For example:
+      
+      // const queryParams = new URLSearchParams({
+      //   firstYearStart: selection.firstYear.start.toISOString(),
+      //   firstYearEnd: selection.firstYear.end.toISOString(),
+      //   secondYearStart: selection.secondYear.start.toISOString(),
+      //   secondYearEnd: selection.secondYear.end.toISOString(),
+      //   market: selection.market || 'Australia',
+      //   category: selection.category || 'Fast Food Outlets'
+      // });
+      
+      // const response = await fetch(`/api/visualization-data?${queryParams}`);
+      // const data = await response.json();
+      
+      // Then you would update your application state with the new data
+      // This could involve setting a state variable that is passed to the DataSphere component
+      
+      // For now, we'll simulate a delay to represent the API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log('API call would be made with these parameters:', {
+        firstYear: {
+          start: selection.firstYear.start.toISOString(),
+          end: selection.firstYear.end.toISOString()
+        },
+        secondYear: {
+          start: selection.secondYear.start.toISOString(),
+          end: selection.secondYear.end.toISOString()
+        },
+        market: selection.market,
+        category: selection.category
+      });
+      
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      // End loading state
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -139,9 +183,19 @@ export function DashboardHeader({
             size="sm"
             className="h-8 gap-1"
             onClick={() => setTimeSelectOpen(!timeSelectOpen)}
+            disabled={isLoading}
           >
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span className="text-xs">{selectedPeriods}</span>
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-3.5 w-3.5 mr-1">⏳</span>
+                <span className="text-xs">Loading...</span>
+              </>
+            ) : (
+              <>
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span className="text-xs">{selectedPeriods}</span>
+              </>
+            )}
           </Button>
           {timeSelectOpen && (
             <div className="absolute right-0 top-full mt-1 z-50 w-[900px] shadow-lg rounded-lg overflow-hidden">
