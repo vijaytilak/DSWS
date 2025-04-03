@@ -675,8 +675,12 @@ export function drawFlowLine(
   // For affinity flows, always use target bubble's color
   // For center flows, use theme-based color (white/black)
   // For all other flows, use source bubble's color
-  const lineColor = fromCenter ? (isDarkTheme ? "#ffffff" : "#000000") :
-                   flowOption === 'affinity' ? endBubble.color : startBubble.color;
+  // Special case: For Market views with Churn/Switching option and inFlow type, when flowing from center, use destination color
+  const lineColor = fromCenter ? 
+                    (isMarketView && (flowOption === 'churn' || flowOption === 'switching') && flowDirection === 'inFlow' ? 
+                      endBubble.color : 
+                      (isDarkTheme ? "#ffffff" : "#000000")) :
+                    flowOption === 'affinity' ? endBubble.color : startBubble.color;
 
   console.log('DEBUG - drawFlowLine color selection:', {
     flowOption,
