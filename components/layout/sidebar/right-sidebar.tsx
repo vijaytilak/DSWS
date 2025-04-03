@@ -27,7 +27,7 @@ export function AppRightSidebar({
 
   return (
     <RightSidebar
-      collapsible="none"
+      collapsible="icon"
       className="sticky top-0 h-svh border-l flex flex-col overflow-hidden"
       {...props}
     >
