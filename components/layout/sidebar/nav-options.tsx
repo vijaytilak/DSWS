@@ -39,7 +39,7 @@ const optionItems = [
 export function NavOptions({ onFlowOptionChange, flowOption, selectedView }: NavOptionsProps) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Options</SidebarGroupLabel>
+      <SidebarGroupLabel>Metric</SidebarGroupLabel>
       <SidebarMenu>
         {optionItems
           .filter(item => !item.brandsOnly || selectedView === 'Brands')
