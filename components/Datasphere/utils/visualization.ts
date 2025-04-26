@@ -590,7 +590,7 @@ export function drawFlows(
           }
           showTooltip(event, getFlowTooltip(flow, flowDirection === 'inFlow' ? target : source, 
                                                 flowDirection === 'inFlow' ? source : target, 
-                                                flowDirection, centreFlow));
+                                                flowDirection, centreFlow, flowOption));
         };
 
         const handleMouseOut = () => {
@@ -824,7 +824,7 @@ export function drawFlowLine(
         path.attr("opacity", 1)
            .attr("stroke-width", lineThickness * 1.1);
       }
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
+      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption));
     })
     .on("mouseout", (event: MouseEvent) => {
       const target = event.currentTarget as SVGPathElement;
