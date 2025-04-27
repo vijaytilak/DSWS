@@ -33,9 +33,8 @@ export default function DataSphere({
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const { isMarketView, flowOption } = useCentreFlow();
+  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
   const { setTableData, setSelectedItemLabel } = useTableData();
-  const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
   const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
 
@@ -167,7 +166,7 @@ export default function DataSphere({
       flowOption
     );
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig]);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
