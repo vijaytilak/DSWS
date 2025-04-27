@@ -544,9 +544,14 @@ export function drawFlows(
             return 0.8;
           });
 
-        // Add inflow marker
-        createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowLine.attr("stroke"), 'inFlow');
-        inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
+        // Add inflow marker only for non-affinity views
+        if (flowOption !== 'affinity') {
+          createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowLine.attr("stroke"), 'inFlow');
+          inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
+        } else {
+          // For affinity view, use rounded end caps
+          inFlowLine.attr('stroke-linecap', 'round');
+        }
 
         const outFlowLine = svg.append('line')
           .attr('x1', splitX)
@@ -568,9 +573,14 @@ export function drawFlows(
             return 0.8;
           });
 
-        // Add outflow marker
-        createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowLine.attr("stroke"), 'outFlow');
-        outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+        // Add outflow marker only for non-affinity views
+        if (flowOption !== 'affinity') {
+          createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowLine.attr("stroke"), 'outFlow');
+          outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+        } else {
+          // For affinity view, use rounded end caps
+          outFlowLine.attr('stroke-linecap', 'round');
+        }
 
         // Add event handlers to both lines
         const updateBothLines = (isHighlighted: boolean) => {
@@ -753,10 +763,15 @@ export function drawFlowLine(
     .attr("data-to-id", endBubble.id.toString())
     .datum(flow);
 
-  // Create marker for this specific flow
-  const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-  createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
-  flowLine.attr('marker-end', `url(#${markerId})`);
+  // Create marker for this specific flow (except for affinity view)
+  if (flowOption !== 'affinity') {
+    const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
+    createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
+    flowLine.attr('marker-end', `url(#${markerId})`);
+  } else {
+    // For affinity view, use rounded end caps
+    flowLine.attr('stroke-linecap', 'round');
+  }
 
   // Calculate label position (midpoint of the line)
   const midX = (points.start.x + points.end.x) / 2;
