@@ -55,6 +55,8 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   onFlowOptionChange?: (option: FlowOption) => void;
   setIsMarketView: (value: boolean) => void;
   flowOption?: FlowOption;
+  focusBubbleId?: number | null;
+  isMarketView?: boolean;
 };
 
 export function AppSidebar({ 
@@ -64,6 +66,8 @@ export function AppSidebar({
   onFlowOptionChange,
   setIsMarketView,
   flowOption = 'churn',
+  focusBubbleId = null,
+  isMarketView = true,
   ...props 
 }: AppSidebarProps) {
   const { user } = useAuth()
@@ -116,6 +120,9 @@ export function AppSidebar({
           <NavFlowTypes 
             setFlowType={setFlowType} 
             currentFlowType={flowType}
+            focusBubbleId={focusBubbleId}
+            isMarketView={isMarketView}
+            flowOption={flowOption}
           />
         )}
       </SidebarContent>

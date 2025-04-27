@@ -121,7 +121,7 @@ export function getBubbleTooltip(bubble: Bubble): string {
   return `${formatNumber(bubble.itemSizeAbsolute)} people visited ${bubble.label}`;
 }
 
-export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false): string {
+export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn'): string {
   if (centreFlow) {
     switch (flowDirection) {
       case 'inFlow':
@@ -144,11 +144,39 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
   } else {
     switch (flowDirection) {
       case 'inFlow':
-        return `${source.label} to ${target.label}: ${flow.absolute_inFlow.toFixed(1)}%`;
+        if (flowOption === 'churn') {
+          return `${flow.absolute_inFlow.toFixed(1)}% sales churn in from ${source.label}`;
+        } else if (flowOption === 'switching') {
+          return `${flow.absolute_inFlow.toFixed(1)}% switch in from ${source.label}`;
+        } else {
+          return `${flow.absolute_inFlow.toFixed(1)}% flow from ${source.label} to ${target.label}`;
+        }
       case 'outFlow':
-        return `${source.label} to ${target.label}: ${flow.absolute_outFlow.toFixed(1)}%`;
+        if (flowOption === 'churn') {
+          return `${flow.absolute_outFlow.toFixed(1)}% sales churn out to ${target.label}`;
+        } else if (flowOption === 'switching') {
+          return `${flow.absolute_outFlow.toFixed(1)}% switch out to ${target.label}`;
+        } else {
+          return `${flow.absolute_outFlow.toFixed(1)}% flow from ${source.label} to ${target.label}`;
+        }
       case 'netFlow':
-        return `Net flow between ${source.label} and ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+        if (flow.absolute_netFlowDirection === 'inFlow') {
+          if (flowOption === 'churn') {
+            return `Net sales churn in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          } else if (flowOption === 'switching') {
+            return `Net switch in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          } else {
+            return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          }
+        } else {
+          if (flowOption === 'churn') {
+            return `Net sales churn out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          } else if (flowOption === 'switching') {
+            return `Net switch out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          } else {
+            return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          }
+        }
       case 'both':
         const complementaryValue = 100 - flow.absolute_inFlow;
         return `${source.label} to ${target.label}:

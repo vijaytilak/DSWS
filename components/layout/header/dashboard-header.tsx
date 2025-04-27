@@ -2,7 +2,6 @@
 
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { RightSidebarTrigger } from "@/components/ui/right-sidebar"
 import { Button } from "@/components/ui/button"
 import { CalendarDays } from "lucide-react"
 import dynamic from 'next/dynamic'
@@ -210,7 +209,6 @@ export function DashboardHeader({
           )}
           <div className="flex items-center space-x-2">
             <ThemeToggleClient />
-            <RightSidebarTrigger />
           </div>
         </div>
       </div>

@@ -38,7 +38,7 @@ export function NavMain({ items, setCentreFlow, setIsMarketView, onViewChange }:
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Views</SidebarGroupLabel>
+      <SidebarGroupLabel>View</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

@@ -435,6 +435,17 @@ export function drawFlows(
         const isFocused = fromId === focusedFlow.from && toId === focusedFlow.to;
         return isFocused ? 1 : 0.2;
       });
+      
+    // Also update opacity for all flow labels
+    svg.selectAll<SVGTextElement, unknown>("text.flow-label")
+      .attr("opacity", function() {
+        const label = d3.select(this);
+        const fromId = parseInt(label.attr("data-from-id") || "-1");
+        const toId = parseInt(label.attr("data-to-id") || "-1");
+        const isFocused = (fromId === focusedFlow.from && toId === focusedFlow.to) ||
+                        (fromId === focusedFlow.to && toId === focusedFlow.from);
+        return isFocused ? 1 : 0.2;
+      });
   }
 
   flowsWithMetrics.forEach((flow) => {
@@ -528,14 +539,19 @@ export function drawFlows(
             if (focusedFlow) {
               const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
                                       (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-              return isThisFlowFocused ? 1 : 0.3;
+              return isThisFlowFocused ? 1 : 0.2;
             }
             return 0.8;
           });
 
-        // Add inflow marker
-        createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowLine.attr("stroke"), 'inFlow');
-        inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
+        // Add inflow marker only for non-affinity views
+        if (flowOption !== 'affinity') {
+          createFlowMarker(svg, `inFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), inFlowLine.attr("stroke"), 'inFlow');
+          inFlowLine.attr('marker-end', `url(#inFlow-${flow.from}-${flow.to})`);
+        } else {
+          // For affinity view, use rounded end caps
+          inFlowLine.attr('stroke-linecap', 'round');
+        }
 
         const outFlowLine = svg.append('line')
           .attr('x1', splitX)
@@ -552,19 +568,24 @@ export function drawFlows(
             if (focusedFlow) {
               const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
                                       (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-              return isThisFlowFocused ? 1 : 0.3;
+              return isThisFlowFocused ? 1 : 0.2;
             }
             return 0.8;
           });
 
-        // Add outflow marker
-        createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowLine.attr("stroke"), 'outFlow');
-        outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+        // Add outflow marker only for non-affinity views
+        if (flowOption !== 'affinity') {
+          createFlowMarker(svg, `outFlow-${flow.from}-${flow.to}`, calculateMarkerSize(lineThickness), outFlowLine.attr("stroke"), 'outFlow');
+          outFlowLine.attr('marker-end', `url(#outFlow-${flow.from}-${flow.to})`);
+        } else {
+          // For affinity view, use rounded end caps
+          outFlowLine.attr('stroke-linecap', 'round');
+        }
 
         // Add event handlers to both lines
         const updateBothLines = (isHighlighted: boolean) => {
           const strokeWidth = isHighlighted ? lineThickness * 1.1 : lineThickness;
-          const opacity = isHighlighted ? 1 : (focusedFlow ? 0.3 : 0.8);
+          const opacity = isHighlighted ? 1 : (focusedFlow ? 0.2 : 0.8);
           inFlowLine.attr("stroke-width", strokeWidth).attr("opacity", opacity);
           outFlowLine.attr("stroke-width", strokeWidth).attr("opacity", opacity);
         };
@@ -579,7 +600,7 @@ export function drawFlows(
           }
           showTooltip(event, getFlowTooltip(flow, flowDirection === 'inFlow' ? target : source, 
                                                 flowDirection === 'inFlow' ? source : target, 
-                                                flowDirection, centreFlow));
+                                                flowDirection, centreFlow, flowOption));
         };
 
         const handleMouseOut = () => {
@@ -619,7 +640,15 @@ export function drawFlows(
             .attr("font-size", "11px")
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
+            .attr('data-flow-id', `${flow.from}-${flow.to}`)
             .text(`${flow.absolute_inFlow.toFixed(1)}%`);
+          
+          // Set opacity for the label based on focused flow
+          if (focusedFlow) {
+            const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                   (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+            svg.selectAll(`text.flow-label[data-flow-id="${flow.from}-${flow.to}"]`).attr('opacity', isThisFlowFocused ? 1 : 0.2);
+          }
         }
 
         if (flow.absolute_outFlow > 0) {
@@ -635,7 +664,15 @@ export function drawFlows(
             .attr("font-size", "11px")
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
+            .attr('data-flow-id', `${flow.from}-${flow.to}`)
             .text(`${flow.absolute_outFlow.toFixed(1)}%`);
+          
+          // Set opacity for the label based on focused flow
+          if (focusedFlow) {
+            const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                   (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+            svg.selectAll(`text.flow-label[data-flow-id="${flow.from}-${flow.to}"]`).attr('opacity', isThisFlowFocused ? 1 : 0.2);
+          }
         }
         break;
       default:
@@ -716,7 +753,7 @@ export function drawFlowLine(
       if (focusedFlow) {
         const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-        return isThisFlowFocused ? 1 : 0.3;
+        return isThisFlowFocused ? 1 : 0.2;
       }
       return 0.8;
     })
@@ -726,10 +763,15 @@ export function drawFlowLine(
     .attr("data-to-id", endBubble.id.toString())
     .datum(flow);
 
-  // Create marker for this specific flow
-  const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-  createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
-  flowLine.attr('marker-end', `url(#${markerId})`);
+  // Create marker for this specific flow (except for affinity view)
+  if (flowOption !== 'affinity') {
+    const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
+    createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
+    flowLine.attr('marker-end', `url(#${markerId})`);
+  } else {
+    // For affinity view, use rounded end caps
+    flowLine.attr('stroke-linecap', 'round');
+  }
 
   // Calculate label position (midpoint of the line)
   const midX = (points.start.x + points.end.x) / 2;
@@ -763,7 +805,7 @@ export function drawFlowLine(
         value = 0;
     }
     
-    svg.append("text")
+    const flowLabel = svg.append("text")
       .attr("class", "flow-label")
       .attr("x", midX + offset * Math.sin(angle))
       .attr("y", midY - offset * Math.cos(angle))
@@ -773,7 +815,15 @@ export function drawFlowLine(
       .attr("font-size", "12px")
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
       .text(`${Math.abs(value).toFixed(1)}%`);
+    
+    // Set opacity for the label based on focused flow
+    if (focusedFlow) {
+      const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                             (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+      flowLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+    }
   }
 
   // Add event handlers
@@ -789,7 +839,7 @@ export function drawFlowLine(
         path.attr("opacity", 1)
            .attr("stroke-width", lineThickness * 1.1);
       }
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow));
+      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption));
     })
     .on("mouseout", (event: MouseEvent) => {
       const target = event.currentTarget as SVGPathElement;
@@ -799,7 +849,7 @@ export function drawFlowLine(
          (flow.from === focusedFlow.to && flow.to === focusedFlow.from)));
       
       path.attr("stroke-width", isFocused ? lineThickness * 1.1 : lineThickness);
-      path.attr("opacity", isFocused ? 1 : (focusedFlow ? 0.3 : 0.8));
+      path.attr("opacity", isFocused ? 1 : (focusedFlow ? 0.2 : 0.8));
       hideTooltip();
     })
     .on('click', () => onFlowClick && onFlowClick(flow, startBubble, endBubble));

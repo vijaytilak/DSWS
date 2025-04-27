@@ -20,6 +20,9 @@ interface NavFlowTypesProps {
     icon: LucideIcon
     flowType: string
   }[]
+  focusBubbleId?: number | null;
+  isMarketView?: boolean;
+  flowOption?: 'churn' | 'switching' | 'affinity';
 }
 
 const defaultItems = [
@@ -49,17 +52,35 @@ const defaultItems = [
   },
 ]
 
-export function NavFlowTypes({ items = defaultItems, setFlowType, currentFlowType }: NavFlowTypesProps) {
+export function NavFlowTypes({ 
+  items = defaultItems, 
+  setFlowType, 
+  currentFlowType,
+  focusBubbleId = null,
+  isMarketView = true,
+  flowOption = 'churn'
+}: NavFlowTypesProps) {
   const handleClick = (e: React.MouseEvent, flowType: string) => {
     e.preventDefault();
     setFlowType(flowType);
   };
 
+  // Filter items based on conditions
+  const filteredItems = items.filter(item => {
+    // For Brands (not Market view) with Churn flow option and no bubble selected
+    if (!isMarketView && flowOption === 'churn' && focusBubbleId === null) {
+      // Only show 'net' and 'both' options when no bubble is selected
+      return item.title === 'net' || item.title === 'both';
+    }
+    // Show all items in other cases
+    return true;
+  });
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Flow Types</SidebarGroupLabel>
+      <SidebarGroupLabel>Flow Type</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
+        {filteredItems.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton 
               asChild

@@ -23,6 +23,8 @@ interface CentreFlowContextType {
   setIsMarketView: (value: boolean) => void;
   flowOption: FlowOption;
   setFlowOption: (value: FlowOption) => void;
+  focusBubbleId: number | null;
+  setFocusBubbleId: (value: number | null) => void;
 }
 
 const CentreFlowContext = createContext<CentreFlowContextType | undefined>(undefined);
@@ -44,6 +46,7 @@ export default function DashboardLayout({
   const [flowType, setFlowType] = useState("outFlow only"); // "outFlow only" for Out
   const [isMarketView, setIsMarketView] = useState(true); // true for Markets as default
   const [flowOption, setFlowOption] = useState<FlowOption>("churn"); // "churn" for Churn
+  const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null); // null for no bubble selected
 
   const handleFlowOptionChange = (option: FlowOption) => {
     setFlowOption(option);
@@ -57,7 +60,9 @@ export default function DashboardLayout({
     isMarketView,
     setIsMarketView,
     flowOption,
-    setFlowOption
+    setFlowOption,
+    focusBubbleId,
+    setFocusBubbleId
   };
 
   return (
@@ -80,6 +85,8 @@ export default function DashboardLayout({
                     setIsMarketView={setIsMarketView}
                     onFlowOptionChange={handleFlowOptionChange}
                     flowOption={flowOption}
+                    focusBubbleId={focusBubbleId}
+                    isMarketView={isMarketView}
                   />
                   <main className="flex-1">
                     <SidebarInset>

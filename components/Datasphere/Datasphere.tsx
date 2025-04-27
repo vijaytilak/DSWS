@@ -33,9 +33,8 @@ export default function DataSphere({
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const { isMarketView, flowOption } = useCentreFlow();
+  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
   const { setTableData, setSelectedItemLabel } = useTableData();
-  const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
   const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
 
@@ -76,7 +75,14 @@ export default function DataSphere({
       const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
       setFocusBubbleId(newFocusId);
 
-      // Update table data for the clicked bubble
+      // If toggling off (deselecting), reset the table data
+      if (newFocusId === null) {
+        setTableData([]);
+        setSelectedItemLabel("");
+        return;
+      }
+
+      // Otherwise, update table data for the clicked bubble
       const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
       if (bubbleData && bubbleData.tabledata) {
         setTableData(bubbleData.tabledata);
@@ -86,8 +92,18 @@ export default function DataSphere({
 
     // Handle flow click
     const handleFlowClick = (flow: Flow) => {
+      // Check if we're toggling this flow off (clicking the same flow again)
+      const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
+      
       // Set focused flow state
-      setFocusedFlow(focusedFlow?.from === flow.from && focusedFlow?.to === flow.to ? null : { from: flow.from, to: flow.to });
+      setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
+      
+      // If toggling off (deselecting), reset the table data
+      if (isToggleOff) {
+        setTableData([]);
+        setSelectedItemLabel("");
+        return;
+      }
       
       // Find the flow data
       if (isMarketView) {
@@ -150,7 +166,7 @@ export default function DataSphere({
       flowOption
     );
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig]);
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
