@@ -78,7 +78,7 @@ export function NavFlowTypes({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Flow Types</SidebarGroupLabel>
+      <SidebarGroupLabel>Flow Type</SidebarGroupLabel>
       <SidebarMenu>
         {filteredItems.map((item) => (
           <SidebarMenuItem key={item.title}>
