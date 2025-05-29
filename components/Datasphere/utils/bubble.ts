@@ -1,9 +1,9 @@
 import { CONFIG } from '../constants/config';
-import type { FlowData, Bubble } from '../types';
+import type { NewFlowData, Bubble } from '../types';
 import { calculateRelativeSizePercent, calculatePercentRanks } from './calculations';
 
 export function prepareBubbleData(
-  data: FlowData,
+  data: NewFlowData,
   positionCircleRadius: number,
   noOfBubbles: number,
 ): { bubbles: Bubble[], maxBubbleRadius: number, minBubbleRadius: number } {

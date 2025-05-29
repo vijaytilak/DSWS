@@ -1,6 +1,6 @@
 "use client"
 
-import { type LucideIcon, ArrowUpRight, ArrowDownRight, ArrowLeftRight, ArrowRightLeft } from "lucide-react"
+import { type LucideIcon, ArrowUpRight, ArrowDownRight, ArrowLeftRight, ArrowRightLeft, ArrowDown, ArrowUp } from "lucide-react"
 import Link from "next/link"
 
 import {
@@ -22,7 +22,7 @@ interface NavFlowTypesProps {
   }[]
   focusBubbleId?: number | null;
   isMarketView?: boolean;
-  flowOption?: 'churn' | 'switching' | 'affinity';
+  flowOption?: 'churn' | 'switching' | 'affinity' | 'spending';
 }
 
 const defaultItems = [
@@ -52,8 +52,23 @@ const defaultItems = [
   },
 ]
 
+const spendingItems = [
+  {
+    title: "Lower",
+    url: "#",
+    icon: ArrowDown,
+    flowType: "Lower"
+  },
+  {
+    title: "Higher",
+    url: "#",
+    icon: ArrowUp,
+    flowType: "Higher"
+  },
+]
+
 export function NavFlowTypes({ 
-  items = defaultItems, 
+  items = defaultItems, // This default will be overridden if flowOption is 'spending'
   setFlowType, 
   currentFlowType,
   focusBubbleId = null,
@@ -65,22 +80,28 @@ export function NavFlowTypes({
     setFlowType(flowType);
   };
 
-  // Filter items based on conditions
-  const filteredItems = items.filter(item => {
-    // For Brands (not Market view) with Churn flow option and no bubble selected
-    if (!isMarketView && flowOption === 'churn' && focusBubbleId === null) {
-      // Only show 'net' and 'both' options when no bubble is selected
-      return item.title === 'net' || item.title === 'both';
-    }
-    // Show all items in other cases
-    return true;
-  });
+  let itemsToRender;
+  if (flowOption === 'spending') {
+    itemsToRender = spendingItems;
+  } else {
+    // Apply original filtering logic for non-spending options
+    itemsToRender = items.filter(item => {
+      // For Brands (not Market view) with Churn flow option and no bubble selected
+      if (!isMarketView && flowOption === 'churn' && focusBubbleId === null) {
+        // Only show 'net' and 'both' options when no bubble is selected
+        return item.title === 'net' || item.title === 'both';
+      }
+      // Show all items in other cases
+      return true;
+    });
+  }
+
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Flow Type</SidebarGroupLabel>
       <SidebarMenu>
-        {filteredItems.map((item) => (
+        {itemsToRender.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton 
               asChild

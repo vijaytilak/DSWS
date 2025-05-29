@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import * as d3 from 'd3';
-import type { FlowData, Bubble, Flow } from './types';
+import type { NewFlowData, Bubble, Flow } from './types';
 import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/visualization';
 import { prepareFlowData } from './utils/flow';
 import { useDimensions } from './hooks/useDimensions';
@@ -11,7 +11,7 @@ import { useCentreFlow } from '@/app/dashboard/layout';
 import { useTableData } from '@/app/contexts/table-data-context';
 
 interface DataSphereProps {
-  data: FlowData;
+  data: NewFlowData;
   flowType: string;
   centreFlow: boolean;
   threshold: number;
@@ -33,7 +33,7 @@ export default function DataSphere({
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
+  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId, setIsMarketView, setFlowOption } = useCentreFlow();
   const { setTableData, setSelectedItemLabel } = useTableData();
   const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
@@ -106,29 +106,29 @@ export default function DataSphere({
       }
       
       // Find the flow data
-      if (isMarketView) {
-        const marketFlows = data.flows_markets;
-        const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
-        
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          setSelectedItemLabel(`Market: ${sourceBubble?.itemLabel || 'Unknown'}`);
-        }
-      } else {
-        const brandFlows = data.flows_brands;
-        const selectedFlow = brandFlows.find(f => 
-          (f.from === flow.from && f.to === flow.to) || 
-          (f.from === flow.to && f.to === flow.from)
-        );
-
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
-          setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
-        }
-      }
+      // if (isMarketView) {
+      //   // const marketFlows = data.flows_markets; // OLD
+      //   // TODO: Update this logic for NewFlowData structure
+      //   // const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
+      //   // if (selectedFlow?.tabledata) {
+      //   //   setTableData(selectedFlow.tabledata);
+      //   //   const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+      //   //   setSelectedItemLabel(`Market: ${sourceBubble?.itemLabel || 'Unknown'}`);
+      //   // }
+      // } else {
+      //   // const brandFlows = data.flows_brands; // OLD
+      //   // TODO: Update this logic for NewFlowData structure
+      //   // const selectedFlow = brandFlows.find(f => 
+      //   //   (f.from === flow.from && f.to === flow.to) || 
+      //   //   (f.from === flow.to && f.to === flow.from)
+      //   // );
+      //   // if (selectedFlow?.tabledata) {
+      //   //   setTableData(selectedFlow.tabledata);
+      //   //   const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+      //   //   const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
+      //   //   setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
+      //   // }
+      // }
     };
 
     if (outerRingConfig) {
@@ -165,8 +165,26 @@ export default function DataSphere({
       isMarketView,
       flowOption
     );
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
+
+    const currentView: 'Market' | 'Brands' = isMarketView ? 'Market' : 'Brands';
+    // Capitalize first letter of flowOption to match 'Churn', 'Switching', 'Spending'
+    const currentCategory = flowOption.charAt(0).toUpperCase() + flowOption.slice(1) as 'Churn' | 'Switching' | 'Spending';
+
+    drawFlows(
+      svg, 
+      initialFlows, 
+      initialBubbles, 
+      flowType, 
+      focusBubbleId, 
+      centreFlow, 
+      isMarketView, 
+      flowOption, 
+      handleFlowClick, 
+      focusedFlow,
+      currentView, // Pass determined currentView
+      currentCategory // Pass determined currentCategory
+    );
+  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId, setIsMarketView, setFlowOption]);
 
   return (
     <div ref={containerRef} className="w-full h-full">
