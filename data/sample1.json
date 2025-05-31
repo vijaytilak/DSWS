@@ -1,0 +1,520 @@
+{
+  "itemIDs": [
+    {
+      "itemID": 0,
+      "itemLabel": "Pizza Hut",
+      "itemSize_absolute": 47000,
+      "itemSize_relative": 0.022091137,
+      "tabledata": [
+        {
+          "item": "Customer Satisfaction",
+          "index": "82",
+          "abs": "82.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "47000",
+          "abs": "22.1%"
+        }
+      ]
+    },
+    {
+      "itemID": 1,
+      "itemLabel": "Others",
+      "itemSize_absolute": 24599,
+      "itemSize_relative": 0.115621254,
+      "tabledata": [
+        {
+          "item": "Combined Revenue",
+          "index": "24599",
+          "abs": "11.6%"
+        },
+        {
+          "item": "Market Coverage",
+          "index": "156",
+          "abs": "15.6%"
+        }
+      ]
+    },
+    {
+      "itemID": 2,
+      "itemLabel": "Other Pizza",
+      "itemSize_absolute": 28006,
+      "itemSize_relative": 0.037630137,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "28006",
+          "abs": "3.8%"
+        }
+      ]
+    },
+    {
+      "itemID": 3,
+      "itemLabel": "McDonald's",
+      "itemSize_absolute": 124599,
+      "itemSize_relative": 0.215621254,
+      "tabledata": [
+        {
+          "item": "Revenue 2024",
+          "index": "124599",
+          "abs": "21.6%"
+        },
+        {
+          "item": "Store Count NSW",
+          "index": "245",
+          "abs": "24.5%"
+        }
+      ]
+    }
+  ],
+  "flows_brands": [
+    {
+      "from": 3,
+      "to": 0,
+      "outFlow": 5409752,
+      "inFlow": 5040952,
+      "interaction": 368800,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "368800",
+          "abs": "36.9%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "5409752",
+          "abs": "54.1%"
+        }
+      ],
+      "churn": {
+        "in": {
+          "perc": 51.2,
+          "index": 1.24,
+          "abs": 368800
+        },
+        "out": {
+          "perc": 43.8,
+          "index": 0.92,
+          "abs": 368800
+        },
+        "net": {
+          "perc": 7.4,
+          "index": 1.05,
+          "abs": 368800
+        },
+        "both": {
+          "out_perc": 43.8,
+          "in_perc": 51.2,
+          "out_index": 0.92,
+          "in_index": 1.24,
+          "abs": 368800
+        }
+      },
+      "switching": {
+        "in": {
+          "perc": 52.8,
+          "index": 1.18,
+          "abs": 385600
+        },
+        "out": {
+          "perc": 41.3,
+          "index": 0.87,
+          "abs": 385600
+        },
+        "net": {
+          "perc": 11.5,
+          "index": 1.03,
+          "abs": 385600
+        },
+        "both": {
+          "out_perc": 41.3,
+          "in_perc": 52.8,
+          "out_index": 0.87,
+          "in_index": 1.18,
+          "abs": 385600
+        }
+      },
+      "spending": {
+        "lower": {
+          "perc": 63.4,
+          "index": 1.27,
+          "abs": 392400
+        },
+        "higher": {
+          "perc": 55.8,
+          "index": 0.95,
+          "abs": 345200
+        }
+      }
+    },
+    {
+      "from": 0,
+      "to": 2,
+      "outFlow": 1634698,
+      "inFlow": 1425301,
+      "interaction": 209397,
+      "tabledata": [
+        {
+          "item": "Customer Overlap",
+          "index": "209397",
+          "abs": "20.9%"
+        },
+        {
+          "item": "Share of Switches",
+          "index": "1634698",
+          "abs": "16.3%"
+        }
+      ],
+      "churn": {
+        "in": {
+          "perc": 48.9,
+          "index": 1.15,
+          "abs": 209397
+        },
+        "out": {
+          "perc": 32.1,
+          "index": 0.73,
+          "abs": 209397
+        },
+        "net": {
+          "perc": 16.8,
+          "index": 1.01,
+          "abs": 209397
+        },
+        "both": {
+          "out_perc": 32.1,
+          "in_perc": 48.9,
+          "out_index": 0.73,
+          "in_index": 1.15,
+          "abs": 209397
+        }
+      },
+      "switching": {
+        "in": {
+          "perc": 58.3,
+          "index": 1.23,
+          "abs": 235600
+        },
+        "out": {
+          "perc": 43.7,
+          "index": 0.88,
+          "abs": 235600
+        },
+        "net": {
+          "perc": 14.6,
+          "index": 1.04,
+          "abs": 235600
+        },
+        "both": {
+          "out_perc": 43.7,
+          "in_perc": 58.3,
+          "out_index": 0.88,
+          "in_index": 1.23,
+          "abs": 235600
+        }
+      },
+      "spending": {
+        "lower": {
+          "perc": 51.2,
+          "index": 1.04,
+          "abs": 235600
+        },
+        "higher": {
+          "perc": 47.5,
+          "index": 0.93,
+          "abs": 223200
+        }
+      }
+    }
+  ],
+  "flows_markets": [
+    {
+      "itemID": 3,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "1",
+          "abs": "21.6%"
+        },
+        {
+          "item": "Brand Loyalty",
+          "index": "86.3",
+          "abs": "86.3%"
+        }
+      ]
+    },
+    {
+      "itemID": 0,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "3",
+          "abs": "4.7%"
+        },
+        {
+          "item": "Brand Loyalty",
+          "index": "76.5",
+          "abs": "76.5%"
+        }
+      ]
+    }
+  ],
+  "views": {
+    "Market": {},
+    "Brands": {
+      "Churn": {
+        "out": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "switch_perc": 0.345,
+              "spend_pect": 0.655,
+              "switch_index": 1.23,
+              "spend_index": 0.45,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Male",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              },
+              {
+                "column1": "Income",
+                "column2": "High",
+                "abs": 3236,
+                "rel": 0.6427,
+                "index": 0.34
+              }
+            ]
+          },
+          {
+            "from": 0,
+            "to": 3,
+            "arrow_data": {
+              "switch_perc": 0.452,
+              "spend_pect": 0.548,
+              "switch_index": 1.12,
+              "spend_index": 0.78,
+              "abs": 412500
+            },
+            "table_data": [
+              {
+                "column1": "Age",
+                "column2": "18-24",
+                "abs": 2456,
+                "rel": 0.4823,
+                "index": 1.32
+              }
+            ]
+          }
+        ],
+        "in": [
+          {
+            "from": 2,
+            "to": 0,
+            "arrow_data": {
+              "switch_perc": 0.345,
+              "save_pect": 0.655,
+              "switch_index": 1.23,
+              "save_index": 0.45,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              },
+              {
+                "column1": "Region",
+                "column2": "North",
+                "abs": 3236,
+                "rel": 0.6427,
+                "index": 0.34
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "perc": 0.345,
+              "index": 1.23,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ],
+        "both": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "out_perc": 0.345,
+              "in_perc": 0.655,
+              "out_index": 1.24,
+              "in_index": 1.14,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ]
+      },
+      "Switching": {
+        "out": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "switch_perc": 0.345,
+              "spend_pect": 0.655,
+              "switch_index": 1.23,
+              "spend_index": 0.45,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Male",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ],
+        "in": [
+          {
+            "from": 2,
+            "to": 0,
+            "arrow_data": {
+              "switch_perc": 0.345,
+              "save_pect": 0.655,
+              "switch_index": 1.23,
+              "save_index": 0.45,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ],
+        "net": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "perc": 0.345,
+              "index": 1.23,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ],
+        "both": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "out_perc": 0.345,
+              "in_perc": 0.655,
+              "out_index": 1.24,
+              "in_index": 1.14,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ]
+      },
+      "Spending": {
+        "Lower": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "perc": 0.345,
+              "index": 1.23,
+              "abs": 368800
+            },
+            "table_data": [
+              {
+                "column1": "Gender",
+                "column2": "Female",
+                "abs": 1236,
+                "rel": 0.5467,
+                "index": 1.24
+              }
+            ]
+          }
+        ],
+        "Higher": [
+          {
+            "from": 0,
+            "to": 2,
+            "arrow_data": {
+              "perc": 0.456,
+              "index": 1.12,
+              "abs": 412500
+            },
+            "table_data": [
+              {
+                "column1": "Income",
+                "column2": "High",
+                "abs": 3236,
+                "rel": 0.6427,
+                "index": 0.34
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
