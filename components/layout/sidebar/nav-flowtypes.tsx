@@ -68,10 +68,10 @@ export function NavFlowTypes({
   // Filter items based on conditions
   const filteredItems = items.filter(item => {
     // For Brands (not Market view) with Churn flow option and no bubble selected
-    if (!isMarketView && flowOption === 'churn' && focusBubbleId === null) {
-      // Only show 'net' and 'both' options when no bubble is selected
-      return item.title === 'net' || item.title === 'both';
-    }
+    // if (!isMarketView && flowOption === 'churn' && focusBubbleId === null) {
+    //   // Only show 'net' and 'both' options when no bubble is selected
+    //   return item.title === 'net' || item.title === 'both';
+    // }
     // Show all items in other cases
     return true;
   });
