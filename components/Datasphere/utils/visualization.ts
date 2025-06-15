@@ -358,7 +358,7 @@ export function drawFlows(
   focusedFlow: { from: number, to: number } | null = null
 ) {
   // Detect if this is a Brands Churn view - if so, we'll use bidirectional flows
-  let currentFlowType = flowType;
+  const currentFlowType = flowType;
   const isBrandsChurnView = !isMarketView && flowOption === 'churn';
   console.log('DEBUG - drawFlows called with flowOption:', flowOption);
   // Filter flows based on focus bubble if any
@@ -1034,7 +1034,9 @@ export function drawFlowLine(
     };
     
     const handleClick = () => {
-      onFlowClick && onFlowClick(flow, startBubble, endBubble);
+      if (onFlowClick) {
+        onFlowClick(flow, startBubble, endBubble);
+      }
     };
     
     // Apply event handlers to both line segments
