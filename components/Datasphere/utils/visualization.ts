@@ -349,7 +349,7 @@ export function drawFlows(
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   flows: Flow[],
   bubbles: Bubble[],
-  flowType: string,
+  flowType: string = 'netFlow',
   focusBubbleId: number | null = null,
   centreFlow: boolean = false,
   isMarketView: boolean = false,
@@ -357,6 +357,9 @@ export function drawFlows(
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number, to: number } | null = null
 ) {
+  // Detect if this is a Brands Churn view - if so, we'll use bidirectional flows
+  let currentFlowType = flowType;
+  const isBrandsChurnView = !isMarketView && flowOption === 'churn';
   console.log('DEBUG - drawFlows called with flowOption:', flowOption);
   // Filter flows based on focus bubble if any
   const filteredFlows = focusBubbleId !== null 
@@ -365,7 +368,7 @@ export function drawFlows(
 
   // Get the appropriate flow value based on flow type
   const getFlowValue = (flow: Flow) => {
-    switch (flowType) {
+    switch (currentFlowType) {
       case 'netFlow':
         return flow.absolute_netFlow;
       case 'inFlow only':
@@ -462,8 +465,17 @@ export function drawFlows(
       flowType,
       flowOption
     });
+    
+    // Store the original flow type before potentially modifying it
+    const originalFlowType = flowType;
+    
+    // For Brands Churn view, use bidirectional flows
+    let currentFlowType = flowType;
+    if (isBrandsChurnView) {
+      currentFlowType = 'bi-directional';
+    }
 
-    switch (flowType) {
+    switch (currentFlowType) {
       case 'inFlow only':
         if (flow.absolute_inFlow > 0) {
           drawFlowLine(svg, flow, 'inFlow', target, source, 'inFlow', centreFlow, bubbles, flowOption, isMarketView, onFlowClick, focusedFlow);
@@ -504,9 +516,30 @@ export function drawFlows(
         const points = calculateFlowPoints(source, target, flowType, 'both', flow, centreFlow);
         const { start, end } = points;
         
-        // Calculate the split point based on flow proportions
-        const splitX = start.x + (end.x - start.x) * (flow.absolute_inFlow / totalFlow);
-        const splitY = start.y + (end.y - start.y) * (flow.absolute_inFlow / totalFlow);
+        // For Brands > Churn view, get churn-specific data if available
+        let switchPerc = flow.absolute_inFlow;
+        let otherPerc = flow.absolute_outFlow;
+        let switchIndex = 1.0; 
+        let otherIndex = 1.0;
+        
+        if (isBrandsChurnView && flow.churn && flow.churn.length > 0) {
+          // For Brands Churn view, get split percentages from churn data
+          // Determine which churn data to use based on the original flow direction
+          const typeKey = (originalFlowType === 'inFlow only' || originalFlowType.includes('in')) ? 'in' : 'out';
+          const churnData = flow.churn[0][typeKey];
+          
+          if (churnData) {
+            switchPerc = churnData.switch_perc * 100;
+            otherPerc = churnData.other_perc * 100;
+            switchIndex = churnData.switch_index;
+            otherIndex = churnData.other_index;
+          }
+        }
+        
+        // Calculate split point based on switch and other percentages
+        const splitRatio = switchPerc / (switchPerc + otherPerc);
+        const splitX = start.x + (end.x - start.x) * splitRatio;
+        const splitY = start.y + (end.y - start.y) * splitRatio;
         
         // Determine colors based on flowOption and theme
         const isDarkTheme = document.documentElement.classList.contains('dark');
@@ -626,10 +659,16 @@ export function drawFlows(
         const outFlowAngle = Math.atan2(end.y - splitY, end.x - splitX);
         const offset = 15;
 
-        // Add flow percentages
+        // Add flow percentages with indexes for Brands Churn view
         if (flow.absolute_inFlow > 0) {
           const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
           const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
+          
+          // For Brands Churn view, show percentages and indices
+          const labelText = isBrandsChurnView ? 
+            `${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})` : 
+            `${flow.absolute_inFlow.toFixed(1)}%`;
+            
           svg.append('text')
             .attr('x', textX)
             .attr('y', textY)
@@ -641,7 +680,7 @@ export function drawFlows(
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
             .attr('data-flow-id', `${flow.from}-${flow.to}`)
-            .text(`${flow.absolute_inFlow.toFixed(1)}%`);
+            .text(labelText);
           
           // Set opacity for the label based on focused flow
           if (focusedFlow) {
@@ -654,6 +693,12 @@ export function drawFlows(
         if (flow.absolute_outFlow > 0) {
           const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
           const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
+          
+          // For Brands Churn view, show percentages and indices
+          const labelText = isBrandsChurnView ? 
+            `${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})` : 
+            `${flow.absolute_outFlow.toFixed(1)}%`;
+            
           svg.append('text')
             .attr('x', textX)
             .attr('y', textY)
@@ -665,7 +710,7 @@ export function drawFlows(
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
             .attr('data-flow-id', `${flow.from}-${flow.to}`)
-            .text(`${flow.absolute_outFlow.toFixed(1)}%`);
+            .text(labelText);
           
           // Set opacity for the label based on focused flow
           if (focusedFlow) {
@@ -711,13 +756,16 @@ export function drawFlowLine(
   
   // For affinity flows, always use target bubble's color
   // For center flows, use theme-based color (white/black)
+  // For Brands view with Switching metric and outFlow type, use destination bubble's color
+  // For Market views with Churn/Switching option and inFlow type, when flowing from center, use destination color
   // For all other flows, use source bubble's color
-  // Special case: For Market views with Churn/Switching option and inFlow type, when flowing from center, use destination color
   const lineColor = fromCenter ? 
                     (isMarketView && (flowOption === 'churn' || flowOption === 'switching') && flowDirection === 'inFlow' ? 
                       endBubble.color : 
                       (isDarkTheme ? "#ffffff" : "#000000")) :
-                    flowOption === 'affinity' ? endBubble.color : startBubble.color;
+                    flowOption === 'affinity' ? endBubble.color : 
+                    (!isMarketView && flowOption === 'switching' && flowDirection === 'outFlow') ? endBubble.color : 
+                    startBubble.color;
 
   console.log('DEBUG - drawFlowLine color selection:', {
     flowOption,
@@ -783,12 +831,17 @@ export function drawFlowLine(
   const angle = Math.atan2(dy, dx);
   const offset = 15; // Offset distance from the line
   
-  // Add label based on flow type (excluding 'both' for now)
-  if (flowType !== 'both') {
+  // Handle bidirectional flow for 'both' flowType or churn metrics in brands view
+  const isChurnMetricInBrandsView = !isMarketView && flowOption === 'churn' && (flowType === 'inFlow' || flowType === 'outFlow');
+  const isBidirectionalFlow = flowType === 'both' || isChurnMetricInBrandsView;
+  
+  if (!isBidirectionalFlow) {
+    // Standard flow handling for non-bidirectional flows
     let value: number;
     
     // Get the correct value based on flow type and direction
-    switch (flowType) {
+    const currentFlowDirection = flowDirection; // Use the flow direction passed to this function
+    switch (currentFlowDirection) {
       case 'inFlow':
         value = flow.absolute_inFlow;
         break;
@@ -824,6 +877,176 @@ export function drawFlowLine(
                              (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
       flowLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
     }
+  } else {
+    // Bidirectional flow handling (both flowType or churn metrics in brands view)
+    
+    // For churn metrics, we need to display switch_perc and other_perc
+    let switchPerc, otherPerc, switchIndex, otherIndex;
+    
+    if (isChurnMetricInBrandsView && flow.churn && flow.churn.length > 0) {
+      // Extract churn-specific data
+      const churnData = flow.churn[0][flowType === 'inFlow' ? 'in' : 'out'];
+      if (churnData) {
+        switchPerc = churnData.switch_perc * 100;
+        otherPerc = churnData.other_perc * 100;
+        switchIndex = churnData.switch_index;
+        otherIndex = churnData.other_index;
+      } else {
+        // Fallback if churn data is not available
+        switchPerc = flowType === 'inFlow' ? flow.absolute_inFlow * 0.6 : flow.absolute_outFlow * 0.6;
+        otherPerc = flowType === 'inFlow' ? flow.absolute_inFlow * 0.4 : flow.absolute_outFlow * 0.4;
+        switchIndex = 1.0;
+        otherIndex = 1.0;
+      }
+    } else {
+      // For 'both' flowType, use the standard values
+      switchPerc = flow.absolute_inFlow;
+      otherPerc = flow.absolute_outFlow;
+      switchIndex = 1.0;
+      otherIndex = 1.0;
+    }
+    
+    // Calculate total flow for determining split point
+    const totalPerc = switchPerc + otherPerc;
+    
+    // Remove the original flow line since we'll replace it with two split lines
+    flowLine.remove();
+    
+    // Calculate the split point based on flow proportions
+    const splitX = points.start.x + (points.end.x - points.start.x) * (switchPerc / totalPerc);
+    const splitY = points.start.y + (points.end.y - points.start.y) * (switchPerc / totalPerc);
+    
+    // Create first line segment for switch percentage
+    const switchLine = svg.append("line")
+      .attr("x1", points.start.x)
+      .attr("y1", points.start.y)
+      .attr("x2", splitX)
+      .attr("y2", splitY)
+      .attr("class", "flow-line switch-line")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", lineThickness)
+      .attr("opacity", () => {
+        if (focusedFlow) {
+          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+          return isThisFlowFocused ? 1 : 0.2;
+        }
+        return 0.8;
+      })
+      .attr("data-flow-direction", flowDirection)
+      .attr("data-from-id", startBubble.id.toString())
+      .attr("data-to-id", endBubble.id.toString());  
+      
+    // Create second line segment for other percentage
+    const otherLine = svg.append("line")
+      .attr("x1", splitX)
+      .attr("y1", splitY)
+      .attr("x2", points.end.x)
+      .attr("y2", points.end.y)
+      .attr("class", "flow-line other-line")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", lineThickness)
+      .attr("opacity", () => {
+        if (focusedFlow) {
+          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+          return isThisFlowFocused ? 1 : 0.2;
+        }
+        return 0.8;
+      })
+      .attr("data-flow-direction", flowDirection)
+      .attr("data-from-id", startBubble.id.toString())
+      .attr("data-to-id", endBubble.id.toString());
+      
+    // Add flow markers
+    if (flowOption !== 'affinity') {
+      const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
+      createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
+      otherLine.attr('marker-end', `url(#${markerId})`);
+    } else {
+      // For affinity view, use rounded end caps
+      switchLine.attr('stroke-linecap', 'round');
+      otherLine.attr('stroke-linecap', 'round');
+    }
+        
+    // Calculate angles for text positioning
+    const switchAngle = Math.atan2(points.start.y - splitY, points.start.x - splitX);
+    const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
+    
+    // Create first label for switch percentage
+    const switchLabel = svg.append("text")
+      .attr("class", "flow-label switch-label")
+      .attr("x", points.start.x + (splitX - points.start.x) * 0.35 + Math.cos(switchAngle - Math.PI/2) * offset)
+      .attr("y", points.start.y + (splitY - points.start.y) * 0.35 + Math.sin(switchAngle - Math.PI/2) * offset)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)
+      .attr("font-size", "11px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(`${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})`);   
+    
+    // Create second label for other percentage
+    const otherLabel = svg.append("text")
+      .attr("class", "flow-label other-label")
+      .attr("x", splitX + (points.end.x - splitX) * 0.65 + Math.cos(otherAngle - Math.PI/2) * offset)
+      .attr("y", splitY + (points.end.y - splitY) * 0.65 + Math.sin(otherAngle - Math.PI/2) * offset)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)
+      .attr("font-size", "11px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(`${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})`);  
+    
+    // Set opacity for labels based on focused flow
+    if (focusedFlow) {
+      const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                             (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+      switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      otherLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+    }
+    
+    // Add event handlers to both line segments
+    const handleMouseOver = (event: MouseEvent) => {
+      if (!focusedFlow || 
+          (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+          (flow.from === focusedFlow.to && flow.to === focusedFlow.from)) {
+        switchLine.attr("opacity", 1).attr("stroke-width", lineThickness * 1.1);
+        otherLine.attr("opacity", 1).attr("stroke-width", lineThickness * 1.1);
+      }
+      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption));
+    };
+    
+    const handleMouseOut = () => {
+      const isFocused = focusedFlow && 
+        ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+         (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
+      
+      const opacity = isFocused ? 1 : (focusedFlow ? 0.2 : 0.8);
+      const width = isFocused ? lineThickness * 1.1 : lineThickness;
+      
+      switchLine.attr("opacity", opacity).attr("stroke-width", width);
+      otherLine.attr("opacity", opacity).attr("stroke-width", width);
+      hideTooltip();
+    };
+    
+    const handleClick = () => {
+      onFlowClick && onFlowClick(flow, startBubble, endBubble);
+    };
+    
+    // Apply event handlers to both line segments
+    switchLine
+      .on("mouseover", handleMouseOver)
+      .on("mouseout", handleMouseOut)
+      .on("click", handleClick);
+      
+    otherLine
+      .on("mouseover", handleMouseOver)
+      .on("mouseout", handleMouseOut)
+      .on("click", handleClick);
   }
 
   // Add event handlers
@@ -910,8 +1133,9 @@ function calculateFlowPoints(
     y: target.y - target.outerRingRadius * Math.sin(angle)
   };
 
-  // Apply offset for two-way flows flows
-  if (flowType === 'two-way flows') {
+  // Apply offset for two-way flows or bidirectional churn flows
+  const isChurnBidirectional = (flowType === 'inFlow' || flowType === 'outFlow') && flow.churn;
+  if (flowType === 'two-way flows' || flowType === 'both' || isChurnBidirectional) {
     // Calculate line thickness to determine the offset
     const lineThickness = calculateLineThickness(flow);
     
