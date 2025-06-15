@@ -69,7 +69,7 @@ interface BrandFlow {
   interaction: number;
   churn: ChurnFlowData[];
   switching: SwitchingFlowData[];
-  affinity: any[];
+  affinity: ChurnFlowData[];
 }
 
 type FlowDirection = "inFlow" | "outFlow";
@@ -173,14 +173,14 @@ export function prepareFlowData(
     });
     
     // Filter out null values and cast to Flow type
-    const brandFlows = brandFlowsWithNulls.filter((flow): flow is any => flow !== null) as Flow[];
+    const brandFlows = brandFlowsWithNulls.filter((flow): flow is NonNullable<typeof flow> => flow !== null) as unknown as Flow[];
 
     // Handle centre flow aggregation for brands
     let flows = centreFlow ? prepareCentreFlowData(brandFlows, data.itemIDs.length) : brandFlows;
 
     // Filter flows if there's a focus bubble
     if (focusBubbleId !== null) {
-      flows = flows.filter((flow: Flow) => 
+      flows = flows.filter((flow) => 
         flow.from === focusBubbleId || flow.to === focusBubbleId
       );
     }
