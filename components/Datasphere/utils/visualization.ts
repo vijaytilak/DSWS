@@ -661,17 +661,23 @@ export function drawFlows(
 
         // Add flow percentages with indexes for Brands Churn view
         if (flow.absolute_inFlow > 0) {
-          const textX = start.x + (splitX - start.x) * 0.35 + Math.cos(inFlowAngle - Math.PI/2) * offset;
-          const textY = start.y + (splitY - start.y) * 0.35 + Math.sin(inFlowAngle - Math.PI/2) * offset;
+          // For inFlow (Churn In, Switch In), position percentage near tail (source) and index near arrow (split)
+          const percPositionFactor = 0.2; // Near source/start (tail end)
+          const indexPositionFactor = 0.8; // Near split point (arrow end)
           
-          // For Brands Churn view, show percentages and indices
-          const labelText = isBrandsChurnView ? 
-            `${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})` : 
+          // Position for percentage
+          const percX = start.x + (splitX - start.x) * percPositionFactor + Math.cos(inFlowAngle - Math.PI/2) * offset;
+          const percY = start.y + (splitY - start.y) * percPositionFactor + Math.sin(inFlowAngle - Math.PI/2) * offset;
+          
+          // For Brands Churn view, show percentages
+          const percLabelText = isBrandsChurnView ? 
+            `${switchPerc.toFixed(1)}%` : 
             `${flow.absolute_inFlow.toFixed(1)}%`;
             
+          // Add percentage label
           svg.append('text')
-            .attr('x', textX)
-            .attr('y', textY)
+            .attr('x', percX)
+            .attr('y', percY)
             .attr('class', 'flow-label')
             .attr('text-anchor', 'start')
             .attr('dominant-baseline', 'middle')
@@ -680,7 +686,26 @@ export function drawFlows(
             .attr('data-from-id', target.id.toString())
             .attr('data-to-id', source.id.toString())
             .attr('data-flow-id', `${flow.from}-${flow.to}`)
-            .text(labelText);
+            .text(percLabelText);
+            
+          // Add index label near source for inFlow
+          if (isBrandsChurnView) {
+            const indexX = start.x + (splitX - start.x) * indexPositionFactor + Math.cos(inFlowAngle - Math.PI/2) * offset;
+            const indexY = start.y + (splitY - start.y) * indexPositionFactor + Math.sin(inFlowAngle - Math.PI/2) * offset;
+            
+            svg.append('text')
+              .attr('x', indexX)
+              .attr('y', indexY)
+              .attr('class', 'flow-label flow-index-label')
+              .attr('text-anchor', 'start')
+              .attr('dominant-baseline', 'middle')
+              .attr('fill', inFlowColor)  
+              .attr("font-size", "10px")
+              .attr('data-from-id', target.id.toString())
+              .attr('data-to-id', source.id.toString())
+              .attr('data-flow-id', `${flow.from}-${flow.to}`)
+              .text(`(${switchIndex.toFixed(1)})`);
+          }
           
           // Set opacity for the label based on focused flow
           if (focusedFlow) {
@@ -691,17 +716,23 @@ export function drawFlows(
         }
 
         if (flow.absolute_outFlow > 0) {
-          const textX = splitX + (end.x - splitX) * 0.65 + Math.cos(outFlowAngle - Math.PI/2) * offset;
-          const textY = splitY + (end.y - splitY) * 0.65 + Math.sin(outFlowAngle - Math.PI/2) * offset;
+          // For outFlow (Churn Out, Switch Out), position percentage near tail (split) and index near arrow (destination)
+          const percPositionFactor = 0.2; // Near split point (tail end)
+          const indexPositionFactor = 0.8; // Near destination (arrow end)
           
-          // For Brands Churn view, show percentages and indices
-          const labelText = isBrandsChurnView ? 
-            `${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})` : 
+          // Position for percentage
+          const percX = splitX + (end.x - splitX) * percPositionFactor + Math.cos(outFlowAngle - Math.PI/2) * offset;
+          const percY = splitY + (end.y - splitY) * percPositionFactor + Math.sin(outFlowAngle - Math.PI/2) * offset;
+          
+          // For Brands Churn view, show percentages
+          const percLabelText = isBrandsChurnView ? 
+            `${otherPerc.toFixed(1)}%` : 
             `${flow.absolute_outFlow.toFixed(1)}%`;
             
+          // Add percentage label
           svg.append('text')
-            .attr('x', textX)
-            .attr('y', textY)
+            .attr('x', percX)
+            .attr('y', percY)
             .attr('class', 'flow-label')
             .attr('text-anchor', 'start')
             .attr('dominant-baseline', 'middle')
@@ -710,7 +741,26 @@ export function drawFlows(
             .attr('data-from-id', source.id.toString())
             .attr('data-to-id', target.id.toString())
             .attr('data-flow-id', `${flow.from}-${flow.to}`)
-            .text(labelText);
+            .text(percLabelText);
+            
+          // Add index label near destination for outFlow
+          if (isBrandsChurnView) {
+            const indexX = splitX + (end.x - splitX) * indexPositionFactor + Math.cos(outFlowAngle - Math.PI/2) * offset;
+            const indexY = splitY + (end.y - splitY) * indexPositionFactor + Math.sin(outFlowAngle - Math.PI/2) * offset;
+            
+            svg.append('text')
+              .attr('x', indexX)
+              .attr('y', indexY)
+              .attr('class', 'flow-label flow-index-label')
+              .attr('text-anchor', 'start')
+              .attr('dominant-baseline', 'middle')
+              .attr('fill', outFlowColor)  
+              .attr("font-size", "10px")
+              .attr('data-from-id', source.id.toString())
+              .attr('data-to-id', target.id.toString())
+              .attr('data-flow-id', `${flow.from}-${flow.to}`)
+              .text(`(${otherIndex.toFixed(1)})`);
+          }
           
           // Set opacity for the label based on focused flow
           if (focusedFlow) {
@@ -821,15 +871,26 @@ export function drawFlowLine(
     flowLine.attr('stroke-linecap', 'round');
   }
 
-  // Calculate label position (midpoint of the line)
-  const midX = (points.start.x + points.end.x) / 2;
-  const midY = (points.start.y + points.end.y) / 2;
+  // Calculate label position with slight variation based on flow ID to minimize overlap
+  // Use flow IDs to create a deterministic but varied position
+  const positionVariation = ((flow.from * 13 + flow.to * 7) % 30) / 100; // 0-0.29 variation
+  const positionFactor = 0.5 + positionVariation; // 0.5-0.79 along the line
+  
+  const midX = points.start.x + (points.end.x - points.start.x) * positionFactor;
+  const midY = points.start.y + (points.end.y - points.start.y) * positionFactor;
   
   // Calculate offset for the label (perpendicular to the line)
   const dx = points.end.x - points.start.x;
   const dy = points.end.y - points.start.y;
   const angle = Math.atan2(dy, dx);
   const offset = 15; // Offset distance from the line
+  
+  // Determine if this is an inflow or outflow for index positioning
+  // This will be used to position indices appropriately:
+  // - For "Churn In", "Switch In", "Spend Less" - indices near source
+  // - For "Churn Out", "Switch Out", "Spend More" - indices near destination
+  const isInFlow = flowDirection === 'inFlow';
+  const isOutFlow = flowDirection === 'outFlow';
   
   // Handle bidirectional flow for 'both' flowType or churn metrics in brands view
   const isChurnMetricInBrandsView = !isMarketView && flowOption === 'churn' && (flowType === 'inFlow' || flowType === 'outFlow');
@@ -858,6 +919,8 @@ export function drawFlowLine(
         value = 0;
     }
     
+    // Determine if this flow type should have index near destination or source
+    // For standard flows, we only show percentage without index
     const flowLabel = svg.append("text")
       .attr("class", "flow-label")
       .attr("x", midX + offset * Math.sin(angle))
@@ -973,11 +1036,28 @@ export function drawFlowLine(
     const switchAngle = Math.atan2(points.start.y - splitY, points.start.x - splitX);
     const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
     
-    // Create first label for switch percentage
+    // For first part of the flow line (from start to split point)
+    // Position labels consistently: percentage near tail end, index near arrow end
+    let switchPercPosition, switchIndexPosition;
+    
+    // For the first part of the line:
+    // - For inFlow: the tail is at the start, arrow is at the split point
+    // - For outFlow: the tail is at the split point, arrow is at the start (reversed direction)
+    if (flowDirection === 'inFlow') {
+      // For inFlow: percentage near tail (start/source), index near arrow (split point)
+      switchPercPosition = 0.2; // Near start (tail)
+      switchIndexPosition = 0.8; // Near split point (arrow)
+    } else {
+      // For outFlow: percentage near split point (tail), index near start (arrow)
+      switchPercPosition = 0.8; // Near split point (tail)
+      switchIndexPosition = 0.2; // Near start (arrow)
+    }
+    
+    // Create percentage label
     const switchLabel = svg.append("text")
       .attr("class", "flow-label switch-label")
-      .attr("x", points.start.x + (splitX - points.start.x) * 0.35 + Math.cos(switchAngle - Math.PI/2) * offset)
-      .attr("y", points.start.y + (splitY - points.start.y) * 0.35 + Math.sin(switchAngle - Math.PI/2) * offset)
+      .attr("x", points.start.x + (splitX - points.start.x) * switchPercPosition + Math.cos(switchAngle - Math.PI/2) * offset)
+      .attr("y", points.start.y + (splitY - points.start.y) * switchPercPosition + Math.sin(switchAngle - Math.PI/2) * offset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr('fill', lineColor)
@@ -985,13 +1065,44 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})`);   
+      .text(`${switchPerc.toFixed(1)}%`);
+      
+    // Create index label - positioned near source for inFlow
+    const switchIndexLabel = svg.append("text")
+      .attr("class", "flow-label switch-index-label")
+      .attr("x", points.start.x + (splitX - points.start.x) * switchIndexPosition + Math.cos(switchAngle - Math.PI/2) * offset)
+      .attr("y", points.start.y + (splitY - points.start.y) * switchIndexPosition + Math.sin(switchAngle - Math.PI/2) * offset)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)
+      .attr("font-size", "10px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(`(${switchIndex.toFixed(1)})`);   
     
-    // Create second label for other percentage
+    // For second part of the flow line (from split point to end)
+    // Position labels consistently: percentage near tail end, index near arrow end
+    let otherPercPosition, otherIndexPosition;
+    
+    // For the second part of the line:
+    // - For outFlow: the tail is at the split point, arrow is at the end
+    // - For inFlow: the tail is at the end, arrow is at the split point (reversed direction)
+    if (flowDirection === 'outFlow') {
+      // For outFlow: percentage near tail (split point), index near arrow (end/destination)
+      otherPercPosition = 0.2; // Near split point (tail)
+      otherIndexPosition = 0.8; // Near end (arrow)
+    } else {
+      // For inFlow: percentage near end (tail), index near split point (arrow)
+      otherPercPosition = 0.8; // Near end (tail)
+      otherIndexPosition = 0.2; // Near split point (arrow)
+    }
+    
+    // Create percentage label
     const otherLabel = svg.append("text")
       .attr("class", "flow-label other-label")
-      .attr("x", splitX + (points.end.x - splitX) * 0.65 + Math.cos(otherAngle - Math.PI/2) * offset)
-      .attr("y", splitY + (points.end.y - splitY) * 0.65 + Math.sin(otherAngle - Math.PI/2) * offset)
+      .attr("x", splitX + (points.end.x - splitX) * otherPercPosition + Math.cos(otherAngle - Math.PI/2) * offset)
+      .attr("y", splitY + (points.end.y - splitY) * otherPercPosition + Math.sin(otherAngle - Math.PI/2) * offset)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr('fill', lineColor)
@@ -999,7 +1110,21 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})`);  
+      .text(`${otherPerc.toFixed(1)}%`);
+      
+    // Create index label - positioned near destination for outFlow
+    const otherIndexLabel = svg.append("text")
+      .attr("class", "flow-label other-index-label")
+      .attr("x", splitX + (points.end.x - splitX) * otherIndexPosition + Math.cos(otherAngle - Math.PI/2) * offset)
+      .attr("y", splitY + (points.end.y - splitY) * otherIndexPosition + Math.sin(otherAngle - Math.PI/2) * offset)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)
+      .attr("font-size", "10px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(`(${otherIndex.toFixed(1)})`);  
     
     // Set opacity for labels based on focused flow
     if (focusedFlow) {
@@ -1007,6 +1132,8 @@ export function drawFlowLine(
                              (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
       switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
       otherLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      switchIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      otherIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
     }
     
     // Add event handlers to both line segments

@@ -145,7 +145,13 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
     switch (flowDirection) {
       case 'inFlow':
         if (flowOption === 'churn') {
-          return `${flow.absolute_inFlow.toFixed(1)}% sales churn in from ${source.label}`;
+          // Get index value if available
+          let indexText = '';
+          if (flow.churn && flow.churn.length > 0 && flow.churn[0].in) {
+            const index = flow.churn[0].in.switch_index;
+            indexText = index ? ` (Index: ${index.toFixed(1)})` : '';
+          }
+          return `${flow.absolute_inFlow.toFixed(1)}% sales churn in from ${source.label}${indexText}`;
         } else if (flowOption === 'switching') {
           return `${flow.absolute_inFlow.toFixed(1)}% switch in from ${source.label}`;
         } else {
@@ -153,7 +159,13 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
         }
       case 'outFlow':
         if (flowOption === 'churn') {
-          return `${flow.absolute_outFlow.toFixed(1)}% sales churn out to ${target.label}`;
+          // Get index value if available
+          let indexText = '';
+          if (flow.churn && flow.churn.length > 0 && flow.churn[0].out) {
+            const index = flow.churn[0].out.switch_index;
+            indexText = index ? ` (Index: ${index.toFixed(1)})` : '';
+          }
+          return `${flow.absolute_outFlow.toFixed(1)}% sales churn out to ${target.label}${indexText}`;
         } else if (flowOption === 'switching') {
           return `${flow.absolute_outFlow.toFixed(1)}% switch out to ${target.label}`;
         } else {
@@ -161,16 +173,30 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
         }
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
+          // Get index value if available for inFlow
+          let indexText = '';
+          if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].in) {
+            const index = flow.churn[0].in.switch_index;
+            indexText = index ? ` (Index: ${index.toFixed(1)})` : '';
+          }
+          
           if (flowOption === 'churn') {
-            return `Net sales churn in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+            return `Net sales churn in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%${indexText}`;
           } else if (flowOption === 'switching') {
             return `Net switch in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           } else {
             return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           }
         } else {
+          // Get index value if available for outFlow
+          let indexText = '';
+          if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].out) {
+            const index = flow.churn[0].out.switch_index;
+            indexText = index ? ` (Index: ${index.toFixed(1)})` : '';
+          }
+          
           if (flowOption === 'churn') {
-            return `Net sales churn out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+            return `Net sales churn out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%${indexText}`;
           } else if (flowOption === 'switching') {
             return `Net switch out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           } else {
