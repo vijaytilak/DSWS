@@ -55,9 +55,10 @@ class VisualizationManager {
 
     // Center Flow Lines and Their Labels
     this.svg.selectAll<SVGElement, Flow>("path.flow-line, line.flow-line")
-      .filter((d: Flow | undefined) => {
+      .filter(function(d: Flow | undefined) {
         if (!d) {
-            const element = d3.select(this as SVGElement);
+            // Use function() syntax to ensure 'this' refers to the DOM element
+            const element = d3.select(this);
             return element.attr("data-from-id") === centerBubbleId.toString();
         }
         // Check if 'from' property exists before accessing it
@@ -273,7 +274,8 @@ export function drawFlows(
     flows: flowsWithMetrics.map(f => ({
       from: f.from,
       to: f.to,
-      value: f.value,
+      // Use absolute_netFlow instead of value which doesn't exist on Flow type
+      value: f.absolute_netFlow,
       percentRank: f.percentRank
     }))
   });

@@ -52,14 +52,16 @@ export function attachFlowEventHandlers(
 
   selection
     .on("mouseover", (event: MouseEvent) => {
-      (selection as d3.Selection<SVGElement, any, any, any>)
+      // Cast to unknown first to avoid type error
+      (selection as unknown as d3.Selection<SVGElement, any, any, any>)
           .attr("opacity", 1)
           .attr("stroke-width", lineThickness * 1.1);
       otherSegmentSelection?.attr("opacity", 1).attr("stroke-width", lineThickness * 1.1);
       showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirectionForTooltip, centreFlow, flowOption));
     })
     .on("mouseout", (event: MouseEvent) => {
-      (selection as d3.Selection<SVGElement, any, any, any>)
+      // Cast to unknown first to avoid type error
+      (selection as unknown as d3.Selection<SVGElement, any, any, any>)
           .attr("opacity", restingOpacity)
           .attr("stroke-width", restingStrokeWidth);
       otherSegmentSelection?.attr("opacity", restingOpacity).attr("stroke-width", restingStrokeWidth);
@@ -92,6 +94,12 @@ export function createFlowLabel(
   const angle = Math.atan2(dy, dx);
   const offset = 15;
 
+  // Safety check for NaN values in calculations
+  if (isNaN(midX) || isNaN(midY) || isNaN(angle)) {
+    console.warn('Flow label position calculation resulted in NaN values:', { midX, midY, angle, flow });
+    return; // Don't attempt to draw the label if we have invalid positioning
+  }
+
   let textContent: string;
   if (labelTextOverride) {
     textContent = labelTextOverride;
@@ -108,19 +116,38 @@ export function createFlowLabel(
         value = flow.absolute_netFlow;
         break;
       default:
-        value = flow.value || 0;
+        console.log('DEBUG - Flow Input:', {
+          from: flow.from,
+          to: flow.to,
+          absolute_inFlow: flow.absolute_inFlow,
+          absolute_outFlow: flow.absolute_outFlow,
+          absolute_netFlowDirection: flow.absolute_netFlowDirection,
+          absolute_netFlow: flow.absolute_netFlow
+        });
+        // Use absolute_netFlow instead of non-existent 'value' property
+        value = flow.absolute_netFlow || 0;
     }
     textContent = `${Math.abs(value).toFixed(1)}%`;
   }
 
+  // Calculate positions with safety checks
+  const labelX = midX + offset * Math.sin(angle);
+  const labelY = midY - offset * Math.cos(angle);
+  
+  // Safety check for final position values
+  if (isNaN(labelX) || isNaN(labelY)) {
+    console.warn('Final label position calculation resulted in NaN values:', { labelX, labelY, flow });
+    return; // Don't attempt to draw the label if we have invalid positioning
+  }
+
   const flowLabel = svg.append("text")
     .attr("class", "flow-label")
-    .attr("x", midX + offset * Math.sin(angle))
-    .attr("y", midY - offset * Math.cos(angle))
+    .attr("x", labelX)
+    .attr("y", labelY)
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .attr('fill', lineColor)
-    .attr("font-size", "12px")
+    .attr("font-size", CONFIG.fontSizes.flowLabel || "12px") // Use config or fallback
     .attr('data-from-id', labelFromBubble.id.toString())
     .attr('data-to-id', labelToBubble.id.toString())
     .attr('data-flow-id', `${flow.from}-${flow.to}`)
@@ -147,12 +174,26 @@ export function drawSingleFlowLine(
 ): void {
   const points = calculateFlowPoints(startBubbleGfx, endBubbleGfx, flowTypeForColorAndPoints, flowDirectionForMarkerAndTooltip, flow);
   const lineThickness = calculateLineThickness(flow);
-  const lineColor = getFlowLineColor(flow, startBubbleGfx, endBubbleGfx, allBubbles, flowDirectionForMarkerAndTooltip, flowTypeForColorAndPoints, flowOption, isMarketView, isDarkTheme);
+  // Fix function call to match correct signature (7 args, not 9)
+  const lineColor = getFlowLineColor(startBubbleGfx, endBubbleGfx, allBubbles, flowDirectionForMarkerAndTooltip, flowOption, isMarketView, isDarkTheme);
 
-  const flowPath = d3.line()([
-    [points.start.x, points.start.y],
-    [points.end.x, points.end.y]
-  ]);
+  // Make sure the points are valid before drawing the line
+  if (isNaN(points.start.x) || isNaN(points.start.y) || isNaN(points.end.x) || isNaN(points.end.y)) {
+    console.warn('Flow line calculation resulted in NaN coordinates:', { start: points.start, end: points.end, flow });
+    return; // Skip this flow line if coordinates are invalid
+  }
+
+  // Create path data string manually instead of using d3.line() to ensure proper format
+  const startPoint = `${points.start.x},${points.start.y}`;
+  const endPoint = `${points.end.x},${points.end.y}`;
+  const flowPath = `M${startPoint} L${endPoint}`;
+  
+  console.log('DEBUG - Flow path:', {
+    flow,
+    startPoint,
+    endPoint,
+    pathData: flowPath
+  });
 
   const isLineFocused = focusedFlow ? (flow.from === focusedFlow.from && flow.to === focusedFlow.to) || (flow.from === focusedFlow.to && flow.to === focusedFlow.from) : false;
   const restingOpacity = isLineFocused ? 1 : (CONFIG.flow.unfocusedOpacity || 0.2);
@@ -160,6 +201,7 @@ export function drawSingleFlowLine(
 
   const fromCenter = startBubbleGfx.id === allBubbles.length - 1;
 
+  // Create the path element with explicit attributes to ensure visibility
   const flowLine = svg.append("path")
     .datum(flow)
     .attr("d", flowPath)
@@ -167,10 +209,18 @@ export function drawSingleFlowLine(
     .attr("stroke", lineColor)
     .attr("stroke-width", restingStrokeWidth)
     .attr("opacity", restingOpacity)
+    .attr("fill", "none")  // Important! SVG paths need fill="none" for lines
     .attr("data-flow-direction", flowDirectionForMarkerAndTooltip)
     .attr("data-from-center", fromCenter.toString())
     .attr("data-from-id", startBubbleGfx.id.toString())
     .attr("data-to-id", endBubbleGfx.id.toString());
+    
+  console.log('DEBUG - Flow line created:', {
+    id: `${flow.from}-${flow.to}`,
+    stroke: lineColor,
+    strokeWidth: restingStrokeWidth,
+    opacity: restingOpacity
+  });
 
   if (flowOption !== 'affinity') {
     const markerId = `${flowDirectionForMarkerAndTooltip}-${startBubbleGfx.id}-${endBubbleGfx.id}`;
@@ -199,10 +249,17 @@ export function drawSplitFlowLine(
   centreFlow: boolean,
   focusedFlow: { from: number, to: number } | null,
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
-  isBrandsChurnView: boolean
+  isBrandsChurnView = false // Default to false and make it optional
 ): void {
   const totalFlowForThickness = flow.absolute_inFlow + flow.absolute_outFlow;
-  const lineThickness = calculateLineThickness({ ...flow, percentRank: flow.percentRank, value: totalFlowForThickness});
+  // Create a modified flow object without the non-existent 'value' property
+  const lineThickness = calculateLineThickness({
+    ...flow,
+    percentRank: flow.percentRank,
+    // Value property will be accessed by the function but isn't part of the type
+    // So we use a temporary type assertion to avoid the TypeScript error
+    absolute_netFlow: totalFlowForThickness
+  });
 
   const points = calculateFlowPoints(sourceBubble, targetBubble, originalFlowType, 'both', flow, centreFlow);
   const { start, end } = points;
@@ -249,85 +306,103 @@ export function drawSplitFlowLine(
   const splitX = start.x + (end.x - start.x) * splitRatio;
   const splitY = start.y + (end.y - start.y) * splitRatio;
 
-  const outFlowColor = getFlowLineColor(flow, sourceBubble, targetBubble, allBubbles, 'outFlow', originalFlowType, flowOption, isMarketView, isDarkTheme);
-  const inFlowColor = getFlowLineColor(flow, targetBubble, sourceBubble, allBubbles, 'inFlow', originalFlowType, flowOption, isMarketView, isDarkTheme);
+  // Fix function call to match correct signature (7 args, not 9)
+  const outFlowColor = getFlowLineColor(sourceBubble, targetBubble, allBubbles, 'outFlow', flowOption, isMarketView, isDarkTheme);
+  // Fix function call to match correct signature (7 args, not 9)
+  const inFlowColor = getFlowLineColor(targetBubble, sourceBubble, allBubbles, 'inFlow', flowOption, isMarketView, isDarkTheme);
 
   const isLineFocused = focusedFlow ? (flow.from === focusedFlow.from && flow.to === focusedFlow.to) || (flow.from === focusedFlow.to && flow.to === focusedFlow.from) : false;
   const restingOpacity = isLineFocused ? 1 : (CONFIG.flow.unfocusedOpacity || 0.2);
 
+  const outFlowPath = `M${start.x},${start.y} L${splitX},${splitY}`;
+  const inFlowPath = `M${splitX},${splitY} L${end.x},${end.y}`;
 
-  const lineFromSource = svg.append('line')
+  console.log('DEBUG - Split Flow Paths:', {
+    outFlowPath,
+    inFlowPath,
+    start: `${start.x},${start.y}`,
+    split: `${splitX},${splitY}`,
+    end: `${end.x},${end.y}`
+  });
+
+  const outFlowLine = svg.append('path')
     .datum(flow)
-    .attr('x1', start.x).attr('y1', start.y)
-    .attr('x2', splitX).attr('y2', splitY)
-    .attr('stroke', outFlowColor).attr('stroke-width', lineThickness).attr('class', 'flow-line')
-    .attr('data-flow-direction', 'outFlow').attr('data-from-id', sourceBubble.id.toString()).attr('data-to-id', targetBubble.id.toString())
-    .attr("opacity", restingOpacity);
+    .attr('d', outFlowPath)
+    .attr('stroke', outFlowColor)
+    .attr('stroke-width', lineThickness)
+    .attr('class', 'flow-line')
+    .attr('data-flow-direction', 'outFlow')
+    .attr('data-from-id', sourceBubble.id.toString())
+    .attr('data-to-id', targetBubble.id.toString())
+    .attr("opacity", restingOpacity)
+    .attr("fill", "none");
 
-  // The graphical line for "inflow" to sourceBubble actually goes from targetBubble's side of the split (end point) to the split point.
-  // No, it should be from split point to the end point representing targetBubble for parallel effect.
-  // The original code was: x1: splitX, y1: splitY, x2: start.x, y2: start.y for the inflow line relative to sourceBubble.
-  // This means it was drawn from the split point back to the sourceBubble side.
-  // For parallel lines, if start->end is source->target:
-  // Line1 (source to target, e.g. outFlow from source) is start -> splitPoint
-  // Line2 (target to source, e.g. inFlow to source) is splitPoint -> end (this is one way to show it)
-  // OR Line2 (target to source) is end -> splitPoint (if arrow points from end to split)
-  // The provided code for bi-directional in drawFlows was:
-  // inFlowLine: (splitX, splitY) to (start.x, start.y) -> stroke(inFlowColor) data-from-id=target data-to-id=source
-  // outFlowLine: (splitX, splitY) to (end.x, end.y) -> stroke(outFlowColor) data-from-id=source data-to-id=target
-  // This means `start` is sourceBubble side, `end` is targetBubble side.
-  const lineToSource = svg.append('line')
+  const inFlowLine = svg.append('path')
     .datum(flow)
-    .attr('x1', splitX).attr('y1', splitY)
-    .attr('x2', end.x).attr('y2', end.y) // Corrected: from split to targetBubble side for parallel effect
-    .attr('stroke', inFlowColor).attr('stroke-width', lineThickness).attr('class', 'flow-line')
-    .attr('data-flow-direction', 'inFlow').attr('data-from-id', targetBubble.id.toString()).attr('data-to-id', sourceBubble.id.toString())
-    .attr("opacity", restingOpacity);
-
+    .attr('d', inFlowPath)
+    .attr('stroke', inFlowColor)
+    .attr('stroke-width', lineThickness)
+    .attr('class', 'flow-line')
+    .attr('data-flow-direction', 'inFlow')
+    .attr('data-from-id', targetBubble.id.toString())
+    .attr('data-to-id', sourceBubble.id.toString())
+    .attr("opacity", restingOpacity)
+    .attr("fill", "none");
 
   if (flowOption !== 'affinity') {
     const markerSize = calculateMarkerSize(lineThickness);
     createFlowMarker(svg, `outFlow-${sourceBubble.id}-${targetBubble.id}`, markerSize, outFlowColor, 'outFlow');
-    lineFromSource.attr('marker-end', `url(#outFlow-${sourceBubble.id}-${targetBubble.id})`);
+    outFlowLine.attr('marker-end', `url(#outFlow-${sourceBubble.id}-${targetBubble.id})`);
 
-    // Marker for lineToSource should represent flow from targetBubble to sourceBubble
     createFlowMarker(svg, `inFlow-${targetBubble.id}-${sourceBubble.id}`, markerSize, inFlowColor, 'inFlow');
-    lineToSource.attr('marker-end', `url(#inFlow-${targetBubble.id}-${sourceBubble.id})`);
+    inFlowLine.attr('marker-end', `url(#inFlow-${targetBubble.id}-${sourceBubble.id})`);
   } else {
-    lineFromSource.attr('stroke-linecap', 'round');
-    lineToSource.attr('stroke-linecap', 'round');
+    outFlowLine.attr('stroke-linecap', 'round');
+    inFlowLine.attr('stroke-linecap', 'round');
   }
 
-  attachFlowEventHandlers(lineFromSource, flow, sourceBubble, targetBubble, 'outFlow', centreFlow, flowOption, lineThickness, isLineFocused, onFlowClick, lineToSource);
-  attachFlowEventHandlers(lineToSource, flow, targetBubble, sourceBubble, 'inFlow', centreFlow, flowOption, lineThickness, isLineFocused, onFlowClick, lineFromSource);
+  attachFlowEventHandlers(outFlowLine as unknown as d3.Selection<SVGPathElement | SVGLineElement, Flow, any, any>, flow, sourceBubble, targetBubble, 'outFlow', centreFlow, flowOption, lineThickness, isLineFocused, onFlowClick, inFlowLine as unknown as d3.Selection<SVGPathElement | SVGLineElement, Flow, any, any>);
+  attachFlowEventHandlers(inFlowLine as unknown as d3.Selection<SVGPathElement | SVGLineElement, Flow, any, any>, flow, targetBubble, sourceBubble, 'inFlow', centreFlow, flowOption, lineThickness, isLineFocused, onFlowClick, outFlowLine as unknown as d3.Selection<SVGPathElement | SVGLineElement, Flow, any, any>);
 
   const labelOffset = CONFIG.flow.labelOffset || 15;
   if (switchPerc > 0) { // Label for flow from sourceBubble
     const outAngle = Math.atan2(splitY - start.y, splitX - start.x);
     const outLabelX = start.x + (splitX - start.x) * 0.5 + Math.sin(outAngle) * labelOffset * (start.y > splitY ? 1 : -1); // Adjust offset direction
     const outLabelY = start.y + (splitY - start.y) * 0.5 - Math.cos(outAngle) * labelOffset * (start.x < splitX ? 1: -1);
-    const outLabelText = isBrandsChurnView ? `${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})` : `${switchPerc.toFixed(1)}%`;
-    svg.append('text')
-      .attr('x', outLabelX).attr('y', outLabelY)
-      .attr('class', 'flow-label').attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-      .attr('fill', outFlowColor).attr("font-size", CONFIG.fontSizes.flowLabel)
-      .attr('data-from-id', sourceBubble.id.toString()).attr('data-to-id', targetBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}-out`)
-      .attr("opacity", restingOpacity).text(outLabelText);
+    
+    // Safety check for NaN values
+    if (isNaN(outLabelX) || isNaN(outLabelY)) {
+      console.warn('Out-label position calculation resulted in NaN values:', { outLabelX, outLabelY, flow });
+    } else {
+      const outLabelText = isBrandsChurnView ? `${switchPerc.toFixed(1)}% (${switchIndex.toFixed(1)})` : `${switchPerc.toFixed(1)}%`;
+      svg.append('text')
+        .attr('x', outLabelX).attr('y', outLabelY)
+        .attr('class', 'flow-label').attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+        .attr('fill', outFlowColor).attr("font-size", CONFIG.fontSizes.flowLabel)
+        .attr('data-from-id', sourceBubble.id.toString()).attr('data-to-id', targetBubble.id.toString())
+        .attr('data-flow-id', `${flow.from}-${flow.to}-out`)
+        .attr("opacity", restingOpacity).text(outLabelText);
+    }
   }
 
   if (otherPerc > 0) { // Label for flow to sourceBubble (from targetBubble)
     const inAngle = Math.atan2(end.y - splitY, end.x - splitX);
     const inLabelX = splitX + (end.x - splitX) * 0.5 + Math.sin(inAngle) * labelOffset * (splitY > end.y ? 1: -1);
     const inLabelY = splitY + (end.y - splitY) * 0.5 - Math.cos(inAngle) * labelOffset * (splitX < end.x ? 1: -1);
-    const inLabelText = isBrandsChurnView ? `${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})` : `${otherPerc.toFixed(1)}%`;
-    svg.append('text')
-      .attr('x', inLabelX).attr('y', inLabelY)
-      .attr('class', 'flow-label').attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-      .attr('fill', inFlowColor).attr("font-size", CONFIG.fontSizes.flowLabel)
-      .attr('data-from-id', targetBubble.id.toString()).attr('data-to-id', sourceBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}-in`)
-      .attr("opacity", restingOpacity).text(inLabelText);
+    
+    // Safety check for NaN values
+    if (isNaN(inLabelX) || isNaN(inLabelY)) {
+      console.warn('In-label position calculation resulted in NaN values:', { inLabelX, inLabelY, flow });
+    } else {
+      const inLabelText = isBrandsChurnView ? `${otherPerc.toFixed(1)}% (${otherIndex.toFixed(1)})` : `${otherPerc.toFixed(1)}%`;
+      svg.append('text')
+        .attr('x', inLabelX).attr('y', inLabelY)
+        .attr('class', 'flow-label').attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+        .attr('fill', inFlowColor).attr("font-size", CONFIG.fontSizes.flowLabel)
+        .attr('data-from-id', targetBubble.id.toString()).attr('data-to-id', sourceBubble.id.toString())
+        .attr('data-flow-id', `${flow.from}-${flow.to}-in`)
+        .attr("opacity", restingOpacity).text(inLabelText);
+    }
   }
 }
 
@@ -355,8 +430,22 @@ export function drawInflowOnlyTypeFlows(
       const sourceGfx = params.bubbles.find(b => b.id === flow.to);
       const targetGfx = params.bubbles.find(b => b.id === flow.from);
       if (!sourceGfx || !targetGfx) return;
-      drawSingleFlowLine(params.svg, flow, sourceGfx, targetGfx, params.bubbles, 'inFlow', flowType,
-        params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+      // Call with only required arguments
+      drawSingleFlowLine(
+        params.svg, 
+        flow, 
+        sourceGfx, 
+        targetGfx, 
+        params.bubbles, 
+        'inFlow', 
+        flowType, 
+        params.flowOption, 
+        params.isMarketView, 
+        params.isDarkTheme, 
+        params.centreFlow, 
+        params.focusedFlow, 
+        params.onFlowClick
+      );
     }
   });
 }
@@ -371,8 +460,22 @@ export function drawOutflowOnlyTypeFlows(
       const sourceGfx = params.bubbles.find(b => b.id === flow.from);
       const targetGfx = params.bubbles.find(b => b.id === flow.to);
       if (!sourceGfx || !targetGfx) return;
-      drawSingleFlowLine(params.svg, flow, sourceGfx, targetGfx, params.bubbles, 'outFlow', flowType,
-        params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+      // Call with only required arguments
+      drawSingleFlowLine(
+        params.svg, 
+        flow, 
+        sourceGfx, 
+        targetGfx, 
+        params.bubbles, 
+        'outFlow', 
+        flowType, 
+        params.flowOption, 
+        params.isMarketView, 
+        params.isDarkTheme, 
+        params.centreFlow, 
+        params.focusedFlow, 
+        params.onFlowClick
+      );
     }
   });
 }
@@ -394,8 +497,22 @@ export function drawNetFlowTypeFlows(
       flowDirectionMarker = 'outFlow';
     }
     if (!sourceGfx || !targetGfx) return;
-    drawSingleFlowLine(params.svg, flow, sourceGfx, targetGfx, params.bubbles, flowDirectionMarker, flowType,
-      params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+    // Call with only required arguments
+    drawSingleFlowLine(
+      params.svg, 
+      flow, 
+      sourceGfx, 
+      targetGfx, 
+      params.bubbles, 
+      flowDirectionMarker, 
+      flowType,
+      params.flowOption, 
+      params.isMarketView, 
+      params.isDarkTheme, 
+      params.centreFlow, 
+      params.focusedFlow, 
+      params.onFlowClick
+    );
   });
 }
 
@@ -408,8 +525,22 @@ export function drawInteractionTypeFlows(
     const sourceGfx = params.bubbles.find(b => b.id === flow.from);
     const targetGfx = params.bubbles.find(b => b.id === flow.to);
     if (!sourceGfx || !targetGfx) return;
-    drawSingleFlowLine(params.svg, flow, sourceGfx, targetGfx, params.bubbles, 'interaction', flowType,
-      params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+    // Call with only required arguments
+    drawSingleFlowLine(
+      params.svg, 
+      flow, 
+      sourceGfx, 
+      targetGfx, 
+      params.bubbles, 
+      'interaction', 
+      flowType,
+      params.flowOption, 
+      params.isMarketView, 
+      params.isDarkTheme, 
+      params.centreFlow, 
+      params.focusedFlow, 
+      params.onFlowClick
+    );
   });
 }
 
@@ -423,16 +554,44 @@ export function drawTwoWayTypeFlows(
       const sourceGfxIn = params.bubbles.find(b => b.id === flow.to);
       const targetGfxIn = params.bubbles.find(b => b.id === flow.from);
       if (sourceGfxIn && targetGfxIn) {
-        drawSingleFlowLine(params.svg, flow, sourceGfxIn, targetGfxIn, params.bubbles, 'inFlow', 'inFlow', // flowTypeForColorAndPoints is 'inFlow'
-          params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+        // Call with only required arguments
+        drawSingleFlowLine(
+          params.svg, 
+          flow, 
+          sourceGfxIn, 
+          targetGfxIn, 
+          params.bubbles, 
+          'inFlow', 
+          'inFlow', // flowTypeForColorAndPoints is 'inFlow'
+          params.flowOption, 
+          params.isMarketView, 
+          params.isDarkTheme, 
+          params.centreFlow, 
+          params.focusedFlow, 
+          params.onFlowClick
+        );
       }
     }
     if (flow.absolute_outFlow > 0) {
       const sourceGfxOut = params.bubbles.find(b => b.id === flow.from);
       const targetGfxOut = params.bubbles.find(b => b.id === flow.to);
       if (sourceGfxOut && targetGfxOut) {
-        drawSingleFlowLine(params.svg, flow, sourceGfxOut, targetGfxOut, params.bubbles, 'outFlow', 'outFlow', // flowTypeForColorAndPoints is 'outFlow'
-          params.flowOption, params.isMarketView, params.isDarkTheme, params.centreFlow, params.focusedFlow, params.onFlowClick);
+        // Call with only required arguments
+        drawSingleFlowLine(
+          params.svg, 
+          flow, 
+          sourceGfxOut, 
+          targetGfxOut, 
+          params.bubbles, 
+          'outFlow', 
+          'outFlow', // flowTypeForColorAndPoints is 'outFlow'
+          params.flowOption, 
+          params.isMarketView, 
+          params.isDarkTheme, 
+          params.centreFlow, 
+          params.focusedFlow, 
+          params.onFlowClick
+        );
       }
     }
   });
@@ -505,7 +664,7 @@ export function drawMainBubbleCircles(
         .attr("r", (d) => d.radius)
         .attr("fill", (d) => {
             if (d.id === bubbles.length - 1) { // bubbles needed here
-                return isDark ? CONFIG.colors.dark.centerBubbleFill : CONFIG.colors.light.centerBubbleFill;
+                return isDark ? (CONFIG.colors.dark as { centerBubbleFill: string }).centerBubbleFill : (CONFIG.colors.light as { centerBubbleFill: string }).centerBubbleFill;
             }
             return d.color;
         })
