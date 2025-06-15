@@ -63,6 +63,31 @@ export interface Bubble {
   totalBubbles: number; // Total number of bubbles including center
 }
 
+interface ChurnFlowData {
+  switch_perc: number;
+  other_perc: number;
+  switch_index: number;
+  other_index: number;
+  abs?: number;
+}
+
+interface ChurnFlow {
+  in?: ChurnFlowData;
+  out?: ChurnFlowData;
+  net?: {
+    abs: number;
+    perc: number;
+    index: number;
+  };
+  both?: {
+    abs: number;
+    out_perc: number;
+    in_perc: number;
+    out_index: number;
+    in_index: number;
+  };
+}
+
 export interface Flow {
   from: number;
   to: number;
@@ -75,4 +100,7 @@ export interface Flow {
   sizePercent_absolute_inFlow?: number;
   sizePercent_absolute_outFlow?: number;
   sizePercent_absolute_netFlow?: number;
+  churn?: ChurnFlow[];
+  switching?: ChurnFlow[];
+  affinity?: ChurnFlow[];
 }

@@ -7,15 +7,69 @@ interface MarketFlow {
   affinity: { in: number; out: number; net: number; both: number; };
 }
 
+interface ChurnFlowData {
+  in: {
+    abs: number;
+    switch_perc: number;
+    other_perc: number;
+    switch_index: number;
+    other_index: number;
+  };
+  out: {
+    abs: number;
+    switch_perc: number;
+    other_perc: number;
+    switch_index: number;
+    other_index: number;
+  };
+  net: {
+    abs: number;
+    perc: number;
+    index: number;
+  };
+  both: {
+    abs: number;
+    out_perc: number;
+    in_perc: number;
+    out_index: number;
+    in_index: number;
+  };
+}
+
+interface SwitchingFlowData {
+  in: {
+    abs: number;
+    perc: number;
+    index: number;
+  };
+  out: {
+    abs: number;
+    perc: number;
+    index: number;
+  };
+  net: {
+    abs: number;
+    perc: number;
+    index: number;
+  };
+  both: {
+    abs: number;
+    out_perc: number;
+    in_perc: number;
+    out_index: number;
+    in_index: number;
+  };
+}
+
 interface BrandFlow {
   from: number;
   to: number;
   outFlow: number;
   inFlow: number;
   interaction: number;
-  churn: { in: number; out: number; net: number; both: number; };
-  switching: { in: number; out: number; net: number; both: number; };
-  affinity: { in: number; out: number; net: number; both: number; };
+  churn: ChurnFlowData[];
+  switching: SwitchingFlowData[];
+  affinity: any[];
 }
 
 type FlowDirection = "inFlow" | "outFlow";
@@ -74,15 +128,24 @@ export function prepareFlowData(
     });
   } else {
     // For Brands view, use the original brand flows
-    const brandFlows = data.flows_brands.map((flow) => {
+    const brandFlowsWithNulls = data.flows_brands.map((flow) => {
       const brandFlow = flow as BrandFlow;
-      const optionData = brandFlow[flowOption];
-      const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
+      // Since churn, switching, and affinity are arrays, we need to access the first element
+      const optionDataArray = brandFlow[flowOption];
+      
+      // Make sure we have data for this flow option
+      if (!optionDataArray || optionDataArray.length === 0) {
+        console.error(`No ${flowOption} data found for flow from ${brandFlow.from} to ${brandFlow.to}`);
+        return null; // Skip this flow
+      }
+      
+      const optionData = optionDataArray[0];
+      const flowDirection: FlowDirection = optionData.net.perc >= 0 ? "inFlow" : "outFlow";
       
       // For 'both' type, we use the 'both' value directly from the flow option data
-      const bothValue = optionData.both;
-      const inValue = optionData.in;
-      const outValue = optionData.out;
+      const bothValue = optionData.both.abs;
+      const inValue = optionData.in.abs;
+      const outValue = optionData.out.abs;
 
       console.log('DEBUG - Flow Preparation:', {
         from: brandFlow.from,
@@ -101,29 +164,36 @@ export function prepareFlowData(
         absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
         absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue,
         absolute_netFlowDirection: flowDirection,
-        absolute_netFlow: Math.abs(optionData.net),
+        absolute_netFlow: Math.abs(optionData.net.abs),
+        // Include the original data arrays for churn, switching, and affinity
+        churn: brandFlow.churn,
+        switching: brandFlow.switching,
+        affinity: brandFlow.affinity
       };
     });
+    
+    // Filter out null values and cast to Flow type
+    const brandFlows = brandFlowsWithNulls.filter((flow): flow is any => flow !== null) as Flow[];
 
     // Handle centre flow aggregation for brands
     let flows = centreFlow ? prepareCentreFlowData(brandFlows, data.itemIDs.length) : brandFlows;
 
     // Filter flows if there's a focus bubble
     if (focusBubbleId !== null) {
-      flows = flows.filter(flow => 
+      flows = flows.filter((flow: Flow) => 
         flow.from === focusBubbleId || flow.to === focusBubbleId
       );
     }
 
     // Apply threshold filtering
-    return flows.filter(flow => {
+    return flows.filter((flow: Flow) => {
       const value = flowType === 'netFlow' ? flow.absolute_netFlow :
                    flowType === 'inFlow only' ? flow.absolute_inFlow :
                    flowType === 'outFlow only' ? flow.absolute_outFlow :
                    flowType === 'both' ? flow.absolute_inFlow :
                    Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
       
-      const maxValue = Math.max(...flows.map(f => 
+      const maxValue = Math.max(...flows.map((f: Flow) => 
         flowType === 'netFlow' ? f.absolute_netFlow :
         flowType === 'inFlow only' ? f.absolute_inFlow :
         flowType === 'outFlow only' ? f.absolute_outFlow :
