@@ -873,24 +873,28 @@ export function drawFlowLine(
 
   // Calculate label position with slight variation based on flow ID to minimize overlap
   // Use flow IDs to create a deterministic but varied position
-  const positionVariation = ((flow.from * 13 + flow.to * 7) % 30) / 100; // 0-0.29 variation
-  const positionFactor = 0.5 + positionVariation; // 0.5-0.79 along the line
+  // const positionVariation = ((flow.from * 13 + flow.to * 7) % 30) / 100; // 0-0.29 variation
+  // Commented out to fix lint error (unused variable)
+  // const positionFactor = 0.5 + positionVariation; // 0.5-0.79 along the line
+  // Commented out to fix lint error (unused variable)
   
-  const midX = points.start.x + (points.end.x - points.start.x) * positionFactor;
-  const midY = points.start.y + (points.end.y - points.start.y) * positionFactor;
+  // Calculate midpoint (commented out to fix lint errors)
+  // const midX = points.start.x + (points.end.x - points.start.x) * positionFactor;
+  // const midY = points.start.y + (points.end.y - points.start.y) * positionFactor;
   
   // Calculate offset for the label (perpendicular to the line)
-  const dx = points.end.x - points.start.x;
-  const dy = points.end.y - points.start.y;
-  const angle = Math.atan2(dy, dx);
+  // const dx = points.end.x - points.start.x; // Commented out to fix lint error (unused variable)
+  // const dy = points.end.y - points.start.y; // Commented out to fix lint error (unused variable)
+  // const angle = Math.atan2(dy, dx); // Commented out to fix lint errors
   const offset = 15; // Offset distance from the line
   
   // Determine if this is an inflow or outflow for index positioning
   // This will be used to position indices appropriately:
   // - For "Churn In", "Switch In", "Spend Less" - indices near source
   // - For "Churn Out", "Switch Out", "Spend More" - indices near destination
-  const isInFlow = flowDirection === 'inFlow';
-  const isOutFlow = flowDirection === 'outFlow';
+  // const isInFlow = flowDirection === 'inFlow';
+  // const isOutFlow = flowDirection === 'outFlow';
+  // Variables commented out to fix lint errors
   
   // Handle bidirectional flow for 'both' flowType or churn metrics in brands view
   const isChurnMetricInBrandsView = !isMarketView && flowOption === 'churn' && (flowType === 'inFlow' || flowType === 'outFlow');
@@ -1150,8 +1154,8 @@ export function drawFlowLine(
         
     // Calculate the actual visual direction of the flow line by examining source/target positions
     // We need this to correctly determine where the tail and arrow are visually
-    const sourceIsAbove = startBubble.y < endBubble.y;
-    const sourceIsLeft = startBubble.x < endBubble.x;
+    // const sourceIsAbove = startBubble.y < endBubble.y; // Commented out to fix lint errors
+    // const sourceIsLeft = startBubble.x < endBubble.x; // Commented out to fix lint errors
     
     // Calculate angles for text positioning
     const switchAngle = Math.atan2(splitY - points.start.y, splitX - points.start.x);
@@ -1160,7 +1164,8 @@ export function drawFlowLine(
     // For first part of the flow line (from start to split point)
     // Always position percentages near tail end, indices near arrow end
     // This is determined by the actual visual direction of the flow, not just the flowDirection property
-    let switchPercPosition, switchIndexPosition;
+    // Variables commented out to fix lint errors
+    // let switchPercPosition, switchIndexPosition;
     
     // For inFlow: flow visually moves from destination toward source bubble
     // Calculate angle for label positioning
@@ -1170,18 +1175,18 @@ export function drawFlowLine(
     // For second segment, position percentage near SPLIT POINT and index near ARROW END
     
     // First segment label positions
-    let switchPercX, switchPercY, switchIndexX, switchIndexY;
     
     // For the first segment: percentage near split point (0.8), index near start (0.2)
     // This is consistent for both flow directions
-    switchIndexX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI/2) * offset;
-    switchIndexY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI/2) * offset;
-    switchPercX = points.start.x + (splitX - points.start.x) * 0.8 + Math.cos(switchAngle + Math.PI/2) * offset;
-    switchPercY = points.start.y + (splitY - points.start.y) * 0.8 + Math.sin(switchAngle + Math.PI/2) * offset;
+    const switchIndexX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI/2) * offset;
+    const switchIndexY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI/2) * offset;
+    // Commented out to fix lint errors (unused variables)
+    // const switchPercX = points.start.x + (splitX - points.start.x) * 0.8 + Math.cos(switchAngle + Math.PI/2) * offset;
+    // const switchPercY = points.start.y + (splitY - points.start.y) * 0.8 + Math.sin(switchAngle + Math.PI/2) * offset;
     
     // Skip creating percentage label for first segment in bidirectional flow
-    // Create a dummy element to maintain code structure
-    const switchLabel = svg.append("g").attr("class", "hidden-label");
+    // Commented out to fix lint error (unused variable)
+    // const switchLabel = svg.append("g").attr("class", "hidden-label");
       
     // Create index label near tail end (start point)
     const switchIndexLabel = svg.append("text")
@@ -1208,45 +1213,49 @@ export function drawFlowLine(
     const endIsBelow = points.end.y > splitY;
     const endIsRight = points.end.x > splitX;
     
-    let otherPercPosition, otherIndexPosition;
+    // Variables commented out to fix lint errors (unused variables)
+    // let otherPercPosition, otherIndexPosition;
     
     // For vertical dominant flows (more vertical than horizontal)
     if (Math.abs(points.end.y - splitY) > Math.abs(points.end.x - splitX)) {
       if (endIsBelow) {
         // Flow is moving downward visually
-        otherPercPosition = 0.2; // Position percentage at top (tail)
-        otherIndexPosition = 0.8; // Position index at bottom (arrow)
+        // Variables commented out to fix lint errors (unused variables)
+        // otherPercPosition = 0.2; // Position percentage at top (tail)
+        // otherIndexPosition = 0.8; // Position index at bottom (arrow)
       } else {
         // Flow is moving upward visually
-        otherPercPosition = 0.8; // Position percentage at bottom (tail)
-        otherIndexPosition = 0.2; // Position index at top (arrow)
+        // Variables commented out to fix lint errors (unused variables)
+        // otherPercPosition = 0.8; // Position percentage at bottom (tail)
+        // otherIndexPosition = 0.2; // Position index at top (arrow)
       }
     } else {
       // For horizontal dominant flows
       if (endIsRight) {
         // Flow is moving rightward visually
-        otherPercPosition = 0.2; // Position percentage at left (tail)
-        otherIndexPosition = 0.8; // Position index at right (arrow)
+        // Variables commented out to fix lint errors (unused variables)
+        // otherPercPosition = 0.2; // Position percentage at left (tail)
+        // otherIndexPosition = 0.8; // Position index at right (arrow)
       } else {
         // Flow is moving leftward visually
-        otherPercPosition = 0.8; // Position percentage at right (tail)
-        otherIndexPosition = 0.2; // Position index at left (arrow)
+        // Variables commented out to fix lint errors (unused variables)
+        // otherPercPosition = 0.8; // Position percentage at right (tail)
+        // otherIndexPosition = 0.2; // Position index at left (arrow)
       }
     }
     
     // CONSISTENT APPROACH FOR SECOND SEGMENT: Position percentage near SPLIT POINT and index near ARROW END
     // Create coordinates for the second segment label positioning
-    let otherPercX, otherPercY, otherIndexX, otherIndexY;
     
     // For the second segment, the arrow ALWAYS points toward the end point
     // So for both flow directions, the arrow head is at the end point
     
     // For the second segment: percentage near split point (0.05), index near arrow end (0.8)
     // This is consistent for both flow directions
-    otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI/2) * offset;
-    otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI/2) * offset;
-    otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI/2) * offset;
-    otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI/2) * offset;
+    const otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI/2) * offset;
+    const otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI/2) * offset;
+    const otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI/2) * offset;
+    const otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI/2) * offset;
     
     // Create percentage label near the split point of the second segment
     const otherLabel = svg.append("text")
