@@ -662,8 +662,8 @@ export function drawFlows(
         // Add flow percentages with indexes for Brands Churn view
         if (flow.absolute_inFlow > 0) {
           // For inFlow (Churn In, Switch In), position percentage near tail (source) and index near arrow (split)
-          const percPositionFactor = 0.2; // Near source/start (tail end)
-          const indexPositionFactor = 0.8; // Near split point (arrow end)
+          const percPositionFactor = 0.8; // Near split point (arrow end)
+          const indexPositionFactor = 0.2; // Near source/start (tail end)
           
           // Position for percentage
           const percX = start.x + (splitX - start.x) * percPositionFactor + Math.cos(inFlowAngle - Math.PI/2) * offset;
@@ -718,7 +718,7 @@ export function drawFlows(
         if (flow.absolute_outFlow > 0) {
           // For outFlow (Churn Out, Switch Out), position percentage near tail (split) and index near arrow (destination)
           const percPositionFactor = 0.2; // Near split point (tail end)
-          const indexPositionFactor = 0.8; // Near destination (arrow end)
+          const indexPositionFactor = 0.95; // Near destination (arrow end)
           
           // Position for percentage
           const percX = splitX + (end.x - splitX) * percPositionFactor + Math.cos(outFlowAngle - Math.PI/2) * offset;
@@ -919,26 +919,136 @@ export function drawFlowLine(
         value = 0;
     }
     
-    // Determine if this flow type should have index near destination or source
-    // For standard flows, we only show percentage without index
-    const flowLabel = svg.append("text")
-      .attr("class", "flow-label")
-      .attr("x", midX + offset * Math.sin(angle))
-      .attr("y", midY - offset * Math.cos(angle))
+    // Calculate a split point for standard flows too, similar to bidirectional flows
+    // This creates a visual midpoint for the flow line
+    const splitX = (points.start.x + points.end.x) / 2;
+    const splitY = (points.start.y + points.end.y) / 2;
+    
+    // Store the original path and create two segments instead
+    flowLine.remove(); // Remove the original line
+    
+    // Create first segment from start to split point
+    const switchLine = svg.append("path")
+      .attr("d", d3.line()([[points.start.x, points.start.y], [splitX, splitY]]))
+      .attr("class", "flow-line")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", lineThickness)
+      .attr("fill", "none")
+      .attr("opacity", () => {
+        if (focusedFlow) {
+          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+          return isThisFlowFocused ? 1 : 0.2;
+        }
+        return 0.8;
+      })
+      .attr("data-flow-direction", flowDirection)
+      .attr("data-from-center", fromCenter)
+      .attr("data-from-id", startBubble.id.toString())
+      .attr("data-to-id", endBubble.id.toString())
+      .datum(flow);
+      
+    // Create second segment from split point to end
+    const otherLine = svg.append("path")
+      .attr("d", d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
+      .attr("class", "flow-line")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", lineThickness)
+      .attr("fill", "none")
+      .attr("opacity", () => {
+        if (focusedFlow) {
+          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+          return isThisFlowFocused ? 1 : 0.2;
+        }
+        return 0.8;
+      })
+      .attr("data-flow-direction", flowDirection)
+      .attr("data-from-center", fromCenter)
+      .attr("data-from-id", startBubble.id.toString())
+      .attr("data-to-id", endBubble.id.toString())
+      .datum(flow);
+      
+    // Add flow marker for the second segment
+    if (flowOption !== 'affinity') {
+      const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
+      createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
+      otherLine.attr('marker-end', `url(#${markerId})`);
+    } else {
+      // For affinity view, use rounded end caps
+      switchLine.attr('stroke-linecap', 'round');
+      otherLine.attr('stroke-linecap', 'round');
+    }
+    
+    // Calculate angles for text positioning
+    const switchAngle = Math.atan2(splitY - points.start.y, splitX - points.start.x);
+    const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
+    
+    // First segment: position percentage near start (0.2)
+    const switchPercX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI/2) * offset;
+    const switchPercY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI/2) * offset;
+    
+    // Second segment: position percentage near split point (0.05)
+    const otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI/2) * offset;
+    const otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI/2) * offset;
+    
+    // Second segment: position index near arrow end (0.8)
+    const otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI/2) * offset;
+    const otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI/2) * offset;
+    
+    // Create percentage label at tail end of first segment
+    const switchLabel = svg.append("text")
+      .attr("class", "flow-label switch-label")
+      .attr("x", switchPercX)
+      .attr("y", switchPercY)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .attr('fill', lineColor)
+      .attr('fill', lineColor)  
       .attr("font-size", "12px")
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
       .text(`${Math.abs(value).toFixed(1)}%`);
+      
+
+      
+    // Create percentage label near split point of second segment
+    const otherPercLabel = svg.append("text")
+      .attr("class", "flow-label other-perc-label")
+      .attr("x", otherPercX)
+      .attr("y", otherPercY)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)  
+      .attr("font-size", "12px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(`${Math.abs(value).toFixed(1)}%`);
+      
+    // Create index label near arrow end of second segment
+    const otherIndexLabel = svg.append("text")
+      .attr("class", "flow-label other-index-label")
+      .attr("x", otherIndexX)
+      .attr("y", otherIndexY)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr('fill', lineColor)  
+      .attr("font-size", "12px")
+      .attr('data-from-id', startBubble.id.toString())
+      .attr('data-to-id', endBubble.id.toString())
+      .attr('data-flow-id', `${flow.from}-${flow.to}`)
+      .text(flow.percentRank !== undefined ? `(${flow.percentRank.toFixed(1)})` : '');
+      
+
     
-    // Set opacity for the label based on focused flow
+    // Set opacity for labels based on focused flow
     if (focusedFlow) {
       const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
                              (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-      flowLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      otherPercLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      otherIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
     }
   } else {
     // Bidirectional flow handling (both flowType or churn metrics in brands view)
@@ -969,59 +1079,65 @@ export function drawFlowLine(
       otherIndex = 1.0;
     }
     
-    // Calculate total flow for determining split point
+    // Calculate total percentage for proportional split point positioning
     const totalPerc = switchPerc + otherPerc;
     
-    // Remove the original flow line since we'll replace it with two split lines
-    flowLine.remove();
-    
-    // Calculate the split point based on flow proportions
+    // Calculate the split point based on the relative percentages
     const splitX = points.start.x + (points.end.x - points.start.x) * (switchPerc / totalPerc);
     const splitY = points.start.y + (points.end.y - points.start.y) * (switchPerc / totalPerc);
     
+    // Debug information to help troubleshoot label positioning
+    console.log('Label Positioning Debug:', {
+      flowDirection,
+      startBubble: startBubble.id,
+      endBubble: endBubble.id,
+      startPos: { x: points.start.x, y: points.start.y },
+      endPos: { x: points.end.x, y: points.end.y },
+      splitPos: { x: splitX, y: splitY },
+      switchPerc,
+      otherPerc
+    });
+    
     // Create first line segment for switch percentage
-    const switchLine = svg.append("line")
-      .attr("x1", points.start.x)
-      .attr("y1", points.start.y)
-      .attr("x2", splitX)
-      .attr("y2", splitY)
-      .attr("class", "flow-line switch-line")
+    const switchPath = d3.line()([
+      [points.start.x, points.start.y],
+      [splitX, splitY]
+    ]);
+
+    const otherPath = d3.line()([
+      [splitX, splitY],
+      [points.end.x, points.end.y]
+    ]);
+
+    // Create the first part of the flow line
+    const switchLine = svg.append("path")
+      .attr("d", switchPath)
+      .attr("class", "flow-line")
       .attr("stroke", lineColor)
       .attr("stroke-width", lineThickness)
-      .attr("opacity", () => {
-        if (focusedFlow) {
-          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-          return isThisFlowFocused ? 1 : 0.2;
-        }
-        return 0.8;
-      })
-      .attr("data-flow-direction", flowDirection)
-      .attr("data-from-id", startBubble.id.toString())
-      .attr("data-to-id", endBubble.id.toString());  
-      
-    // Create second line segment for other percentage
-    const otherLine = svg.append("line")
-      .attr("x1", splitX)
-      .attr("y1", splitY)
-      .attr("x2", points.end.x)
-      .attr("y2", points.end.y)
-      .attr("class", "flow-line other-line")
-      .attr("stroke", lineColor)
-      .attr("stroke-width", lineThickness)
-      .attr("opacity", () => {
-        if (focusedFlow) {
-          const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-                                  (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-          return isThisFlowFocused ? 1 : 0.2;
-        }
-        return 0.8;
-      })
+      .attr("fill", "none")
+      .attr("data-flow-id", `${flow.from}-${flow.to}`)
+      .attr("data-flow-type", flowType)
       .attr("data-flow-direction", flowDirection)
       .attr("data-from-id", startBubble.id.toString())
       .attr("data-to-id", endBubble.id.toString());
       
-    // Add flow markers
+    // Create the second part of the flow line
+    const otherLine = svg.append("path")
+      .attr("d", otherPath)
+      .attr("class", "flow-line")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", lineThickness)
+      .attr("fill", "none")
+      .attr("data-flow-id", `${flow.from}-${flow.to}`)
+      .attr("data-flow-type", flowType)
+      .attr("data-flow-direction", flowDirection === 'inFlow' ? 'outFlow' : 'inFlow') // Opposite direction
+      .attr("data-from-id", startBubble.id.toString())
+      .attr("data-to-id", endBubble.id.toString());
+      
+    // Add flow markers for the second segment only (not the first segment)
+    // This is important for understanding the visual direction
+    // The marker shows the arrow head, so the second segment always has an arrow pointing to the endpoint
     if (flowOption !== 'affinity') {
       const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
       createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
@@ -1032,46 +1148,46 @@ export function drawFlowLine(
       otherLine.attr('stroke-linecap', 'round');
     }
         
+    // Calculate the actual visual direction of the flow line by examining source/target positions
+    // We need this to correctly determine where the tail and arrow are visually
+    const sourceIsAbove = startBubble.y < endBubble.y;
+    const sourceIsLeft = startBubble.x < endBubble.x;
+    
     // Calculate angles for text positioning
-    const switchAngle = Math.atan2(points.start.y - splitY, points.start.x - splitX);
+    const switchAngle = Math.atan2(splitY - points.start.y, splitX - points.start.x);
     const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
     
     // For first part of the flow line (from start to split point)
-    // Position labels consistently: percentage near tail end, index near arrow end
+    // Always position percentages near tail end, indices near arrow end
+    // This is determined by the actual visual direction of the flow, not just the flowDirection property
     let switchPercPosition, switchIndexPosition;
     
-    // For the first part of the line:
-    // - For inFlow: the tail is at the start, arrow is at the split point
-    // - For outFlow: the tail is at the split point, arrow is at the start (reversed direction)
-    if (flowDirection === 'inFlow') {
-      // For inFlow: percentage near tail (start/source), index near arrow (split point)
-      switchPercPosition = 0.2; // Near start (tail)
-      switchIndexPosition = 0.8; // Near split point (arrow)
-    } else {
-      // For outFlow: percentage near split point (tail), index near start (arrow)
-      switchPercPosition = 0.8; // Near split point (tail)
-      switchIndexPosition = 0.2; // Near start (arrow)
-    }
+    // For inFlow: flow visually moves from destination toward source bubble
+    // Calculate angle for label positioning
+    const offset = 15; // Offset distance for labels
     
-    // Create percentage label
-    const switchLabel = svg.append("text")
-      .attr("class", "flow-label switch-label")
-      .attr("x", points.start.x + (splitX - points.start.x) * switchPercPosition + Math.cos(switchAngle - Math.PI/2) * offset)
-      .attr("y", points.start.y + (splitY - points.start.y) * switchPercPosition + Math.sin(switchAngle - Math.PI/2) * offset)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "middle")
-      .attr('fill', lineColor)
-      .attr("font-size", "11px")
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${switchPerc.toFixed(1)}%`);
+    // CONSISTENT APPROACH: For first segment, position percentage near SPLIT POINT and index near START
+    // For second segment, position percentage near SPLIT POINT and index near ARROW END
+    
+    // First segment label positions
+    let switchPercX, switchPercY, switchIndexX, switchIndexY;
+    
+    // For the first segment: percentage near split point (0.8), index near start (0.2)
+    // This is consistent for both flow directions
+    switchIndexX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI/2) * offset;
+    switchIndexY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI/2) * offset;
+    switchPercX = points.start.x + (splitX - points.start.x) * 0.8 + Math.cos(switchAngle + Math.PI/2) * offset;
+    switchPercY = points.start.y + (splitY - points.start.y) * 0.8 + Math.sin(switchAngle + Math.PI/2) * offset;
+    
+    // Skip creating percentage label for first segment in bidirectional flow
+    // Create a dummy element to maintain code structure
+    const switchLabel = svg.append("g").attr("class", "hidden-label");
       
-    // Create index label - positioned near source for inFlow
+    // Create index label near tail end (start point)
     const switchIndexLabel = svg.append("text")
       .attr("class", "flow-label switch-index-label")
-      .attr("x", points.start.x + (splitX - points.start.x) * switchIndexPosition + Math.cos(switchAngle - Math.PI/2) * offset)
-      .attr("y", points.start.y + (splitY - points.start.y) * switchIndexPosition + Math.sin(switchAngle - Math.PI/2) * offset)
+      .attr("x", switchIndexX)
+      .attr("y", switchIndexY)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr('fill', lineColor)
@@ -1079,30 +1195,64 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${switchIndex.toFixed(1)})`);   
+      .text(`(${switchIndex.toFixed(1)})`);
+   
     
     // For second part of the flow line (from split point to end)
-    // Position labels consistently: percentage near tail end, index near arrow end
+    // Always position percentages near tail end, indices near arrow end
+    // This positioning is based on the actual visual direction of the flow
+    
+    // Determine the visual flow direction of the second part
+    // For all flow types, the second part moves from split point to the destination
+    // So we need to determine if this movement is upward/downward/leftward/rightward
+    const endIsBelow = points.end.y > splitY;
+    const endIsRight = points.end.x > splitX;
+    
     let otherPercPosition, otherIndexPosition;
     
-    // For the second part of the line:
-    // - For outFlow: the tail is at the split point, arrow is at the end
-    // - For inFlow: the tail is at the end, arrow is at the split point (reversed direction)
-    if (flowDirection === 'outFlow') {
-      // For outFlow: percentage near tail (split point), index near arrow (end/destination)
-      otherPercPosition = 0.2; // Near split point (tail)
-      otherIndexPosition = 0.8; // Near end (arrow)
+    // For vertical dominant flows (more vertical than horizontal)
+    if (Math.abs(points.end.y - splitY) > Math.abs(points.end.x - splitX)) {
+      if (endIsBelow) {
+        // Flow is moving downward visually
+        otherPercPosition = 0.2; // Position percentage at top (tail)
+        otherIndexPosition = 0.8; // Position index at bottom (arrow)
+      } else {
+        // Flow is moving upward visually
+        otherPercPosition = 0.8; // Position percentage at bottom (tail)
+        otherIndexPosition = 0.2; // Position index at top (arrow)
+      }
     } else {
-      // For inFlow: percentage near end (tail), index near split point (arrow)
-      otherPercPosition = 0.8; // Near end (tail)
-      otherIndexPosition = 0.2; // Near split point (arrow)
+      // For horizontal dominant flows
+      if (endIsRight) {
+        // Flow is moving rightward visually
+        otherPercPosition = 0.2; // Position percentage at left (tail)
+        otherIndexPosition = 0.8; // Position index at right (arrow)
+      } else {
+        // Flow is moving leftward visually
+        otherPercPosition = 0.8; // Position percentage at right (tail)
+        otherIndexPosition = 0.2; // Position index at left (arrow)
+      }
     }
     
-    // Create percentage label
+    // CONSISTENT APPROACH FOR SECOND SEGMENT: Position percentage near SPLIT POINT and index near ARROW END
+    // Create coordinates for the second segment label positioning
+    let otherPercX, otherPercY, otherIndexX, otherIndexY;
+    
+    // For the second segment, the arrow ALWAYS points toward the end point
+    // So for both flow directions, the arrow head is at the end point
+    
+    // For the second segment: percentage near split point (0.05), index near arrow end (0.8)
+    // This is consistent for both flow directions
+    otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI/2) * offset;
+    otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI/2) * offset;
+    otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI/2) * offset;
+    otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI/2) * offset;
+    
+    // Create percentage label near the split point of the second segment
     const otherLabel = svg.append("text")
       .attr("class", "flow-label other-label")
-      .attr("x", splitX + (points.end.x - splitX) * otherPercPosition + Math.cos(otherAngle - Math.PI/2) * offset)
-      .attr("y", splitY + (points.end.y - splitY) * otherPercPosition + Math.sin(otherAngle - Math.PI/2) * offset)
+      .attr("x", otherPercX)
+      .attr("y", otherPercY)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr('fill', lineColor)
@@ -1110,13 +1260,13 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${otherPerc.toFixed(1)}%`);
+      .text(`${otherPerc.toFixed(1)}% TEST`);
       
-    // Create index label - positioned near destination for outFlow
+    // Create index label near the arrow end of the second segment
     const otherIndexLabel = svg.append("text")
       .attr("class", "flow-label other-index-label")
-      .attr("x", splitX + (points.end.x - splitX) * otherIndexPosition + Math.cos(otherAngle - Math.PI/2) * offset)
-      .attr("y", splitY + (points.end.y - splitY) * otherIndexPosition + Math.sin(otherAngle - Math.PI/2) * offset)
+      .attr("x", otherIndexX)
+      .attr("y", otherIndexY)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .attr('fill', lineColor)
@@ -1124,13 +1274,14 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${otherIndex.toFixed(1)})`);  
+      .text(`(${otherIndex.toFixed(1)}) TEST`);
+  
     
     // Set opacity for labels based on focused flow
     if (focusedFlow) {
       const isThisFlowFocused = (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
                              (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-      switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      // No need to handle switchLabel as it's now a dummy element
       otherLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
       switchIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
       otherIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
