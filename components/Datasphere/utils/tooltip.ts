@@ -122,6 +122,25 @@ export function getBubbleTooltip(bubble: Bubble): string {
 }
 
 export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn'): string {
+  // For churn metrics, extract the correct percentage values from churn data
+  let switchPerc, otherPerc, switchIndex, otherIndex;
+  const isChurnMetric = flowOption === 'churn';
+  
+  if (isChurnMetric && flow.churn && flow.churn.length > 0) {
+    // Extract churn-specific data for the correct flow direction
+    if (flowDirection === 'inFlow' && flow.churn[0].in) {
+      switchPerc = flow.churn[0].in.switch_perc * 100;
+      otherPerc = flow.churn[0].in.other_perc * 100;
+      switchIndex = flow.churn[0].in.switch_index;
+      otherIndex = flow.churn[0].in.other_index;
+    } else if (flowDirection === 'outFlow' && flow.churn[0].out) {
+      switchPerc = flow.churn[0].out.switch_perc * 100;
+      otherPerc = flow.churn[0].out.other_perc * 100;
+      switchIndex = flow.churn[0].out.switch_index;
+      otherIndex = flow.churn[0].out.other_index;
+    }
+  }
+  
   if (centreFlow) {
     switch (flowDirection) {
       case 'inFlow':
@@ -144,16 +163,20 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
   } else {
     switch (flowDirection) {
       case 'inFlow':
-        if (flowOption === 'churn') {
-          return `${flow.absolute_inFlow.toFixed(1)}% sales churn in from ${source.label}`;
+        if (isChurnMetric && switchPerc !== undefined) {
+          // Use the correct percentage from churn data
+          const indexText = switchIndex ? ` (Index: ${switchIndex.toFixed(1)})` : '';
+          return `${switchPerc.toFixed(1)}% sales churn in from ${source.label}${indexText}`;
         } else if (flowOption === 'switching') {
           return `${flow.absolute_inFlow.toFixed(1)}% switch in from ${source.label}`;
         } else {
           return `${flow.absolute_inFlow.toFixed(1)}% flow from ${source.label} to ${target.label}`;
         }
       case 'outFlow':
-        if (flowOption === 'churn') {
-          return `${flow.absolute_outFlow.toFixed(1)}% sales churn out to ${target.label}`;
+        if (isChurnMetric && switchPerc !== undefined) {
+          // Use the correct percentage from churn data
+          const indexText = switchIndex ? ` (Index: ${switchIndex.toFixed(1)})` : '';
+          return `${switchPerc.toFixed(1)}% sales churn out to ${target.label}${indexText}`;
         } else if (flowOption === 'switching') {
           return `${flow.absolute_outFlow.toFixed(1)}% switch out to ${target.label}`;
         } else {
@@ -161,16 +184,30 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
         }
       case 'netFlow':
         if (flow.absolute_netFlowDirection === 'inFlow') {
-          if (flowOption === 'churn') {
-            return `Net sales churn in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          // Get index value if available for inFlow
+          let indexText = '';
+          if (isChurnMetric && switchIndex !== undefined) {
+            indexText = ` (Index: ${switchIndex.toFixed(1)})`;
+          }
+          
+          if (isChurnMetric) {
+            const percValue = switchPerc !== undefined ? switchPerc : flow.absolute_netFlow;
+            return `Net sales churn in from ${source.label}: ${percValue.toFixed(1)}%${indexText}`;
           } else if (flowOption === 'switching') {
             return `Net switch in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           } else {
             return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           }
         } else {
-          if (flowOption === 'churn') {
-            return `Net sales churn out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
+          // Get index value if available for outFlow
+          let indexText = '';
+          if (isChurnMetric && switchIndex !== undefined) {
+            indexText = ` (Index: ${switchIndex.toFixed(1)})`;
+          }
+          
+          if (isChurnMetric) {
+            const percValue = switchPerc !== undefined ? switchPerc : flow.absolute_netFlow;
+            return `Net sales churn out to ${target.label}: ${percValue.toFixed(1)}%${indexText}`;
           } else if (flowOption === 'switching') {
             return `Net switch out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
           } else {
@@ -178,11 +215,21 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
           }
         }
       case 'both':
-        const complementaryValue = 100 - flow.absolute_inFlow;
-        return `${source.label} to ${target.label}:
-                Inbound: ${flow.absolute_inFlow.toFixed(1)}%
-                Outbound: ${complementaryValue.toFixed(1)}%
-                Net: ${flow.absolute_netFlow.toFixed(1)}%`;
+        if (isChurnMetric && switchPerc !== undefined && otherPerc !== undefined) {
+          // For bidirectional flows with churn data, show both percentages
+          const switchIndexText = switchIndex ? ` (Index: ${switchIndex.toFixed(1)})` : '';
+          const otherIndexText = otherIndex ? ` (Index: ${otherIndex.toFixed(1)})` : '';
+          
+          return `${source.label} to ${target.label}:
+                  Switch: ${switchPerc.toFixed(1)}%${switchIndexText}
+                  Other: ${otherPerc.toFixed(1)}%${otherIndexText}`;
+        } else {
+          // Default bidirectional flow display
+          return `${source.label} to ${target.label}:
+                  Inbound: ${flow.absolute_inFlow.toFixed(1)}%
+                  Outbound: ${flow.absolute_outFlow.toFixed(1)}%
+                  Net: ${flow.absolute_netFlow.toFixed(1)}%`;
+        }
     }
   }
   return '';
