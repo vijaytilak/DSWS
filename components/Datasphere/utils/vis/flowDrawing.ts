@@ -87,31 +87,19 @@ export function drawFlows(
     if (!source || !target) return;
 
     if (isBidirectionalFlowType(currentFlowType)) {
-      drawFlowLine(
+      drawBidirectionalFlowLine(
         svg,
         flow,
-        'inFlow',
         source,
         target,
-        currentFlowType,
         centreFlow,
         bubbles,
         flowOption,
         isMarketView,
-        onFlowClick,
-        focusedFlow
-      );
-      drawFlowLine(
-        svg,
-        flow,
-        'outFlow',
-        source,
-        target,
-        currentFlowType,
-        centreFlow,
-        bubbles,
-        flowOption,
-        isMarketView,
+        flow.bidirectional_inPerc ?? flow.absolute_inFlow,
+        flow.bidirectional_outPerc ?? flow.absolute_outFlow,
+        flow.bidirectional_inIndex,
+        flow.bidirectional_outIndex,
         onFlowClick,
         focusedFlow
       );
@@ -707,4 +695,161 @@ function calculateMarkerSize(lineThickness: number): number {
     .clamp(true);
 
   return scale(lineThickness);
+}
+
+export function drawBidirectionalFlowLine(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  flow: Flow,
+  startBubble: Bubble,
+  endBubble: Bubble,
+  centreFlow: boolean,
+  allBubbles: Bubble[],
+  flowOption: 'churn' | 'switching' | 'affinity',
+  isMarketView: boolean,
+  inPerc: number,
+  outPerc: number,
+  inIndex?: number,
+  outIndex?: number,
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
+  focusedFlow: { from: number; to: number } | null = null
+) {
+  const lineThickness = calculateLineThickness(flow);
+  const isDarkTheme = document.documentElement.classList.contains('dark');
+  const fromCenter = startBubble.id === allBubbles.length - 1;
+  const lineColor = fromCenter
+    ? isMarketView && (flowOption === 'churn' || flowOption === 'switching')
+      ? endBubble.color
+      : isDarkTheme
+        ? '#ffffff'
+        : '#000000'
+    : flowOption === 'affinity'
+      ? endBubble.color
+      : !isMarketView && flowOption === 'switching'
+        ? endBubble.color
+        : startBubble.color;
+  const points = calculateFlowPoints(startBubble, endBubble, 'bi-directional', 'inFlow', flow);
+  const total = inPerc + outPerc;
+  const splitRatio = total === 0 ? 0.5 : inPerc / total;
+  const splitX = points.start.x + (points.end.x - points.start.x) * splitRatio;
+  const splitY = points.start.y + (points.end.y - points.start.y) * splitRatio;
+
+  const segmentStart = svg
+    .append('path')
+    .attr('d', d3.line()([[points.start.x, points.start.y], [splitX, splitY]]))
+    .attr('class', 'flow-line')
+    .attr('stroke', lineColor)
+    .attr('stroke-width', lineThickness)
+    .attr('fill', 'none')
+    .attr('marker-start', `url(#bi-start-${startBubble.id}-${endBubble.id})`)
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .datum(flow);
+
+  const segmentEnd = svg
+    .append('path')
+    .attr('d', d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
+    .attr('class', 'flow-line')
+    .attr('stroke', lineColor)
+    .attr('stroke-width', lineThickness)
+    .attr('fill', 'none')
+    .attr('marker-end', `url(#bi-end-${startBubble.id}-${endBubble.id})`)
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .datum(flow);
+
+  createFlowMarker(svg, `bi-start-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), lineColor, 'inFlow');
+  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), lineColor, 'outFlow');
+
+  const offset = 15;
+  const angle1 = Math.atan2(splitY - points.start.y, splitX - points.start.x);
+  const angle2 = Math.atan2(points.end.y - splitY, points.end.x - splitX);
+
+  const perc1X = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(angle1 + Math.PI / 2) * offset;
+  const perc1Y = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(angle1 + Math.PI / 2) * offset;
+  const index1X = points.start.x + (splitX - points.start.x) * 0.8 + Math.cos(angle1 + Math.PI / 2) * offset;
+  const index1Y = points.start.y + (splitY - points.start.y) * 0.8 + Math.sin(angle1 + Math.PI / 2) * offset;
+
+  const perc2X = splitX + (points.end.x - splitX) * 0.05 + Math.cos(angle2 + Math.PI / 2) * offset;
+  const perc2Y = splitY + (points.end.y - splitY) * 0.05 + Math.sin(angle2 + Math.PI / 2) * offset;
+  const index2X = splitX + (points.end.x - splitX) * 0.8 + Math.cos(angle2 + Math.PI / 2) * offset;
+  const index2Y = splitY + (points.end.y - splitY) * 0.8 + Math.sin(angle2 + Math.PI / 2) * offset;
+
+  const label1 = svg
+    .append('text')
+    .attr('class', 'flow-label')
+    .attr('x', perc1X)
+    .attr('y', perc1Y)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '12px')
+    .text(`${inPerc.toFixed(1)}%`);
+
+  const label1Index = svg
+    .append('text')
+    .attr('class', 'flow-label')
+    .attr('x', index1X)
+    .attr('y', index1Y)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '10px')
+    .text(inIndex !== undefined ? `(${inIndex.toFixed(1)})` : '');
+
+  const label2 = svg
+    .append('text')
+    .attr('class', 'flow-label')
+    .attr('x', perc2X)
+    .attr('y', perc2Y)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '12px')
+    .text(`${outPerc.toFixed(1)}%`);
+
+  const label2Index = svg
+    .append('text')
+    .attr('class', 'flow-label')
+    .attr('x', index2X)
+    .attr('y', index2Y)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '10px')
+    .text(outIndex !== undefined ? `(${outIndex.toFixed(1)})` : '');
+
+  const handleMouseOver = (event: MouseEvent) => {
+    if (
+      !focusedFlow ||
+      (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+      (flow.from === focusedFlow.to && flow.to === focusedFlow.from)
+    ) {
+      segmentStart.attr('stroke-width', lineThickness * 1.1);
+      segmentEnd.attr('stroke-width', lineThickness * 1.1);
+    }
+    showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, 'both', centreFlow, flowOption));
+  };
+
+  const handleMouseOut = () => {
+    const isFocused =
+      focusedFlow &&
+      ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+        (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
+    const width = isFocused ? lineThickness * 1.1 : lineThickness;
+    segmentStart.attr('stroke-width', width);
+    segmentEnd.attr('stroke-width', width);
+    hideTooltip();
+  };
+
+  const handleClick = () => {
+    if (onFlowClick) onFlowClick(flow, startBubble, endBubble);
+  };
+
+  segmentStart.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+  segmentEnd.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+
+  label1.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+  label1Index.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+  label2.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+  label2Index.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
 }

@@ -103,4 +103,8 @@ export interface Flow {
   churn?: ChurnFlow[];
   switching?: ChurnFlow[];
   affinity?: ChurnFlow[];
+  bidirectional_inPerc?: number;
+  bidirectional_outPerc?: number;
+  bidirectional_inIndex?: number;
+  bidirectional_outIndex?: number;
 }

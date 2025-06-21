@@ -100,6 +100,8 @@ export function prepareFlowData(
         absolute_outFlow: bidirectional ? (100 - optionData.both) : optionData.out,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net),
+        bidirectional_inPerc: bidirectional ? optionData.both : undefined,
+        bidirectional_outPerc: bidirectional ? (100 - optionData.both) : undefined,
       };
     });
 
@@ -144,11 +146,15 @@ export function prepareFlowData(
       
       const optionData = optionDataArray[0];
       const flowDirection: FlowDirection = optionData.net.perc >= 0 ? "inFlow" : "outFlow";
-      
+
       // For 'both' type, we use the 'both' value directly from the flow option data
       const bothValue = optionData.both.abs;
       const inValue = optionData.in.abs;
       const outValue = optionData.out.abs;
+      const inPerc = optionData.both.in_perc * 100;
+      const outPerc = optionData.both.out_perc * 100;
+      const inIndex = optionData.both.in_index;
+      const outIndex = optionData.both.out_index;
 
       console.log('DEBUG - Flow Preparation:', {
         from: brandFlow.from,
@@ -171,7 +177,11 @@ export function prepareFlowData(
         // Include the original data arrays for churn, switching, and affinity
         churn: brandFlow.churn,
         switching: brandFlow.switching,
-        affinity: brandFlow.affinity
+        affinity: brandFlow.affinity,
+        bidirectional_inPerc: bidirectional ? inPerc : undefined,
+        bidirectional_outPerc: bidirectional ? outPerc : undefined,
+        bidirectional_inIndex: bidirectional ? inIndex : undefined,
+        bidirectional_outIndex: bidirectional ? outIndex : undefined
       };
     });
     
