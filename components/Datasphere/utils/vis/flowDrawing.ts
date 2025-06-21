@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import { CONFIG } from '../../constants/config';
 import type { Flow, Bubble } from '../../types';
 import { showTooltip, hideTooltip, getFlowTooltip } from '../tooltip';
+import { isBidirectionalFlowType } from '../flowTypeUtils';
 
 export function drawFlows(
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
@@ -31,11 +32,11 @@ export function drawFlows(
         return flow.absolute_inFlow;
       case 'outFlow only':
         return flow.absolute_outFlow;
-      case 'both':
-      case 'bi-directional':
-        return Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
       default:
-        return flow.absolute_inFlow;
+        return isBidirectionalFlowType(currentFlowType)
+          ? Math.max(flow.absolute_inFlow, flow.absolute_outFlow)
+          : flow.absolute_inFlow;
+
     }
   };
 
@@ -85,7 +86,7 @@ export function drawFlows(
     const target = bubbles.find((b) => b.id === flow.to);
     if (!source || !target) return;
 
-    if (currentFlowType === 'bi-directional') {
+    if (isBidirectionalFlowType(currentFlowType)) {
       drawFlowLine(
         svg,
         flow,
@@ -244,7 +245,7 @@ export function drawFlowLine(
 
   const offset = 15;
   const isChurnMetricInBrandsView = !isMarketView && flowOption === 'churn' && (flowType === 'inFlow' || flowType === 'outFlow');
-  const isBidirectionalFlow = flowType === 'both' || isChurnMetricInBrandsView;
+  const isBidirectionalFlow = isBidirectionalFlowType(flowType) || isChurnMetricInBrandsView;
 
   if (!isBidirectionalFlow) {
     let value: number;
@@ -651,7 +652,7 @@ function calculateFlowPoints(
   };
 
   const isChurnBidirectional = (flowType === 'inFlow' || flowType === 'outFlow') && flow.churn;
-  if (flowType === 'two-way flows' || flowType === 'both' || isChurnBidirectional) {
+  if (isBidirectionalFlowType(flowType) || isChurnBidirectional) {
     const lineThickness = calculateLineThickness(flow);
     const offsetScale = d3
       .scaleLinear()

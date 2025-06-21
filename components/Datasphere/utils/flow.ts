@@ -1,4 +1,5 @@
 import type { FlowData, Flow } from '../types';
+import { isBidirectionalFlowType } from './flowTypeUtils';
 
 interface MarketFlow {
   itemID: number;
@@ -83,18 +84,20 @@ export function prepareFlowData(
   isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
 ): Flow[] {
+  const bidirectional = isBidirectionalFlowType(flowType);
+
   if (isMarketView) {
     // For Markets view, create centre flows for each market
     const marketFlows = data.flows_markets.map((flow) => {
       const marketFlow = flow as MarketFlow;
       const optionData = marketFlow[flowOption];
       const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
-      
+
       return {
         from: marketFlow.itemID,
         to: data.itemIDs.length, // Center bubble ID
-        absolute_inFlow: flowType === 'both' ? optionData.both : optionData.in,
-        absolute_outFlow: flowType === 'both' ? (100 - optionData.both) : optionData.out,
+        absolute_inFlow: bidirectional ? optionData.both : optionData.in,
+        absolute_outFlow: bidirectional ? (100 - optionData.both) : optionData.out,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net),
       };
@@ -113,14 +116,14 @@ export function prepareFlowData(
       const value = flowType === 'netFlow' ? flow.absolute_netFlow :
                    flowType === 'inFlow only' ? flow.absolute_inFlow :
                    flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   flowType === 'both' ? flow.absolute_inFlow :
+                   bidirectional ? flow.absolute_inFlow :
                    Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-      
-      const maxValue = Math.max(...marketFlows.map(f => 
+
+      const maxValue = Math.max(...marketFlows.map(f =>
         flowType === 'netFlow' ? f.absolute_netFlow :
         flowType === 'inFlow only' ? f.absolute_inFlow :
         flowType === 'outFlow only' ? f.absolute_outFlow :
-        flowType === 'both' ? f.absolute_inFlow :
+        bidirectional ? f.absolute_inFlow :
         Math.max(f.absolute_inFlow, f.absolute_outFlow)
       ));
 
@@ -154,15 +157,15 @@ export function prepareFlowData(
         bothValue,
         inValue,
         outValue,
-        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue
+        absolute_inFlow: bidirectional ? bothValue : inValue,
+        absolute_outFlow: bidirectional ? (100 - bothValue) : outValue
       });
 
       return {
         from: brandFlow.from,
         to: brandFlow.to,
-        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue,
+        absolute_inFlow: bidirectional ? bothValue : inValue,
+        absolute_outFlow: bidirectional ? (100 - bothValue) : outValue,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net.abs),
         // Include the original data arrays for churn, switching, and affinity
@@ -190,14 +193,14 @@ export function prepareFlowData(
       const value = flowType === 'netFlow' ? flow.absolute_netFlow :
                    flowType === 'inFlow only' ? flow.absolute_inFlow :
                    flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   flowType === 'both' ? flow.absolute_inFlow :
+                   bidirectional ? flow.absolute_inFlow :
                    Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-      
-      const maxValue = Math.max(...flows.map((f: Flow) => 
+
+      const maxValue = Math.max(...flows.map((f: Flow) =>
         flowType === 'netFlow' ? f.absolute_netFlow :
         flowType === 'inFlow only' ? f.absolute_inFlow :
         flowType === 'outFlow only' ? f.absolute_outFlow :
-        flowType === 'both' ? f.absolute_inFlow :
+        bidirectional ? f.absolute_inFlow :
         Math.max(f.absolute_inFlow, f.absolute_outFlow)
       ));
 
