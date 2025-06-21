@@ -514,7 +514,7 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${switchIndex.toFixed(1)})`);
+      .text(`(${switchIndex.toFixed(2)})`);
 
     const otherLabel = svg
       .append('text')
@@ -528,7 +528,7 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${otherPerc.toFixed(1)}% TEST`);
+      .text(`${otherPerc.toFixed(1)}%`);
 
     const otherIndexLabel2 = svg
       .append('text')
@@ -542,7 +542,7 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${otherIndex.toFixed(1)}) TEST`);
+      .text(`(${otherIndex.toFixed(2)})`);
 
     if (focusedFlow) {
       const isThisFlowFocused =
@@ -752,6 +752,15 @@ export function drawBidirectionalFlowLine(
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
 ) {
+  // Log to verify we're using the correct data for 'both' flow type
+  console.log('Bidirectional Flow Data:', {
+    flow: `${flow.from}->${flow.to}`,
+    abs: flow.churn?.[0]?.both?.abs || 'N/A',
+    inPerc,
+    outPerc,
+    inIndex,
+    outIndex
+  });
   const lineThickness = calculateLineThickness(flow);
   const isDarkTheme = document.documentElement.classList.contains('dark');
   const fromCenter = startBubble.id === allBubbles.length - 1;
