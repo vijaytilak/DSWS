@@ -1,4 +1,5 @@
-import type { FlowData, Flow } from '../types';
+import type { FlowData, Flow, BrandFlow as ImportedBrandFlow } from '../types';
+import { isBidirectionalFlowType } from './flowTypeUtils';
 
 interface MarketFlow {
   itemID: number;
@@ -61,7 +62,8 @@ interface SwitchingFlowData {
   };
 }
 
-interface BrandFlow {
+// Local interface for backward compatibility
+interface LocalBrandFlow {
   from: number;
   to: number;
   outFlow: number;
@@ -83,20 +85,28 @@ export function prepareFlowData(
   isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
 ): Flow[] {
+  const bidirectional = isBidirectionalFlowType(
+    flowType, 
+    isMarketView ? 'Markets' : 'Brands', 
+    flowOption
+  );
+
   if (isMarketView) {
     // For Markets view, create centre flows for each market
     const marketFlows = data.flows_markets.map((flow) => {
       const marketFlow = flow as MarketFlow;
       const optionData = marketFlow[flowOption];
       const flowDirection: FlowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
-      
+
       return {
         from: marketFlow.itemID,
         to: data.itemIDs.length, // Center bubble ID
-        absolute_inFlow: flowType === 'both' ? optionData.both : optionData.in,
-        absolute_outFlow: flowType === 'both' ? (100 - optionData.both) : optionData.out,
+        absolute_inFlow: bidirectional ? optionData.both : optionData.in,
+        absolute_outFlow: bidirectional ? (100 - optionData.both) : optionData.out,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net),
+        bidirectional_inPerc: bidirectional ? optionData.both : undefined,
+        bidirectional_outPerc: bidirectional ? (100 - optionData.both) : undefined,
       };
     });
 
@@ -110,18 +120,18 @@ export function prepareFlowData(
 
     // Apply threshold filtering
     return filteredFlows.filter(flow => {
-      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
-                   flowType === 'inFlow only' ? flow.absolute_inFlow :
-                   flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   flowType === 'both' ? flow.absolute_inFlow :
-                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-      
-      const maxValue = Math.max(...marketFlows.map(f => 
-        flowType === 'netFlow' ? f.absolute_netFlow :
-        flowType === 'inFlow only' ? f.absolute_inFlow :
-        flowType === 'outFlow only' ? f.absolute_outFlow :
-        flowType === 'both' ? f.absolute_inFlow :
-        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+      const value = flowType === 'net' ? flow.absolute_netFlow :
+                   flowType === 'in' ? flow.absolute_inFlow :
+                   flowType === 'out' ? flow.absolute_outFlow :
+                   flowType === 'both' ? Math.max(flow.absolute_inFlow, flow.absolute_outFlow) :
+                   flow.absolute_netFlow;
+
+      const maxValue = Math.max(...marketFlows.map(f =>
+        flowType === 'net' ? f.absolute_netFlow :
+        flowType === 'in' ? f.absolute_inFlow :
+        flowType === 'out' ? f.absolute_outFlow :
+        flowType === 'both' ? Math.max(f.absolute_inFlow, f.absolute_outFlow) :
+        f.absolute_netFlow
       ));
 
       return (value / maxValue) * 100 >= threshold;
@@ -129,7 +139,7 @@ export function prepareFlowData(
   } else {
     // For Brands view, use the original brand flows
     const brandFlowsWithNulls = data.flows_brands.map((flow) => {
-      const brandFlow = flow as BrandFlow;
+      const brandFlow = flow as unknown as LocalBrandFlow;
       // Since churn, switching, and affinity are arrays, we need to access the first element
       const optionDataArray = brandFlow[flowOption];
       
@@ -141,11 +151,15 @@ export function prepareFlowData(
       
       const optionData = optionDataArray[0];
       const flowDirection: FlowDirection = optionData.net.perc >= 0 ? "inFlow" : "outFlow";
-      
+
       // For 'both' type, we use the 'both' value directly from the flow option data
       const bothValue = optionData.both.abs;
       const inValue = optionData.in.abs;
       const outValue = optionData.out.abs;
+      const inPerc = optionData.both.in_perc * 100;
+      const outPerc = optionData.both.out_perc * 100;
+      const inIndex = optionData.both.in_index;
+      const outIndex = optionData.both.out_index;
 
       console.log('DEBUG - Flow Preparation:', {
         from: brandFlow.from,
@@ -154,21 +168,25 @@ export function prepareFlowData(
         bothValue,
         inValue,
         outValue,
-        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue
+        absolute_inFlow: bidirectional ? bothValue : inValue,
+        absolute_outFlow: bidirectional ? (100 - bothValue) : outValue
       });
 
       return {
         from: brandFlow.from,
         to: brandFlow.to,
-        absolute_inFlow: (flowType === 'both' || flowType === 'bi-directional') ? bothValue : inValue,
-        absolute_outFlow: (flowType === 'both' || flowType === 'bi-directional') ? (100 - bothValue) : outValue,
+        absolute_inFlow: bidirectional ? bothValue : inValue,
+        absolute_outFlow: bidirectional ? (100 - bothValue) : outValue,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net.abs),
         // Include the original data arrays for churn, switching, and affinity
         churn: brandFlow.churn,
         switching: brandFlow.switching,
-        affinity: brandFlow.affinity
+        affinity: brandFlow.affinity,
+        bidirectional_inPerc: bidirectional ? inPerc : undefined,
+        bidirectional_outPerc: bidirectional ? outPerc : undefined,
+        bidirectional_inIndex: bidirectional ? inIndex : undefined,
+        bidirectional_outIndex: bidirectional ? outIndex : undefined
       };
     });
     
@@ -187,18 +205,18 @@ export function prepareFlowData(
 
     // Apply threshold filtering
     return flows.filter((flow: Flow) => {
-      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
-                   flowType === 'inFlow only' ? flow.absolute_inFlow :
-                   flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   flowType === 'both' ? flow.absolute_inFlow :
-                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
-      
-      const maxValue = Math.max(...flows.map((f: Flow) => 
-        flowType === 'netFlow' ? f.absolute_netFlow :
-        flowType === 'inFlow only' ? f.absolute_inFlow :
-        flowType === 'outFlow only' ? f.absolute_outFlow :
-        flowType === 'both' ? f.absolute_inFlow :
-        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+      const value = flowType === 'net' ? flow.absolute_netFlow :
+                   flowType === 'in' ? flow.absolute_inFlow :
+                   flowType === 'out' ? flow.absolute_outFlow :
+                   flowType === 'both' ? Math.max(flow.absolute_inFlow, flow.absolute_outFlow) :
+                   flow.absolute_netFlow;
+
+      const maxValue = Math.max(...flows.map((f: Flow) =>
+        flowType === 'net' ? f.absolute_netFlow :
+        flowType === 'in' ? f.absolute_inFlow :
+        flowType === 'out' ? f.absolute_outFlow :
+        flowType === 'both' ? Math.max(f.absolute_inFlow, f.absolute_outFlow) :
+        f.absolute_netFlow
       ));
 
       return (value / maxValue) * 100 >= threshold;
