@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
-import { CONFIG } from '../constants/config';
-import type { FlowData, Bubble } from '../types';
+import { CONFIG } from '../../constants/config';
+import type { FlowData, Bubble } from '../../types';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip } from '../tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from '../bubble';
 import VisualizationManager from './VisualizationManager';

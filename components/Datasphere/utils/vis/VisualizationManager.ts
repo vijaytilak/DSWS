@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { createTooltip, updateTooltipTheme } from '../tooltip';
-import type { Bubble, Flow } from '../types';
+import type { Bubble, Flow } from '../../types';
 
 class VisualizationManager {
   private static instance: VisualizationManager;

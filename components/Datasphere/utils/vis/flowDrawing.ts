@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
-import { CONFIG } from '../constants/config';
-import type { Flow, Bubble } from '../types';
+import { CONFIG } from '../../constants/config';
+import type { Flow, Bubble } from '../../types';
 import { showTooltip, hideTooltip, getFlowTooltip } from '../tooltip';
 
 export function drawFlows(
@@ -58,7 +58,7 @@ export function drawFlows(
     flows: flowsWithMetrics.map((f) => ({
       from: f.from,
       to: f.to,
-      value: f.value,
+      value: f.absolute_netFlow,
       percentRank: f.percentRank,
     })),
   });
