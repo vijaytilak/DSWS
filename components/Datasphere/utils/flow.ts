@@ -1,4 +1,4 @@
-import type { FlowData, Flow } from '../types';
+import type { FlowData, Flow, BrandFlow as ImportedBrandFlow } from '../types';
 import { isBidirectionalFlowType } from './flowTypeUtils';
 
 interface MarketFlow {
@@ -62,7 +62,8 @@ interface SwitchingFlowData {
   };
 }
 
-interface BrandFlow {
+// Local interface for backward compatibility
+interface LocalBrandFlow {
   from: number;
   to: number;
   outFlow: number;
@@ -84,7 +85,11 @@ export function prepareFlowData(
   isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
 ): Flow[] {
-  const bidirectional = isBidirectionalFlowType(flowType);
+  const bidirectional = isBidirectionalFlowType(
+    flowType, 
+    isMarketView ? 'Markets' : 'Brands', 
+    flowOption
+  );
 
   if (isMarketView) {
     // For Markets view, create centre flows for each market
@@ -115,18 +120,18 @@ export function prepareFlowData(
 
     // Apply threshold filtering
     return filteredFlows.filter(flow => {
-      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
-                   flowType === 'inFlow only' ? flow.absolute_inFlow :
-                   flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   bidirectional ? flow.absolute_inFlow :
-                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
+      const value = flowType === 'net' ? flow.absolute_netFlow :
+                   flowType === 'in' ? flow.absolute_inFlow :
+                   flowType === 'out' ? flow.absolute_outFlow :
+                   flowType === 'both' ? Math.max(flow.absolute_inFlow, flow.absolute_outFlow) :
+                   flow.absolute_netFlow;
 
       const maxValue = Math.max(...marketFlows.map(f =>
-        flowType === 'netFlow' ? f.absolute_netFlow :
-        flowType === 'inFlow only' ? f.absolute_inFlow :
-        flowType === 'outFlow only' ? f.absolute_outFlow :
-        bidirectional ? f.absolute_inFlow :
-        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+        flowType === 'net' ? f.absolute_netFlow :
+        flowType === 'in' ? f.absolute_inFlow :
+        flowType === 'out' ? f.absolute_outFlow :
+        flowType === 'both' ? Math.max(f.absolute_inFlow, f.absolute_outFlow) :
+        f.absolute_netFlow
       ));
 
       return (value / maxValue) * 100 >= threshold;
@@ -134,7 +139,7 @@ export function prepareFlowData(
   } else {
     // For Brands view, use the original brand flows
     const brandFlowsWithNulls = data.flows_brands.map((flow) => {
-      const brandFlow = flow as BrandFlow;
+      const brandFlow = flow as unknown as LocalBrandFlow;
       // Since churn, switching, and affinity are arrays, we need to access the first element
       const optionDataArray = brandFlow[flowOption];
       
@@ -200,18 +205,18 @@ export function prepareFlowData(
 
     // Apply threshold filtering
     return flows.filter((flow: Flow) => {
-      const value = flowType === 'netFlow' ? flow.absolute_netFlow :
-                   flowType === 'inFlow only' ? flow.absolute_inFlow :
-                   flowType === 'outFlow only' ? flow.absolute_outFlow :
-                   bidirectional ? flow.absolute_inFlow :
-                   Math.max(flow.absolute_inFlow, flow.absolute_outFlow);
+      const value = flowType === 'net' ? flow.absolute_netFlow :
+                   flowType === 'in' ? flow.absolute_inFlow :
+                   flowType === 'out' ? flow.absolute_outFlow :
+                   flowType === 'both' ? Math.max(flow.absolute_inFlow, flow.absolute_outFlow) :
+                   flow.absolute_netFlow;
 
       const maxValue = Math.max(...flows.map((f: Flow) =>
-        flowType === 'netFlow' ? f.absolute_netFlow :
-        flowType === 'inFlow only' ? f.absolute_inFlow :
-        flowType === 'outFlow only' ? f.absolute_outFlow :
-        bidirectional ? f.absolute_inFlow :
-        Math.max(f.absolute_inFlow, f.absolute_outFlow)
+        flowType === 'net' ? f.absolute_netFlow :
+        flowType === 'in' ? f.absolute_inFlow :
+        flowType === 'out' ? f.absolute_outFlow :
+        flowType === 'both' ? Math.max(f.absolute_inFlow, f.absolute_outFlow) :
+        f.absolute_netFlow
       ));
 
       return (value / maxValue) * 100 >= threshold;

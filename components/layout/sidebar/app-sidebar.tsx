@@ -87,9 +87,9 @@ export function AppSidebar({
     setCentreFlow(isMarkets);
     setIsMarketView(isMarkets);
     
-    // Reset to Churn and netFlow when view changes
+    // Reset to Churn and net when view changes
     onFlowOptionChange?.('churn');
-    setFlowType('netFlow');
+    setFlowType('net');
   };
 
   return (

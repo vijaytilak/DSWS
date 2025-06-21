@@ -7,10 +7,9 @@ export interface TableDataItem {
 export interface BrandFlow {
   from: number;
   to: number;
-  outFlow: number;
-  inFlow: number;
-  interaction: number;
   tabledata?: TableDataItem[];
+  churn?: ChurnFlow[];
+  switching?: SwitchingFlow[];
 }
 
 export interface MarketFlow {
@@ -63,23 +62,38 @@ export interface Bubble {
   totalBubbles: number; // Total number of bubbles including center
 }
 
-interface ChurnFlowData {
-  switch_perc: number;
-  other_perc: number;
-  switch_index: number;
-  other_index: number;
-  abs?: number;
+interface FlowDataWithPercentages {
+  abs: number;
+  out_perc: number;
+  in_perc: number;
+  out_index: number;
+  in_index: number;
+}
+
+interface FlowDataWithSinglePercentage {
+  abs: number;
+  perc: number;
+  index: number;
 }
 
 interface ChurnFlow {
-  in?: ChurnFlowData;
-  out?: ChurnFlowData;
-  net?: {
+  in: FlowDataWithPercentages;
+  out: FlowDataWithPercentages;
+  net: FlowDataWithSinglePercentage;
+  both: {
     abs: number;
-    perc: number;
-    index: number;
+    out_perc: number;
+    in_perc: number;
+    out_index: number;
+    in_index: number;
   };
-  both?: {
+}
+
+interface SwitchingFlow {
+  in: FlowDataWithSinglePercentage;
+  out: FlowDataWithSinglePercentage;
+  net: FlowDataWithSinglePercentage;
+  both: {
     abs: number;
     out_perc: number;
     in_perc: number;
