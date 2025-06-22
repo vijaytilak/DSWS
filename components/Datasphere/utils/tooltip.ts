@@ -121,136 +121,100 @@ export function getBubbleTooltip(bubble: Bubble): string {
   return `${formatNumber(bubble.itemSizeAbsolute)} people visited ${bubble.label}`;
 }
 
-export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn'): string {
-  // For churn metrics, extract the correct percentage values from churn data
-  let switchPerc, otherPerc, switchIndex, otherIndex;
-  const isChurnMetric = flowOption === 'churn';
+export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn', isMarketView: boolean = false): string {
+  // Use Markets/Brands for view as requested
+  const view = isMarketView ? 'Markets' : 'Brands';
   
-  // For churn metrics, we need to extract data based on the flow structure defined in types.ts
-  if (isChurnMetric && flow.churn && flow.churn.length > 0) {
-    // Extract churn-specific data for the correct flow direction
-    if (flowDirection === 'inFlow' && flow.churn[0].in) {
-      // Using the correct property names from FlowDataWithPercentages interface
-      switchPerc = flow.churn[0].in.in_perc * 100;
-      otherPerc = flow.churn[0].in.out_perc * 100;
-      switchIndex = flow.churn[0].in.in_index;
-      otherIndex = flow.churn[0].in.out_index;
-    } else if (flowDirection === 'outFlow' && flow.churn[0].out) {
-      switchPerc = flow.churn[0].out.in_perc * 100;
-      otherPerc = flow.churn[0].out.out_perc * 100;
-      switchIndex = flow.churn[0].out.in_index;
-      otherIndex = flow.churn[0].out.out_index;
+  // Get metric name with proper capitalization
+  const metric = flowOption.charAt(0).toUpperCase() + flowOption.slice(1);
+  
+  // Use the original flow type directly as requested
+  const flowType = flowDirection;
+  
+  let percentage = 0;
+  let index = 0;
+  
+  // Extract data based on flow direction and metric
+  if (flowDirection === 'inbound') {
+    // For inbound segment of bidirectional flow, use in_perc and in_index from 'both'
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
+      percentage = flow.churn[0].both.in_perc * 100;
+      index = flow.churn[0].both.in_index || 0;
+    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
+      percentage = flow.switching[0].both.in_perc * 100;
+      index = flow.switching[0].both.in_index || 0;
+    } else {
+      percentage = flow.absolute_inFlow;
+    }
+    
+    // For inbound segment of bidirectional flow
+    return `${source.label} → ${target.label}\n` +
+           `View: ${view} | Metric: ${metric} | Flow: inFlow\n` +
+           `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;  
+  } else if (flowDirection === 'outbound') {
+    // For outbound segment of bidirectional flow, use out_perc and out_index from 'both'
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
+      percentage = flow.churn[0].both.out_perc * 100;
+      index = flow.churn[0].both.out_index || 0;
+    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
+      percentage = flow.switching[0].both.out_perc * 100;
+      index = flow.switching[0].both.out_index || 0;
+    } else {
+      percentage = flow.absolute_outFlow;
+    }
+    
+    // For outbound segment of bidirectional flow
+    return `${source.label} ← ${target.label}\n` +
+           `View: ${view} | Metric: ${metric} | Flow: outFlow\n` +
+           `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
+  } else if (flowDirection === 'both') {
+    // For complete bidirectional flow, show absolute value
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
+      percentage = flow.churn[0].both.abs || 0;
+    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
+      percentage = flow.switching[0].both.abs || 0;
+    } else {
+      percentage = flow.absolute_netFlow;
+    }
+    
+    // For bidirectional flows, use a bidirectional arrow
+    return `${source.label} ↔ ${target.label}\n` +
+           `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
+           `Percentage: ${percentage.toFixed(2)}`;
+  } else if (flowDirection === 'inFlow') {
+    // For inbound flows
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].in) {
+      percentage = flow.churn[0].in.in_perc * 100;
+      index = flow.churn[0].in.in_index || 0;
+    } else {
+      percentage = flow.absolute_inFlow;
+    }
+  } else if (flowDirection === 'outFlow') {
+    // For outbound flows
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].out) {
+      percentage = flow.churn[0].out.in_perc * 100;
+      index = flow.churn[0].out.in_index || 0;
+    } else {
+      percentage = flow.absolute_outFlow;
+    }
+  } else if (flowDirection === 'netFlow') {
+    // For net flows
+    percentage = flow.absolute_netFlow;
+    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0) {
+      if (flow.absolute_netFlowDirection === 'inFlow' && flow.churn[0].in) {
+        index = flow.churn[0].in.in_index || 0;
+      } else if (flow.churn[0].out) {
+        index = flow.churn[0].out.in_index || 0;
+      }
     }
   }
   
-  if (centreFlow) {
-    switch (flowDirection) {
-      case 'inFlow':
-        return `${source.label} to ${target.label}: ${flow.absolute_inFlow.toFixed(1)}%`;
-      case 'outFlow':
-        return `${source.label} to ${target.label}: ${flow.absolute_outFlow.toFixed(1)}%`;
-      case 'netFlow':
-        if (flow.absolute_netFlowDirection === 'inFlow') {
-          return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-        } else {
-          return `Net flow from ${target.label} to ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-        }
-      case 'both':
-        const complementaryValue = 100 - flow.absolute_inFlow;
-        return `${source.label} to ${target.label}:
-                Inbound: ${flow.absolute_inFlow.toFixed(1)}%
-                Outbound: ${complementaryValue.toFixed(1)}%
-                Net: ${flow.absolute_netFlow.toFixed(1)}%`;
-    }
-  } else {
-    switch (flowDirection) {
-      case 'inFlow':
-        if (isChurnMetric && switchPerc !== undefined) {
-          // Use the correct percentage from churn data
-          const indexText = switchIndex ? ` (Index: ${switchIndex.toFixed(2)})` : '';
-          return `${switchPerc.toFixed(1)}% sales churn in from ${source.label}${indexText}`;
-        } else if (flowOption === 'switching') {
-          return `${flow.absolute_inFlow.toFixed(1)}% switch in from ${source.label}`;
-        } else {
-          return `${flow.absolute_inFlow.toFixed(1)}% flow from ${source.label} to ${target.label}`;
-        }
-      case 'outFlow':
-        if (isChurnMetric && switchPerc !== undefined) {
-          // Use the correct percentage from churn data
-          const indexText = switchIndex ? ` (Index: ${switchIndex.toFixed(2)})` : '';
-          return `${switchPerc.toFixed(1)}% sales churn out to ${target.label}${indexText}`;
-        } else if (flowOption === 'switching') {
-          return `${flow.absolute_outFlow.toFixed(1)}% switch out to ${target.label}`;
-        } else {
-          return `${flow.absolute_outFlow.toFixed(1)}% flow from ${source.label} to ${target.label}`;
-        }
-      case 'netFlow':
-        if (flow.absolute_netFlowDirection === 'inFlow') {
-          // Get index value if available for inFlow
-          let indexText = '';
-          if (isChurnMetric && switchIndex !== undefined) {
-            indexText = ` (Index: ${switchIndex.toFixed(2)})`;
-          }
-          
-          if (isChurnMetric) {
-            const percValue = switchPerc !== undefined ? switchPerc : flow.absolute_netFlow;
-            return `Net sales churn in from ${source.label}: ${percValue.toFixed(1)}%${indexText}`;
-          } else if (flowOption === 'switching') {
-            return `Net switch in from ${source.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-          } else {
-            return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-          }
-        } else {
-          // Get index value if available for outFlow
-          let indexText = '';
-          if (isChurnMetric && switchIndex !== undefined) {
-            indexText = ` (Index: ${switchIndex.toFixed(2)})`;
-          }
-          
-          if (isChurnMetric) {
-            const percValue = switchPerc !== undefined ? switchPerc : flow.absolute_netFlow;
-            return `Net sales churn out to ${target.label}: ${percValue.toFixed(1)}%${indexText}`;
-          } else if (flowOption === 'switching') {
-            return `Net switch out to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-          } else {
-            return `Net flow from ${source.label} to ${target.label}: ${flow.absolute_netFlow.toFixed(1)}%`;
-          }
-        }
-      case 'both':
-        // Check for 'both' data in churn section for Brands view
-        if (isChurnMetric && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
-          const bothData = flow.churn[0].both;
-          const inPerc = bothData.in_perc * 100;
-          const outPerc = bothData.out_perc * 100;
-          const inIndexText = bothData.in_index ? ` (Index: ${bothData.in_index.toFixed(2)})` : '';
-          const outIndexText = bothData.out_index ? ` (Index: ${bothData.out_index.toFixed(2)})` : '';
-          const absValue = bothData.abs || 0;
-          
-          return `${source.label} ↔ ${target.label}:
-                  Absolute: ${absValue}
-                  Inbound: ${inPerc.toFixed(1)}%${inIndexText}
-                  Outbound: ${outPerc.toFixed(1)}%${outIndexText}`;
-        } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
-          // Handle switching data similarly
-          const bothData = flow.switching[0].both;
-          const inPerc = bothData.in_perc * 100;
-          const outPerc = bothData.out_perc * 100;
-          const inIndexText = bothData.in_index ? ` (Index: ${bothData.in_index.toFixed(2)})` : '';
-          const outIndexText = bothData.out_index ? ` (Index: ${bothData.out_index.toFixed(2)})` : '';
-          const absValue = bothData.abs || 0;
-          
-          return `${source.label} ↔ ${target.label}:
-                  Absolute: ${absValue}
-                  Inbound: ${inPerc.toFixed(1)}%${inIndexText}
-                  Outbound: ${outPerc.toFixed(1)}%${outIndexText}`;
-        } else {
-          // Default bidirectional flow display
-          return `${source.label} ↔ ${target.label}:
-                  Inbound: ${flow.absolute_inFlow.toFixed(1)}%
-                  Outbound: ${flow.absolute_outFlow.toFixed(1)}%
-                  Net: ${flow.absolute_netFlow.toFixed(1)}%`;
-        }
-    }
-  }
-  return '';
+  // For non-bidirectional flows, use appropriate arrow direction
+  const direction = flow.absolute_netFlowDirection === 'inFlow' ? 
+    `${source.label} → ${target.label}` : 
+    `${source.label} ← ${target.label}`;
+  
+  return `${direction}\n` +
+         `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
+         `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
 }

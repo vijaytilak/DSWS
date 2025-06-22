@@ -864,7 +864,7 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', destColor)
     .attr('font-size', '10px')
-    .text(inIndex !== undefined ? `(${inIndex.toFixed(1)})` : '');
+    .text(inIndex !== undefined ? `(${inIndex.toFixed(2)})` : '');
 
   // Get absolute value for outflow if available
   let outAbsValue = '';
@@ -894,18 +894,31 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', sourceColor)
     .attr('font-size', '10px')
-    .text(outIndex !== undefined ? `(${outIndex.toFixed(1)})` : '');
+    .text(outIndex !== undefined ? `(${outIndex.toFixed(2)})` : '');
 
-  const handleMouseOver = (event: MouseEvent) => {
+  // Separate handlers for inbound and outbound segments
+  const handleInboundMouseOver = (event: MouseEvent) => {
     if (
       !focusedFlow ||
       (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
       (flow.from === focusedFlow.to && flow.to === focusedFlow.from)
     ) {
       segmentStart.attr('stroke-width', lineThickness * 1.1);
+    }
+    // For inbound segment, pass a special 'inbound' flow direction to indicate we want inbound data from 'both'
+    showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, 'inbound', centreFlow, flowOption, isMarketView));
+  };
+
+  const handleOutboundMouseOver = (event: MouseEvent) => {
+    if (
+      !focusedFlow ||
+      (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+      (flow.from === focusedFlow.to && flow.to === focusedFlow.from)
+    ) {
       segmentEnd.attr('stroke-width', lineThickness * 1.1);
     }
-    showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, 'both', centreFlow, flowOption));
+    // For outbound segment, pass a special 'outbound' flow direction to indicate we want outbound data from 'both'
+    showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, 'outbound', centreFlow, flowOption, isMarketView));
   };
 
   const handleMouseOut = () => {
@@ -923,11 +936,13 @@ export function drawBidirectionalFlowLine(
     if (onFlowClick) onFlowClick(flow, startBubble, endBubble);
   };
 
-  segmentStart.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
-  segmentEnd.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+  // Use separate handlers for inbound and outbound segments
+  segmentStart.on('mouseover', handleInboundMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+  segmentEnd.on('mouseover', handleOutboundMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
 
-  label1.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
-  label1Index.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
-  label2.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
-  label2Index.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+  // Update labels to use the appropriate handlers
+  label1.on('mouseover', handleInboundMouseOver).on('mouseout', handleMouseOut);
+  label1Index.on('mouseover', handleInboundMouseOver).on('mouseout', handleMouseOut);
+  label2.on('mouseover', handleOutboundMouseOver).on('mouseout', handleMouseOut);
+  label2Index.on('mouseover', handleOutboundMouseOver).on('mouseout', handleMouseOut);
 }
