@@ -268,57 +268,71 @@ export function drawFlowLine(
     let value = 0;
     let indexValue = 0;
     
-    // Simplified data access based on flow type and direction
+    /**
+     * Extract flow values for unidirectional flows
+     * This handles both newer structured data format and legacy format
+     * The data access pattern is consistent across all flow types (churn, switching, affinity)
+     */
+    value = 0;
+    indexValue = 0;
+    
+    // First try to get data from structured flow data (preferred)
     if (flow[flowOption] && flow[flowOption].length > 0) {
-      const flowData = flow[flowOption][0];
+      const flowData = flow[flowOption][0] as any;
+      const direction = flowDirection.replace('Flow', ''); // Remove 'Flow' suffix
       
-      // Handle each flow direction with proper type checking
-      if (flowDirection === 'netFlow' && 'net' in flowData) {
-        const netData = flowData.net;
-        value = (netData.perc !== undefined) ? netData.perc * 100 : 0;
-        indexValue = netData.index || 0;
-      } 
-      else if (flowDirection === 'inFlow' && 'in' in flowData) {
-        const inData = flowData.in;
-        // Handle both old and new property names
-        if ('perc' in inData && typeof inData.perc === 'number') {
-          value = inData.perc * 100;
-          indexValue = 'index' in inData && typeof inData.index === 'number' ? inData.index : 0;
-        } else if ('in_perc' in inData && typeof inData.in_perc === 'number') {
-          value = inData.in_perc * 100;
-          indexValue = 'in_index' in inData && typeof inData.in_index === 'number' ? inData.in_index : 0;
+      // Access data based on direction (in, out, net)
+      if (direction === 'in' && flowData.in) {
+        // For inbound flows
+        if (typeof flowData.in.perc === 'number') {
+          value = flowData.in.perc * 100;
+          indexValue = typeof flowData.in.index === 'number' ? flowData.in.index : 0;
+        } else if (typeof flowData.in.in_perc === 'number') {
+          value = flowData.in.in_perc * 100;
+          indexValue = typeof flowData.in.in_index === 'number' ? flowData.in.in_index : 0;
         }
       } 
-      else if (flowDirection === 'outFlow' && 'out' in flowData) {
-        const outData = flowData.out;
-        // Handle both old and new property names
-        if ('perc' in outData && typeof outData.perc === 'number') {
-          value = outData.perc * 100;
-          indexValue = 'index' in outData && typeof outData.index === 'number' ? outData.index : 0;
-        } else if ('out_perc' in outData && typeof outData.out_perc === 'number') {
-          value = outData.out_perc * 100;
-          indexValue = 'out_index' in outData && typeof outData.out_index === 'number' ? outData.out_index : 0;
+      else if (direction === 'out' && flowData.out) {
+        // For outbound flows
+        if (typeof flowData.out.perc === 'number') {
+          value = flowData.out.perc * 100;
+          indexValue = typeof flowData.out.index === 'number' ? flowData.out.index : 0;
+        } else if (typeof flowData.out.out_perc === 'number') {
+          value = flowData.out.out_perc * 100;
+          indexValue = typeof flowData.out.out_index === 'number' ? flowData.out.out_index : 0;
+        }
+      }
+      else if (direction === 'net' && flowData.net) {
+        // For net flows
+        if (typeof flowData.net.perc === 'number') {
+          value = flowData.net.perc * 100;
+          indexValue = typeof flowData.net.index === 'number' ? flowData.net.index : 0;
         }
       }
     }
     
     // Fallback to legacy properties if no structured data found
-    if (value === 0 && indexValue === 0) {
-      switch (flowDirection) {
-        case 'inFlow':
-          value = flow.absolute_inFlow;
-          break;
-        case 'outFlow':
-          value = flow.absolute_outFlow;
-          break;
-        case 'netFlow':
-          value = flow.absolute_netFlow;
-          if (flow.absolute_netFlowDirection === 'outFlow') {
-            value = -value;
-          }
-          break;
+    if (value === 0) {
+      if (flowDirection === 'inFlow' && typeof flow.absolute_inFlow === 'number') {
+        value = flow.absolute_inFlow;
+      } else if (flowDirection === 'outFlow' && typeof flow.absolute_outFlow === 'number') {
+        value = flow.absolute_outFlow;
+      } else if (flowDirection === 'netFlow' && typeof flow.absolute_netFlow === 'number') {
+        value = flow.absolute_netFlow;
       }
     }
+    
+    // Ensure we have a valid value
+    if (isNaN(value) || value === undefined) {
+      value = 0;
+    }
+    
+    if (isNaN(indexValue) || indexValue === undefined) {
+      indexValue = 0;
+    }
+    
+    console.log(`Final flow data for ${flowDirection}:`, { value, indexValue });
+    
 
     const splitX = (points.start.x + points.end.x) / 2;
     const splitY = (points.start.y + points.end.y) / 2;
@@ -403,6 +417,8 @@ export function drawFlowLine(
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
       .text(`${Math.abs(value).toFixed(1)}%`);
+      
+    console.log('Unidirectional flow label:', { flowDirection, value, indexValue });
 
     // Remove duplicate percentage label - we only need one label for unidirectional flows
 

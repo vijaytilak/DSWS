@@ -121,6 +121,20 @@ export function getBubbleTooltip(bubble: Bubble): string {
   return `${formatNumber(bubble.itemSizeAbsolute)} people visited ${bubble.label}`;
 }
 
+/**
+ * Generates tooltip content for flow lines
+ * Uses the same data access pattern as the drawFlowLine function
+ * to ensure consistency between tooltips and labels
+ *
+ * @param flow - Flow data object
+ * @param source - Source bubble
+ * @param target - Target bubble
+ * @param flowDirection - Direction of the flow ('inFlow', 'outFlow', 'netFlow', 'inbound', 'outbound', 'both')
+ * @param centreFlow - Whether the flow is centered
+ * @param flowOption - Type of flow metric ('churn', 'switching', 'affinity')
+ * @param isMarketView - Whether the view is market view
+ * @returns Formatted tooltip content string
+ */
 export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn', isMarketView: boolean = false): string {
   // Use Markets/Brands for view as requested
   const view = isMarketView ? 'Markets' : 'Brands';
@@ -135,44 +149,39 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
   let index = 0;
   
   // Extract data based on flow direction and metric
-  if (flowDirection === 'inbound') {
-    // For inbound segment of bidirectional flow, use in_perc and in_index from 'both'
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
-      percentage = flow.churn[0].both.in_perc * 100;
-      index = flow.churn[0].both.in_index || 0;
-    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
-      percentage = flow.switching[0].both.in_perc * 100;
-      index = flow.switching[0].both.in_index || 0;
+  if (flowDirection === 'inbound' || flowDirection === 'outbound') {
+    // For bidirectional flows (inbound/outbound segments)
+    if (flow[flowOption] && flow[flowOption].length > 0 && flow[flowOption][0].both) {
+      const flowData = flow[flowOption][0].both;
+      
+      if (flowDirection === 'inbound') {
+        // For inbound segment
+        percentage = typeof flowData.in_perc === 'number' ? flowData.in_perc * 100 : 0;
+        index = typeof flowData.in_index === 'number' ? flowData.in_index : 0;
+        
+        // For inbound segment of bidirectional flow
+        return `${source.label} → ${target.label}\n` +
+               `View: ${view} | Metric: ${metric} | Flow: inFlow\n` +
+               `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
+      } else {
+        // For outbound segment
+        percentage = typeof flowData.out_perc === 'number' ? flowData.out_perc * 100 : 0;
+        index = typeof flowData.out_index === 'number' ? flowData.out_index : 0;
+        
+        // For outbound segment of bidirectional flow
+        return `${source.label} ← ${target.label}\n` +
+               `View: ${view} | Metric: ${metric} | Flow: outFlow\n` +
+               `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
+      }
     } else {
-      percentage = flow.absolute_inFlow;
+      // Fallback to legacy properties
+      percentage = flowDirection === 'inbound' ? flow.absolute_inFlow : flow.absolute_outFlow;
     }
-    
-    // For inbound segment of bidirectional flow
-    return `${source.label} → ${target.label}\n` +
-           `View: ${view} | Metric: ${metric} | Flow: inFlow\n` +
-           `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;  
-  } else if (flowDirection === 'outbound') {
-    // For outbound segment of bidirectional flow, use out_perc and out_index from 'both'
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
-      percentage = flow.churn[0].both.out_perc * 100;
-      index = flow.churn[0].both.out_index || 0;
-    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
-      percentage = flow.switching[0].both.out_perc * 100;
-      index = flow.switching[0].both.out_index || 0;
-    } else {
-      percentage = flow.absolute_outFlow;
-    }
-    
-    // For outbound segment of bidirectional flow
-    return `${source.label} ← ${target.label}\n` +
-           `View: ${view} | Metric: ${metric} | Flow: outFlow\n` +
-           `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
   } else if (flowDirection === 'both') {
     // For complete bidirectional flow, show absolute value
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
-      percentage = flow.churn[0].both.abs || 0;
-    } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
-      percentage = flow.switching[0].both.abs || 0;
+    if (flow[flowOption] && flow[flowOption].length > 0 && flow[flowOption][0].both) {
+      const flowData = flow[flowOption][0].both;
+      percentage = typeof flowData.abs === 'number' ? flowData.abs : 0;
     } else {
       percentage = flow.absolute_netFlow;
     }
@@ -180,31 +189,53 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
     // For bidirectional flows, use a bidirectional arrow
     return `${source.label} ↔ ${target.label}\n` +
            `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
-           `Percentage: ${percentage.toFixed(2)}`;
-  } else if (flowDirection === 'inFlow') {
-    // For inbound flows
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].in) {
-      percentage = flow.churn[0].in.in_perc * 100;
-      index = flow.churn[0].in.in_index || 0;
-    } else {
-      percentage = flow.absolute_inFlow;
+           `Percentage: ${percentage.toFixed(2)}%`;
+  } else {
+    // Handle unidirectional flows (inFlow, outFlow, netFlow)
+    // Extract direction without 'Flow' suffix for data access
+    const direction = flowDirection.replace('Flow', '');
+    
+    // Access flow data based on flowOption and direction
+    if (flow[flowOption] && flow[flowOption].length > 0) {
+      const flowData = flow[flowOption][0] as any;
+      
+      if (direction === 'in' && flowData.in) {
+        // Handle inFlow data
+        if (typeof flowData.in.perc === 'number') {
+          percentage = flowData.in.perc * 100;
+          index = typeof flowData.in.index === 'number' ? flowData.in.index : 0;
+        } else if (typeof flowData.in.in_perc === 'number') {
+          percentage = flowData.in.in_perc * 100;
+          index = typeof flowData.in.in_index === 'number' ? flowData.in.in_index : 0;
+        }
+      } 
+      else if (direction === 'out' && flowData.out) {
+        // Handle outFlow data
+        if (typeof flowData.out.perc === 'number') {
+          percentage = flowData.out.perc * 100;
+          index = typeof flowData.out.index === 'number' ? flowData.out.index : 0;
+        } else if (typeof flowData.out.out_perc === 'number') {
+          percentage = flowData.out.out_perc * 100;
+          index = typeof flowData.out.out_index === 'number' ? flowData.out.out_index : 0;
+        }
+      }
+      else if (direction === 'net' && flowData.net) {
+        // Handle netFlow data
+        if (typeof flowData.net.perc === 'number') {
+          percentage = flowData.net.perc * 100;
+          index = typeof flowData.net.index === 'number' ? flowData.net.index : 0;
+        }
+      }
     }
-  } else if (flowDirection === 'outFlow') {
-    // For outbound flows
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].out) {
-      percentage = flow.churn[0].out.in_perc * 100;
-      index = flow.churn[0].out.in_index || 0;
-    } else {
-      percentage = flow.absolute_outFlow;
-    }
-  } else if (flowDirection === 'netFlow') {
-    // For net flows
-    percentage = flow.absolute_netFlow;
-    if (flowOption === 'churn' && flow.churn && flow.churn.length > 0) {
-      if (flow.absolute_netFlowDirection === 'inFlow' && flow.churn[0].in) {
-        index = flow.churn[0].in.in_index || 0;
-      } else if (flow.churn[0].out) {
-        index = flow.churn[0].out.in_index || 0;
+    
+    // Fallback to legacy properties if no data found
+    if (percentage === 0) {
+      if (flowDirection === 'inFlow' && typeof flow.absolute_inFlow === 'number') {
+        percentage = flow.absolute_inFlow;
+      } else if (flowDirection === 'outFlow' && typeof flow.absolute_outFlow === 'number') {
+        percentage = flow.absolute_outFlow;
+      } else if (flowDirection === 'netFlow' && typeof flow.absolute_netFlow === 'number') {
+        percentage = flow.absolute_netFlow;
       }
     }
   }
