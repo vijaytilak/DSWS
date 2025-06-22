@@ -265,23 +265,59 @@ export function drawFlowLine(
   ) || isChurnMetricInBrandsView;
 
   if (!isBidirectionalFlow) {
-    let value: number;
-    const currentFlowDirection = flowDirection;
-    switch (currentFlowDirection) {
-      case 'inFlow':
-        value = flow.absolute_inFlow;
-        break;
-      case 'outFlow':
-        value = flow.absolute_outFlow;
-        break;
-      case 'netFlow':
-        value = flow.absolute_netFlow;
-        if (flow.absolute_netFlowDirection === 'outFlow') {
-          value = -value;
+    let value = 0;
+    let indexValue = 0;
+    
+    // Simplified data access based on flow type and direction
+    if (flow[flowOption] && flow[flowOption].length > 0) {
+      const flowData = flow[flowOption][0];
+      
+      // Handle each flow direction with proper type checking
+      if (flowDirection === 'netFlow' && 'net' in flowData) {
+        const netData = flowData.net;
+        value = (netData.perc !== undefined) ? netData.perc * 100 : 0;
+        indexValue = netData.index || 0;
+      } 
+      else if (flowDirection === 'inFlow' && 'in' in flowData) {
+        const inData = flowData.in;
+        // Handle both old and new property names
+        if ('perc' in inData && typeof inData.perc === 'number') {
+          value = inData.perc * 100;
+          indexValue = 'index' in inData && typeof inData.index === 'number' ? inData.index : 0;
+        } else if ('in_perc' in inData && typeof inData.in_perc === 'number') {
+          value = inData.in_perc * 100;
+          indexValue = 'in_index' in inData && typeof inData.in_index === 'number' ? inData.in_index : 0;
         }
-        break;
-      default:
-        value = 0;
+      } 
+      else if (flowDirection === 'outFlow' && 'out' in flowData) {
+        const outData = flowData.out;
+        // Handle both old and new property names
+        if ('perc' in outData && typeof outData.perc === 'number') {
+          value = outData.perc * 100;
+          indexValue = 'index' in outData && typeof outData.index === 'number' ? outData.index : 0;
+        } else if ('out_perc' in outData && typeof outData.out_perc === 'number') {
+          value = outData.out_perc * 100;
+          indexValue = 'out_index' in outData && typeof outData.out_index === 'number' ? outData.out_index : 0;
+        }
+      }
+    }
+    
+    // Fallback to legacy properties if no structured data found
+    if (value === 0 && indexValue === 0) {
+      switch (flowDirection) {
+        case 'inFlow':
+          value = flow.absolute_inFlow;
+          break;
+        case 'outFlow':
+          value = flow.absolute_outFlow;
+          break;
+        case 'netFlow':
+          value = flow.absolute_netFlow;
+          if (flow.absolute_netFlowDirection === 'outFlow') {
+            value = -value;
+          }
+          break;
+      }
     }
 
     const splitX = (points.start.x + points.end.x) / 2;
@@ -368,19 +404,7 @@ export function drawFlowLine(
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
       .text(`${Math.abs(value).toFixed(1)}%`);
 
-    const otherPercLabel = svg
-      .append('text')
-      .attr('class', 'flow-label other-perc-label')
-      .attr('x', otherPercX)
-      .attr('y', otherPercY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '12px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${Math.abs(value).toFixed(1)}%`);
+    // Remove duplicate percentage label - we only need one label for unidirectional flows
 
     const otherIndexLabel = svg
       .append('text')
@@ -394,14 +418,14 @@ export function drawFlowLine(
       .attr('data-from-id', startBubble.id.toString())
       .attr('data-to-id', endBubble.id.toString())
       .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(flow.percentRank !== undefined ? `(${flow.percentRank.toFixed(1)})` : '');
+      .text(`(${indexValue ? indexValue.toFixed(2) : '0.00'})`);
 
     if (focusedFlow) {
       const isThisFlowFocused =
         (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
         (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
       switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-      otherPercLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+      // otherPercLabel removed
       otherIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
     }
   } else {
