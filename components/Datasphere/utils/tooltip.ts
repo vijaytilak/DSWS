@@ -176,6 +176,15 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
     } else {
       // Fallback to legacy properties
       percentage = flowDirection === 'inbound' ? flow.absolute_inFlow : flow.absolute_outFlow;
+      
+      // Return tooltip for bidirectional flow with legacy data
+      const direction = flowDirection === 'inbound' ? 
+        `${source.label} → ${target.label}` : 
+        `${source.label} ← ${target.label}`;
+      
+      return `${direction}\n` +
+             `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
+             `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
     }
   } else if (flowDirection === 'both') {
     // For complete bidirectional flow, show absolute value
@@ -238,14 +247,22 @@ export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowD
         percentage = flow.absolute_netFlow;
       }
     }
+    
+    // For unidirectional flows, determine arrow direction based on flow type
+    let arrowDirection;
+    if (flowDirection === 'inFlow') {
+      arrowDirection = `${source.label} → ${target.label}`;
+    } else if (flowDirection === 'outFlow') {
+      arrowDirection = `${source.label} ← ${target.label}`;
+    } else {
+      // For netFlow, use the absolute flow direction if available
+      arrowDirection = flow.absolute_netFlowDirection === 'inFlow' ? 
+        `${source.label} → ${target.label}` : 
+        `${source.label} ← ${target.label}`;
+    }
+    
+    return `${arrowDirection}\n` +
+           `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
+           `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
   }
-  
-  // For non-bidirectional flows, use appropriate arrow direction
-  const direction = flow.absolute_netFlowDirection === 'inFlow' ? 
-    `${source.label} → ${target.label}` : 
-    `${source.label} ← ${target.label}`;
-  
-  return `${direction}\n` +
-         `View: ${view} | Metric: ${metric} | Flow: ${flowType}\n` +
-         `Percentage: ${percentage.toFixed(2)}% (Index: ${index.toFixed(2)})`;
 }

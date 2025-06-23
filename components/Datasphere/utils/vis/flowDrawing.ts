@@ -18,11 +18,46 @@ export function drawFlows(
 ) {
   const currentFlowType = flowType;
   const isBrandsChurnView = !isMarketView && flowOption === 'churn';
-  console.log('DEBUG - drawFlows called with flowOption:', flowOption);
-  const filteredFlows =
-    focusBubbleId !== null
-      ? flows.filter((flow) => flow.from === focusBubbleId || flow.to === focusBubbleId)
-      : flows;
+
+  console.log(`DEBUG - drawFlows called with flowOption: ${flowOption}, flowType: ${flowType}, flows count: ${flows.length}`);
+
+  // Check what exists before cleanup
+  const beforeCleanup = {
+    flowLine: svg.selectAll('.flow-line').nodes().length,
+    bidirectionalInflow: svg.selectAll('.flow-bidirectional-inflow').nodes().length,
+    bidirectionalOutflow: svg.selectAll('.flow-bidirectional-outflow').nodes().length,
+    total: svg.selectAll('*').nodes().length
+  };
+  console.log('DEBUG - Before cleanup:', beforeCleanup);
+
+  // Simple SVG cleanup
+  svg.selectAll('.flow-line').remove();
+  svg.selectAll('.flow-bidirectional-inflow').remove();
+  svg.selectAll('.flow-bidirectional-outflow').remove();
+  svg.selectAll('.flow-arrow').remove(); 
+  svg.selectAll('.flow-label').remove();
+  svg.selectAll('.flow-marker').remove();
+  svg.selectAll('.arrow-marker').remove();
+  svg.selectAll('line').remove();
+  svg.selectAll('path[class*="flow"]').remove();
+  svg.selectAll('g[class*="flow"]').remove();
+  svg.selectAll('marker').remove();
+
+  // Check what exists after cleanup
+  const afterCleanup = {
+    flowLine: svg.selectAll('.flow-line').nodes().length,
+    bidirectionalInflow: svg.selectAll('.flow-bidirectional-inflow').nodes().length,
+    bidirectionalOutflow: svg.selectAll('.flow-bidirectional-outflow').nodes().length,
+    total: svg.selectAll('*').nodes().length
+  };
+  console.log('DEBUG - After cleanup:', afterCleanup);
+
+  // Log each flow that will be processed
+  flows.forEach((flow, index) => {
+    const source = bubbles.find((b) => b.id === flow.from);
+    const target = bubbles.find((b) => b.id === flow.to);
+    console.log(`DEBUG - Flow ${index + 1}/${flows.length}: ${source?.label || flow.from} -> ${target?.label || flow.to} (flowType: ${currentFlowType}, netFlow: ${flow.absolute_netFlow})`);
+  });
 
   const getFlowValue = (flow: Flow) => {
     switch (currentFlowType) {
@@ -39,32 +74,13 @@ export function drawFlows(
     }
   };
 
-  const flowsWithValues = filteredFlows.map((flow) => ({ ...flow, value: getFlowValue(flow) }));
+  const flowsWithValues = flows.map((flow) => ({ ...flow, value: getFlowValue(flow) }));
   const sortedValues = [...flowsWithValues.map((f) => f.value)].sort((a, b) => a - b);
   const flowsWithMetrics = flowsWithValues.map((flow) => {
     const lessThanCount = sortedValues.filter((v) => v < flow.value).length;
     const percentRank = sortedValues.length <= 1 ? 100 : (lessThanCount / (sortedValues.length - 1)) * 100;
-    console.log('DEBUG - Percentile Calculation:', {
-      value: flow.value,
-      lessThanCount,
-      totalValues: sortedValues.length,
-      percentRank,
-    });
     return { ...flow, percentRank } as Flow;
   });
-
-  console.log('DEBUG - After Metrics Calculation:', {
-    flowType,
-    flows: flowsWithMetrics.map((f) => ({
-      from: f.from,
-      to: f.to,
-      value: f.absolute_netFlow,
-      percentRank: f.percentRank,
-    })),
-  });
-
-  svg.selectAll('line').remove();
-  svg.selectAll('marker').remove();
 
   if (focusedFlow) {
     svg
@@ -80,89 +96,40 @@ export function drawFlows(
       });
   }
 
-  flowsWithMetrics.forEach((flow) => {
+  flowsWithMetrics.forEach((flow, index) => {
     const source = bubbles.find((b) => b.id === flow.from);
     const target = bubbles.find((b) => b.id === flow.to);
     if (!source || !target) return;
 
-    // Check if we should use bidirectional flow based only on isBidirectionalFlowType
-    const viewType = isMarketView ? 'Markets' : 'Brands';
-    const metricType = flowOption === 'churn' ? 'Churn' : 
-                     flowOption === 'switching' ? 'Switching' : 'Affinity';
-    
-    const shouldUseBidirectional = isBidirectionalFlowType(
-      currentFlowType, 
-      viewType,
-      metricType
+    drawFlowLine(
+      svg,
+      flow,
+      currentFlowType,
+      source,
+      target,
+      currentFlowType,
+      centreFlow,
+      bubbles,
+      flowOption,
+      isMarketView,
+      onFlowClick,
+      focusedFlow
     );
-
-    if (shouldUseBidirectional) {
-      // Get the appropriate percentages and indices based on whether it's brands or markets
-      let inPerc, outPerc, inIndex, outIndex;
-      
-      if (!isMarketView) { // For Brands view
-        if (flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
-          inPerc = flow.churn[0].both.in_perc * 100;
-          outPerc = flow.churn[0].both.out_perc * 100;
-          inIndex = flow.churn[0].both.in_index;
-          outIndex = flow.churn[0].both.out_index;
-        } else if (flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
-          inPerc = flow.switching[0].both.in_perc * 100;
-          outPerc = flow.switching[0].both.out_perc * 100;
-          inIndex = flow.switching[0].both.in_index;
-          outIndex = flow.switching[0].both.out_index;
-        } else {
-          // Fallback for Brands view when specific data isn't available
-          inPerc = flow.bidirectional_inPerc ?? flow.absolute_inFlow;
-          outPerc = flow.bidirectional_outPerc ?? flow.absolute_outFlow;
-          inIndex = flow.bidirectional_inIndex;
-          outIndex = flow.bidirectional_outIndex;
-        }
-      } else { // For Markets view
-        // Default values for market view
-        inPerc = flow.bidirectional_inPerc ?? flow.absolute_inFlow;
-        outPerc = flow.bidirectional_outPerc ?? flow.absolute_outFlow;
-        inIndex = flow.bidirectional_inIndex;
-        outIndex = flow.bidirectional_outIndex;
-      }
-      
-      drawBidirectionalFlowLine(
-        svg,
-        flow,
-        source,
-        target,
-        centreFlow,
-        bubbles,
-        flowOption,
-        isMarketView,
-        inPerc,
-        outPerc,
-        inIndex,
-        outIndex,
-        onFlowClick,
-        focusedFlow
-      );
-    } else {
-      // Use unidirectional flow for all non-bidirectional cases
-      drawFlowLine(
-        svg,
-        flow,
-        currentFlowType,
-        source,
-        target,
-        currentFlowType,
-        centreFlow,
-        bubbles,
-        flowOption,
-        isMarketView,
-        onFlowClick,
-        focusedFlow
-      );
-    }
   });
+
+  // Count flows properly: unidirectional = 1 element per flow, bidirectional = 2 elements per flow
+  const unidirectionalElements = svg.selectAll('.flow-line:not(.flow-bidirectional-inflow):not(.flow-bidirectional-outflow)').nodes().length;
+  const bidirectionalFlows = svg.selectAll('.flow-bidirectional-inflow').nodes().length; // Count only inflow segments to avoid double-counting
+  const totalFlowCount = unidirectionalElements + bidirectionalFlows;
+  
+  console.log(`DEBUG - drawFlows completed. Unidirectional: ${unidirectionalElements}, Bidirectional: ${bidirectionalFlows}, Total flows: ${totalFlowCount}`);
 }
 
-export function drawFlowLine(
+/**
+ * Generic function to draw unidirectional flows with a single line
+ * The direction is determined by flowDirection ('in', 'out', or 'net')
+ */
+export function drawUnidirectionalFlow(
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   flow: Flow,
   flowDirection: string,
@@ -176,48 +143,98 @@ export function drawFlowLine(
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
 ) {
-  if (false && centreFlow) {
-    console.log('');
-  }
-
   const points = calculateFlowPoints(startBubble, endBubble, flowType, flowDirection, flow, centreFlow, isMarketView, flowOption);
   const lineThickness = calculateLineThickness(flow);
-  const flowPath = d3.line()([
-    [points.start.x, points.start.y],
-    [points.end.x, points.end.y],
-  ]);
+  
+  // Extract flow value and index
+  let value = 0;
+  let indexValue = 0;
+  
+  // Get data from structured flow data
+  if (flow[flowOption] && flow[flowOption].length > 0) {
+    const flowData = flow[flowOption][0] as any;
+    const direction = flowDirection.replace('Flow', ''); // Remove 'Flow' suffix
+    
+    // Access data based on direction (in, out, net)
+    if (direction === 'in' && flowData.in) {
+      if (typeof flowData.in.perc === 'number') {
+        value = flowData.in.perc * 100;
+        indexValue = typeof flowData.in.index === 'number' ? flowData.in.index : 0;
+      } else if (typeof flowData.in.in_perc === 'number') {
+        value = flowData.in.in_perc * 100;
+        indexValue = typeof flowData.in.in_index === 'number' ? flowData.in.in_index : 0;
+      }
+    } 
+    else if (direction === 'out' && flowData.out) {
+      if (typeof flowData.out.perc === 'number') {
+        value = flowData.out.perc * 100;
+        indexValue = typeof flowData.out.index === 'number' ? flowData.out.index : 0;
+      } else if (typeof flowData.out.out_perc === 'number') {
+        value = flowData.out.out_perc * 100;
+        indexValue = typeof flowData.out.out_index === 'number' ? flowData.out.out_index : 0;
+      }
+    }
+    else if (direction === 'net' && flowData.net) {
+      if (typeof flowData.net.perc === 'number') {
+        value = flowData.net.perc * 100;
+        indexValue = typeof flowData.net.index === 'number' ? flowData.net.index : 0;
+      }
+    }
+  }
+  
+  // Fallback to legacy properties
+  if (value === 0) {
+    if (flowDirection === 'in' && typeof flow.absolute_inFlow === 'number') {
+      value = flow.absolute_inFlow;
+    } else if (flowDirection === 'out' && typeof flow.absolute_outFlow === 'number') {
+      value = flow.absolute_outFlow;
+    } else if (flowDirection === 'net' && typeof flow.absolute_netFlow === 'number') {
+      value = flow.absolute_netFlow;
+    }
+  }
+  
+  // Ensure valid values
+  if (isNaN(value) || value === undefined) value = 0;
+  if (isNaN(indexValue) || indexValue === undefined) indexValue = 0;
+  
+  // Determine the correct points based on flow direction
+  let startPoint = { x: points.start.x, y: points.start.y };
+  let endPoint = { x: points.end.x, y: points.end.y };
+  
+  // For outFlow, reverse the direction (from target to source)
+  if (flowDirection === 'out') {
+    startPoint = { x: points.end.x, y: points.end.y };
+    endPoint = { x: points.start.x, y: points.start.y };
+  }
+  // For netFlow, determine direction based on the value
+  else if (flowDirection === 'net' && value < 0) {
+    startPoint = { x: points.end.x, y: points.end.y };
+    endPoint = { x: points.start.x, y: points.start.y };
+    value = Math.abs(value); // Use absolute value for display
+  }
+  else {
+  }
 
+  // Color calculation
   const isDarkTheme = document.documentElement.classList.contains('dark');
   const fromCenter = startBubble.id === allBubbles.length - 1;
   const lineColor = fromCenter
-    ? isMarketView && (flowOption === 'churn' || flowOption === 'switching') && flowDirection === 'inFlow'
+    ? isMarketView && (flowOption === 'churn' || flowOption === 'switching') && flowDirection === 'in'
       ? endBubble.color
       : isDarkTheme
         ? '#ffffff'
         : '#000000'
     : flowOption === 'affinity'
       ? endBubble.color
-      : !isMarketView && flowOption === 'switching' && flowDirection === 'outFlow'
+      : !isMarketView && flowOption === 'switching' && flowDirection === 'out'
         ? endBubble.color
         : startBubble.color;
 
-  console.log('DEBUG - drawFlowLine color selection:', {
-    flowOption,
-    fromCenter,
-    isDarkTheme,
-    startBubbleId: startBubble.id,
-    endBubbleId: endBubble.id,
-    startBubbleColor: startBubble.color,
-    endBubbleColor: endBubble.color,
-    selectedColor: lineColor,
-  });
-
-  if (false && fromCenter && lineColor) {
-    console.log('');
-  }
-  if (false && fromCenter && isMarketView) {
-    console.log('');
-  }
+  // Create single flow line
+  const flowPath = d3.line()([
+    [startPoint.x, startPoint.y],
+    [endPoint.x, endPoint.y],
+  ]);
 
   const flowLine = svg
     .append('path')
@@ -248,6 +265,7 @@ export function drawFlowLine(
     .attr('data-to-id', endBubble.id.toString())
     .datum(flow);
 
+  // Add marker for the flow (except for affinity)
   if (flowOption !== 'affinity') {
     const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
     createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
@@ -256,407 +274,178 @@ export function drawFlowLine(
     flowLine.attr('stroke-linecap', 'round');
   }
 
+  // Calculate label positions along the line
+  const lineAngle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
   const offset = 15;
-  const isChurnMetricInBrandsView = !isMarketView && flowOption === 'churn' && (flowType === 'in' || flowType === 'out');
-  const isBidirectionalFlow = isBidirectionalFlowType(
-    flowType, 
-    isMarketView ? 'Markets' : 'Brands', 
-    flowOption === 'churn' ? 'Churn' : flowOption === 'switching' ? 'Switching' : 'Affinity'
-  ) || isChurnMetricInBrandsView;
+  
+  // Position percentage label at 30% along the line
+  const percX = startPoint.x + (endPoint.x - startPoint.x) * 0.3 + Math.cos(lineAngle + Math.PI / 2) * offset;
+  const percY = startPoint.y + (endPoint.y - startPoint.y) * 0.3 + Math.sin(lineAngle + Math.PI / 2) * offset;
+  
+  // Position index label at 70% along the line
+  const indexX = startPoint.x + (endPoint.x - startPoint.x) * 0.7 + Math.cos(lineAngle + Math.PI / 2) * offset;
+  const indexY = startPoint.y + (endPoint.y - startPoint.y) * 0.7 + Math.sin(lineAngle + Math.PI / 2) * offset;
 
-  if (!isBidirectionalFlow) {
-    let value = 0;
-    let indexValue = 0;
-    
-    /**
-     * Extract flow values for unidirectional flows
-     * This handles both newer structured data format and legacy format
-     * The data access pattern is consistent across all flow types (churn, switching, affinity)
-     */
-    value = 0;
-    indexValue = 0;
-    
-    // First try to get data from structured flow data (preferred)
-    if (flow[flowOption] && flow[flowOption].length > 0) {
-      const flowData = flow[flowOption][0] as any;
-      const direction = flowDirection.replace('Flow', ''); // Remove 'Flow' suffix
-      
-      // Access data based on direction (in, out, net)
-      if (direction === 'in' && flowData.in) {
-        // For inbound flows
-        if (typeof flowData.in.perc === 'number') {
-          value = flowData.in.perc * 100;
-          indexValue = typeof flowData.in.index === 'number' ? flowData.in.index : 0;
-        } else if (typeof flowData.in.in_perc === 'number') {
-          value = flowData.in.in_perc * 100;
-          indexValue = typeof flowData.in.in_index === 'number' ? flowData.in.in_index : 0;
-        }
-      } 
-      else if (direction === 'out' && flowData.out) {
-        // For outbound flows
-        if (typeof flowData.out.perc === 'number') {
-          value = flowData.out.perc * 100;
-          indexValue = typeof flowData.out.index === 'number' ? flowData.out.index : 0;
-        } else if (typeof flowData.out.out_perc === 'number') {
-          value = flowData.out.out_perc * 100;
-          indexValue = typeof flowData.out.out_index === 'number' ? flowData.out.out_index : 0;
-        }
-      }
-      else if (direction === 'net' && flowData.net) {
-        // For net flows
-        if (typeof flowData.net.perc === 'number') {
-          value = flowData.net.perc * 100;
-          indexValue = typeof flowData.net.index === 'number' ? flowData.net.index : 0;
-        }
-      }
-    }
-    
-    // Fallback to legacy properties if no structured data found
-    if (value === 0) {
-      if (flowDirection === 'inFlow' && typeof flow.absolute_inFlow === 'number') {
-        value = flow.absolute_inFlow;
-      } else if (flowDirection === 'outFlow' && typeof flow.absolute_outFlow === 'number') {
-        value = flow.absolute_outFlow;
-      } else if (flowDirection === 'netFlow' && typeof flow.absolute_netFlow === 'number') {
-        value = flow.absolute_netFlow;
-      }
-    }
-    
-    // Ensure we have a valid value
-    if (isNaN(value) || value === undefined) {
-      value = 0;
-    }
-    
-    if (isNaN(indexValue) || indexValue === undefined) {
-      indexValue = 0;
-    }
-    
-    console.log(`Final flow data for ${flowDirection}:`, { value, indexValue });
-    
+  // Add percentage label
+  const percLabel = svg
+    .append('text')
+    .attr('class', 'flow-label perc-label')
+    .attr('x', percX)
+    .attr('y', percY)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '12px')
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
+    .text(`${Math.abs(value).toFixed(1)}%`);
 
-    const splitX = (points.start.x + points.end.x) / 2;
-    const splitY = (points.start.y + points.end.y) / 2;
+  // Add index label  
+  const indexLabel = svg
+    .append('text')
+    .attr('class', 'flow-label index-label')
+    .attr('x', indexX)
+    .attr('y', indexY)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('fill', lineColor)
+    .attr('font-size', '12px')
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
+    .text(`(${indexValue ? indexValue.toFixed(2) : '0.00'})`);
 
-    flowLine.remove();
-
-    const switchLine = svg
-      .append('path')
-      .attr('d', d3.line()([[points.start.x, points.start.y], [splitX, splitY]]))
-      .attr('class', 'flow-line')
-      .attr('stroke', lineColor)
-      .attr('stroke-width', lineThickness)
-      .attr('fill', 'none')
-      .attr('opacity', () => {
-        if (focusedFlow) {
-          const isThisFlowFocused =
-            (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-            (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-          return isThisFlowFocused ? 1 : 0.2;
-        }
-        return 0.8;
-      })
-      .attr('data-flow-direction', flowDirection)
-      .attr('data-from-center', fromCenter)
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .datum(flow);
-
-    const otherLine = svg
-      .append('path')
-      .attr('d', d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
-      .attr('class', 'flow-line')
-      .attr('stroke', lineColor)
-      .attr('stroke-width', lineThickness)
-      .attr('fill', 'none')
-      .attr('opacity', () => {
-        if (focusedFlow) {
-          const isThisFlowFocused =
-            (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-            (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-          return isThisFlowFocused ? 1 : 0.2;
-        }
-        return 0.8;
-      })
-      .attr('data-flow-direction', flowDirection)
-      .attr('data-from-center', fromCenter)
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .datum(flow);
-
-    if (flowOption !== 'affinity') {
-      const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-      createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
-      otherLine.attr('marker-end', `url(#${markerId})`);
-    } else {
-      switchLine.attr('stroke-linecap', 'round');
-      otherLine.attr('stroke-linecap', 'round');
-    }
-
-    const switchAngle = Math.atan2(splitY - points.start.y, splitX - points.start.x);
-    const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
-
-    const switchPercX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI / 2) * offset;
-    const switchPercY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI / 2) * offset;
-
-    const otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI / 2) * offset;
-    const otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI / 2) * offset;
-
-    const otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI / 2) * offset;
-    const otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI / 2) * offset;
-
-    const switchLabel = svg
-      .append('text')
-      .attr('class', 'flow-label switch-label')
-      .attr('x', switchPercX)
-      .attr('y', switchPercY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '12px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${Math.abs(value).toFixed(1)}%`);
-      
-    console.log('Unidirectional flow label:', { flowDirection, value, indexValue });
-
-    // Remove duplicate percentage label - we only need one label for unidirectional flows
-
-    const otherIndexLabel = svg
-      .append('text')
-      .attr('class', 'flow-label other-index-label')
-      .attr('x', otherIndexX)
-      .attr('y', otherIndexY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '12px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${indexValue ? indexValue.toFixed(2) : '0.00'})`);
-
-    if (focusedFlow) {
-      const isThisFlowFocused =
-        (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-        (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-      switchLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-      // otherPercLabel removed
-      otherIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-    }
-  } else {
-    let switchPerc: number;
-    let otherPerc: number;
-    let switchIndex: number;
-    let otherIndex: number;
-
-    if (isChurnMetricInBrandsView && flow.churn && flow.churn.length > 0) {
-      const churnData = flow.churn[0][flowType === 'in' ? 'in' : 'out'];
-      if (churnData) {
-        switchPerc = churnData.in_perc * 100;
-        otherPerc = churnData.out_perc * 100;
-        switchIndex = churnData.in_index;
-        otherIndex = churnData.out_index;
-      } else {
-        switchPerc = flowType === 'in' ? flow.absolute_inFlow * 0.6 : flow.absolute_outFlow * 0.6;
-        otherPerc = flowType === 'in' ? flow.absolute_inFlow * 0.4 : flow.absolute_outFlow * 0.4;
-        switchIndex = 1.0;
-        otherIndex = 1.0;
-      }
-    } else {
-      switchPerc = flow.absolute_inFlow;
-      otherPerc = flow.absolute_outFlow;
-      switchIndex = 1.0;
-      otherIndex = 1.0;
-    }
-
-    const totalPerc = switchPerc + otherPerc;
-    const splitX = points.start.x + (points.end.x - points.start.x) * (switchPerc / totalPerc);
-    const splitY = points.start.y + (points.end.y - points.start.y) * (switchPerc / totalPerc);
-
-    console.log('Label Positioning Debug:', {
-      flowDirection,
-      startBubble: startBubble.id,
-      endBubble: endBubble.id,
-      startPos: { x: points.start.x, y: points.start.y },
-      endPos: { x: points.end.x, y: points.end.y },
-      splitPos: { x: splitX, y: splitY },
-      switchPerc,
-      otherPerc,
-    });
-
-    const switchPath = d3.line()([
-      [points.start.x, points.start.y],
-      [splitX, splitY],
-    ]);
-
-    const otherPath = d3.line()([
-      [splitX, splitY],
-      [points.end.x, points.end.y],
-    ]);
-
-    const switchLine = svg
-      .append('path')
-      .attr('d', switchPath)
-      .attr('class', 'flow-line')
-      .attr('stroke', lineColor)
-      .attr('stroke-width', lineThickness)
-      .attr('fill', 'none')
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .attr('data-flow-type', flowType)
-      .attr('data-flow-direction', flowDirection)
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString());
-
-    const otherLine = svg
-      .append('path')
-      .attr('d', otherPath)
-      .attr('class', 'flow-line')
-      .attr('stroke', lineColor)
-      .attr('stroke-width', lineThickness)
-      .attr('fill', 'none')
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .attr('data-flow-type', flowType)
-      .attr('data-flow-direction', flowDirection === 'inFlow' ? 'outFlow' : 'inFlow')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString());
-
-    if (flowOption !== 'affinity') {
-      const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-      createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
-      otherLine.attr('marker-end', `url(#${markerId})`);
-    } else {
-      switchLine.attr('stroke-linecap', 'round');
-      otherLine.attr('stroke-linecap', 'round');
-    }
-
-    const switchAngle = Math.atan2(splitY - points.start.y, splitX - points.start.x);
-    const otherAngle = Math.atan2(points.end.y - splitY, points.end.x - splitX);
-    const offset2 = 15;
-
-    const switchIndexX = points.start.x + (splitX - points.start.x) * 0.2 + Math.cos(switchAngle + Math.PI / 2) * offset2;
-    const switchIndexY = points.start.y + (splitY - points.start.y) * 0.2 + Math.sin(switchAngle + Math.PI / 2) * offset2;
-
-    const otherPercX = splitX + (points.end.x - splitX) * 0.05 + Math.cos(otherAngle + Math.PI / 2) * offset2;
-    const otherPercY = splitY + (points.end.y - splitY) * 0.05 + Math.sin(otherAngle + Math.PI / 2) * offset2;
-    const otherIndexX = splitX + (points.end.x - splitX) * 0.8 + Math.cos(otherAngle + Math.PI / 2) * offset2;
-    const otherIndexY = splitY + (points.end.y - splitY) * 0.8 + Math.sin(otherAngle + Math.PI / 2) * offset2;
-
-    const switchIndexLabel = svg
-      .append('text')
-      .attr('class', 'flow-label switch-index-label')
-      .attr('x', switchIndexX)
-      .attr('y', switchIndexY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '10px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${switchIndex.toFixed(2)})`);
-
-    const otherLabel = svg
-      .append('text')
-      .attr('class', 'flow-label other-label')
-      .attr('x', otherPercX)
-      .attr('y', otherPercY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '11px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`${otherPerc.toFixed(1)}%`);
-
-    const otherIndexLabel2 = svg
-      .append('text')
-      .attr('class', 'flow-label other-index-label')
-      .attr('x', otherIndexX)
-      .attr('y', otherIndexY)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', lineColor)
-      .attr('font-size', '10px')
-      .attr('data-from-id', startBubble.id.toString())
-      .attr('data-to-id', endBubble.id.toString())
-      .attr('data-flow-id', `${flow.from}-${flow.to}`)
-      .text(`(${otherIndex.toFixed(2)})`);
-
-    if (focusedFlow) {
-      const isThisFlowFocused =
-        (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-        (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
-      otherLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-      switchIndexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-      otherIndexLabel2.attr('opacity', isThisFlowFocused ? 1 : 0.2);
-    }
-
-    const handleMouseOver = (event: MouseEvent) => {
-      if (
-        !focusedFlow ||
-        (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-        (flow.from === focusedFlow.to && flow.to === focusedFlow.from)
-      ) {
-        switchLine.attr('opacity', 1).attr('stroke-width', lineThickness * 1.1);
-        otherLine.attr('opacity', 1).attr('stroke-width', lineThickness * 1.1);
-      }
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption));
-    };
-
-    const handleMouseOut = () => {
-      const isFocused =
-        focusedFlow &&
-        ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-          (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
-
-      const opacity = isFocused ? 1 : focusedFlow ? 0.2 : 0.8;
-      const width = isFocused ? lineThickness * 1.1 : lineThickness;
-
-      switchLine.attr('opacity', opacity).attr('stroke-width', width);
-      otherLine.attr('opacity', opacity).attr('stroke-width', width);
-      hideTooltip();
-    };
-
-    const handleClick = () => {
-      if (onFlowClick) {
-        onFlowClick(flow, startBubble, endBubble);
-      }
-    };
-
-    switchLine.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
-
-    otherLine.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+  // Apply focus effects to labels
+  if (focusedFlow) {
+    const isThisFlowFocused =
+      (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+      (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+    percLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
+    indexLabel.attr('opacity', isThisFlowFocused ? 1 : 0.2);
   }
 
-  flowLine
-    .on('mouseover', (event: MouseEvent) => {
-      const target = event.currentTarget as SVGPathElement;
-      const path = d3.select(target);
-      const isFocused =
-        focusedFlow &&
-        ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-          (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
+  // Event handlers
+  const handleMouseOver = (event: MouseEvent) => {
+    if (
+      !focusedFlow ||
+      (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+      (flow.from === focusedFlow.to && flow.to === focusedFlow.from)
+    ) {
+      flowLine.attr('opacity', 1).attr('stroke-width', lineThickness * 1.1);
+    }
+    showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption, isMarketView));
+  };
 
-      if (!focusedFlow || isFocused) {
-        path.attr('opacity', 1).attr('stroke-width', lineThickness * 1.1);
-      }
-      showTooltip(event, getFlowTooltip(flow, startBubble, endBubble, flowDirection, centreFlow, flowOption));
-    })
-    .on('mouseout', (event: MouseEvent) => {
-      const target = event.currentTarget as SVGPathElement;
-      const path = d3.select(target);
-      const isFocused =
-        focusedFlow &&
-        ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-          (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
+  const handleMouseOut = () => {
+    const isFocused =
+      focusedFlow &&
+      ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
+        (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
 
-      path.attr('stroke-width', isFocused ? lineThickness * 1.1 : lineThickness);
-      path.attr('opacity', isFocused ? 1 : focusedFlow ? 0.2 : 0.8);
-      hideTooltip();
-    })
-    .on('click', () => onFlowClick && onFlowClick(flow, startBubble, endBubble));
+    const opacity = isFocused ? 1 : focusedFlow ? 0.2 : 0.8;
+    const width = isFocused ? lineThickness * 1.1 : lineThickness;
+
+    flowLine.attr('opacity', opacity).attr('stroke-width', width);
+    hideTooltip();
+  };
+
+  const handleClick = () => {
+    if (onFlowClick) {
+      onFlowClick(flow, startBubble, endBubble);
+    }
+  };
+
+  // Attach event handlers
+  flowLine.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut).on('click', handleClick);
+  percLabel.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+  indexLabel.on('mouseover', handleMouseOver).on('mouseout', handleMouseOut);
+}
+
+export function drawFlowLine(
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
+  flow: Flow,
+  flowDirection: string,
+  startBubble: Bubble,
+  endBubble: Bubble,
+  flowType: string,
+  centreFlow: boolean = false,
+  allBubbles: Bubble[],
+  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  isMarketView: boolean = false,
+  onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
+  focusedFlow: { from: number; to: number } | null = null
+) {
+  const viewType = isMarketView ? 'Markets' : 'Brands';
+  const metricType = flowOption === 'churn' ? 'Churn' : 
+                   flowOption === 'switching' ? 'Switching' : 'Affinity';
+  
+  // Use the existing isBidirectionalFlowType function to correctly determine flow type
+  const shouldUseBidirectional = isBidirectionalFlowType(
+    flowDirection, 
+    viewType,
+    metricType
+  );
+
+  if (shouldUseBidirectional) {
+    // Calculate percentages and indices for bidirectional flow
+    let inPerc: number;
+    let outPerc: number;
+    let inIndex: number = 1.0;
+    let outIndex: number = 1.0;
+
+    if (!isMarketView && flowOption === 'churn' && flow.churn && flow.churn.length > 0 && flow.churn[0].both) {
+      inPerc = flow.churn[0].both.in_perc * 100;
+      outPerc = flow.churn[0].both.out_perc * 100;
+      inIndex = flow.churn[0].both.in_index;
+      outIndex = flow.churn[0].both.out_index;
+    } else if (!isMarketView && flowOption === 'switching' && flow.switching && flow.switching.length > 0 && flow.switching[0].both) {
+      inPerc = flow.switching[0].both.in_perc * 100;
+      outPerc = flow.switching[0].both.out_perc * 100;
+      inIndex = flow.switching[0].both.in_index;
+      outIndex = flow.switching[0].both.out_index;
+    } else {
+      // Fallback values
+      inPerc = flow.bidirectional_inPerc ?? flow.absolute_inFlow;
+      outPerc = flow.bidirectional_outPerc ?? flow.absolute_outFlow;
+      inIndex = flow.bidirectional_inIndex ?? 1.0;
+      outIndex = flow.bidirectional_outIndex ?? 1.0;
+    }
+
+    // Draw bidirectional flow
+    drawBidirectionalFlowLine(
+      svg,
+      flow,
+      startBubble,
+      endBubble,
+      centreFlow,
+      allBubbles,
+      flowOption,
+      isMarketView,
+      inPerc,
+      outPerc,
+      inIndex,
+      outIndex,
+      onFlowClick,
+      focusedFlow
+    );
+  } else {
+    // Draw unidirectional flow
+    drawUnidirectionalFlow(
+      svg,
+      flow,
+      flowDirection,
+      startBubble,
+      endBubble,
+      flowType,
+      centreFlow,
+      allBubbles,
+      flowOption,
+      isMarketView,
+      onFlowClick,
+      focusedFlow
+    );
+  }
 }
 
 export function createFlowMarker(
@@ -671,7 +460,7 @@ export function createFlowMarker(
     .append('marker')
     .attr('id', id)
     .attr('viewBox', '0 -5 10 10')
-    .attr('refX', flowDirection === 'inFlow' ? 0 : 8) // Adjust reference point based on direction
+    .attr('refX', flowDirection === 'in' ? 0 : 8) // Adjust reference point based on direction
     .attr('refY', 0)
     .attr('markerWidth', size)
     .attr('markerHeight', size)
@@ -679,7 +468,7 @@ export function createFlowMarker(
 
   if (flowDirection === 'interaction') {
     marker.append('circle').attr('cx', '5').attr('cy', '0').attr('r', '4').attr('fill', color);
-  } else if (flowDirection === 'inFlow') {
+  } else if (flowDirection === 'in') {
     // For inflow, arrow points toward the start of the path (←)
     marker.append('path').attr('d', 'M10,-5L0,0L10,5').attr('fill', color);
   } else {
@@ -698,10 +487,6 @@ function calculateFlowPoints(
   isMarketView: boolean = false,
   flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
 ) {
-  if (false && centreFlow) {
-    console.log('');
-  }
-
   const angle = Math.atan2(target.y - source.y, target.x - source.x);
 
   const startPoint = {
@@ -714,11 +499,10 @@ function calculateFlowPoints(
     y: target.y - target.outerRingRadius * Math.sin(angle),
   };
 
-
   if (isBidirectionalFlowType(
     flowType, 
     isMarketView ? 'Markets' : 'Brands', 
-    flowOption
+    flowOption === 'churn' ? 'Churn' : flowOption === 'switching' ? 'Switching' : 'Affinity'
   )) {
     const lineThickness = calculateLineThickness(flow);
     const offsetScale = d3
@@ -730,8 +514,8 @@ function calculateFlowPoints(
     const perpAngle = angle + Math.PI / 2;
     const offsetX = offset * Math.cos(perpAngle);
     const offsetY = offset * Math.sin(perpAngle);
-    const originalFromId = flowDirection === 'inFlow' ? target.id : source.id;
-    const originalToId = flowDirection === 'inFlow' ? source.id : target.id;
+    const originalFromId = flowDirection === 'in' ? target.id : source.id;
+    const originalToId = flowDirection === 'in' ? source.id : target.id;
     const direction = originalFromId < originalToId ? 1 : -1;
     return {
       start: { x: startPoint.x + offsetX * direction, y: startPoint.y + offsetY * direction },
@@ -743,10 +527,7 @@ function calculateFlowPoints(
 }
 
 function calculateLineThickness(flow: Flow): number {
-  console.log('DEBUG - Flow Input:', flow);
-
   if (typeof flow.percentRank === 'undefined') {
-    console.log('DEBUG - Using min thickness due to undefined percentRank');
     return CONFIG.flow.minLineThickness;
   }
 
@@ -755,13 +536,6 @@ function calculateLineThickness(flow: Flow): number {
     .domain([0, 100])
     .range([CONFIG.flow.minLineThickness, CONFIG.flow.maxLineThickness])
     .clamp(true);
-
-  console.log('DEBUG - Line Thickness:', {
-    percentRank: flow.percentRank,
-    thickness: scale(flow.percentRank),
-    minThickness: CONFIG.flow.minLineThickness,
-    maxThickness: CONFIG.flow.maxLineThickness,
-  });
 
   return scale(flow.percentRank);
 }
@@ -792,15 +566,6 @@ export function drawBidirectionalFlowLine(
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
 ) {
-  // Log to verify we're using the correct data for 'both' flow type
-  console.log('Bidirectional Flow Data:', {
-    flow: `${flow.from}->${flow.to}`,
-    abs: flow.churn?.[0]?.both?.abs || 'N/A',
-    inPerc,
-    outPerc,
-    inIndex,
-    outIndex
-  });
   const lineThickness = calculateLineThickness(flow);
   const isDarkTheme = document.documentElement.classList.contains('dark');
   const fromCenter = startBubble.id === allBubbles.length - 1;
@@ -824,7 +589,7 @@ export function drawBidirectionalFlowLine(
       // Keep the colors as is - already handled by direct assignment above
     }
   }
-  const points = calculateFlowPoints(startBubble, endBubble, 'bi-directional', 'inFlow', flow);
+  const points = calculateFlowPoints(startBubble, endBubble, 'bi-directional', 'in', flow);
   const total = inPerc + outPerc;
   const splitRatio = total === 0 ? 0.5 : inPerc / total;
   const splitX = points.start.x + (points.end.x - points.start.x) * splitRatio;
@@ -834,7 +599,7 @@ export function drawBidirectionalFlowLine(
   const segmentStart = svg
     .append('path')
     .attr('d', d3.line()([[points.start.x, points.start.y], [splitX, splitY]]))
-    .attr('class', 'flow-line')
+    .attr('class', 'flow-line flow-bidirectional-inflow')
     .attr('stroke', destColor) // Use destination color for inflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
@@ -848,7 +613,7 @@ export function drawBidirectionalFlowLine(
   const segmentEnd = svg
     .append('path')
     .attr('d', d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
-    .attr('class', 'flow-line')
+    .attr('class', 'flow-line flow-bidirectional-outflow')
     .attr('stroke', sourceColor) // Use source color for outflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
@@ -859,8 +624,8 @@ export function drawBidirectionalFlowLine(
     .datum(flow);
 
   // Create markers with appropriate colors
-  createFlowMarker(svg, `bi-start-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), destColor, 'outFlow');
-  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'inFlow');
+  createFlowMarker(svg, `bi-start-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), destColor, 'out');
+  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'in');
 
   const offset = 15;
   const angle1 = Math.atan2(splitY - points.start.y, splitX - points.start.x);
@@ -893,6 +658,9 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', destColor)
     .attr('font-size', '12px')
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
     .text(`${inPerc.toFixed(1)}% (${inAbsValue})`);
 
   const label1Index = svg
@@ -904,7 +672,10 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', destColor)
     .attr('font-size', '10px')
-    .text(inIndex !== undefined ? `(${inIndex.toFixed(2)})` : '');
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
+    .text(`(${inIndex !== undefined ? inIndex.toFixed(2) : '0.00'})`);
 
   // Get absolute value for outflow if available
   let outAbsValue = '';
@@ -923,6 +694,9 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', sourceColor)
     .attr('font-size', '12px')
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
     .text(`${outPerc.toFixed(1)}% (${outAbsValue})`);
 
   const label2Index = svg
@@ -934,7 +708,10 @@ export function drawBidirectionalFlowLine(
     .attr('dominant-baseline', 'middle')
     .attr('fill', sourceColor)
     .attr('font-size', '10px')
-    .text(outIndex !== undefined ? `(${outIndex.toFixed(2)})` : '');
+    .attr('data-from-id', startBubble.id.toString())
+    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-flow-id', `${flow.from}-${flow.to}`)
+    .text(`(${outIndex !== undefined ? outIndex.toFixed(2) : '0.00'})`);
 
   // Separate handlers for inbound and outbound segments
   const handleInboundMouseOver = (event: MouseEvent) => {
@@ -966,6 +743,7 @@ export function drawBidirectionalFlowLine(
       focusedFlow &&
       ((flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
         (flow.from === focusedFlow.to && flow.to === focusedFlow.from));
+
     const width = isFocused ? lineThickness * 1.1 : lineThickness;
     segmentStart.attr('stroke-width', width);
     segmentEnd.attr('stroke-width', width);

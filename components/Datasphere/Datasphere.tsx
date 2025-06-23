@@ -165,6 +165,7 @@ export default function DataSphere({
       isMarketView,
       flowOption
     );
+    
     drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
   }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
 

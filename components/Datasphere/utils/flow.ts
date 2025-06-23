@@ -145,7 +145,6 @@ export function prepareFlowData(
       
       // Make sure we have data for this flow option
       if (!optionDataArray || optionDataArray.length === 0) {
-        console.error(`No ${flowOption} data found for flow from ${brandFlow.from} to ${brandFlow.to}`);
         return null; // Skip this flow
       }
       
@@ -160,17 +159,6 @@ export function prepareFlowData(
       const outPerc = optionData.both.out_perc * 100;
       const inIndex = optionData.both.in_index;
       const outIndex = optionData.both.out_index;
-
-      console.log('DEBUG - Flow Preparation:', {
-        from: brandFlow.from,
-        to: brandFlow.to,
-        flowType,
-        bothValue,
-        inValue,
-        outValue,
-        absolute_inFlow: bidirectional ? bothValue : inValue,
-        absolute_outFlow: bidirectional ? (100 - bothValue) : outValue
-      });
 
       return {
         from: brandFlow.from,
@@ -195,6 +183,61 @@ export function prepareFlowData(
 
     // Handle centre flow aggregation for brands
     let flows = centreFlow ? prepareCentreFlowData(brandFlows, data.itemIDs.length) : brandFlows;
+
+    // Generic deduplication logic: ALL flow types should show only one flow per bubble pair
+    // The difference between flow types is in how they're drawn (bidirectional vs unidirectional), not in data
+    const flowPairs = new Map<string, Flow[]>();
+    
+    // Group flows by bubble pairs (bidirectional)
+    flows.forEach(flow => {
+      const bubblePair = [flow.from, flow.to].sort().join('-');
+      if (!flowPairs.has(bubblePair)) {
+        flowPairs.set(bubblePair, []);
+      }
+      flowPairs.get(bubblePair)!.push(flow);
+    });
+
+    // For each pair, keep only the best flow based on flow type
+    flows = Array.from(flowPairs.values()).map(flowsInPair => {
+      if (flowsInPair.length === 1) {
+        // Only one direction exists, keep it
+        return flowsInPair[0];
+      } else {
+        // Multiple flows between same bubbles, choose the best one for this flow type
+        return flowsInPair.reduce((bestFlow, currentFlow) => {
+          let bestValue: number;
+          let currentValue: number;
+          
+          // Determine comparison values based on flow type
+          switch (flowType) {
+            case 'net':
+              bestValue = bestFlow.absolute_netFlow;
+              currentValue = currentFlow.absolute_netFlow;
+              break;
+            case 'out':
+              bestValue = bestFlow.absolute_outFlow;
+              currentValue = currentFlow.absolute_outFlow;
+              break;
+            case 'in':
+              bestValue = bestFlow.absolute_inFlow;
+              currentValue = currentFlow.absolute_inFlow;
+              break;
+            case 'both':
+              // For 'both' flows, choose based on the larger of inFlow or outFlow
+              bestValue = Math.max(bestFlow.absolute_inFlow, bestFlow.absolute_outFlow);
+              currentValue = Math.max(currentFlow.absolute_inFlow, currentFlow.absolute_outFlow);
+              break;
+            default:
+              // Fallback to net flow for any other flow types
+              bestValue = bestFlow.absolute_netFlow;
+              currentValue = currentFlow.absolute_netFlow;
+              break;
+          }
+          
+          return currentValue > bestValue ? currentFlow : bestFlow;
+        });
+      }
+    }).filter(Boolean) as Flow[]; // Remove any undefined values
 
     // Filter flows if there's a focus bubble
     if (focusBubbleId !== null) {

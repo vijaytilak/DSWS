@@ -161,8 +161,6 @@ const MonthSelector: React.FC<TimelineSelectorProps> = ({ onChange, onClose, ini
     const yearValue = year === 'first' ? firstYearSelection.year : secondYearSelection.year;
     
     const handleYearChange = (newYear: number) => {
-      console.log(`Changing ${year} year to ${newYear}`);
-      
       // Update the year in the appropriate state
       if (year === 'first') {
         // Create a new object to ensure React detects the state change
