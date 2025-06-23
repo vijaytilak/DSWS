@@ -37,7 +37,6 @@ export function drawFlows(
   svg.selectAll('.flow-arrow').remove(); 
   svg.selectAll('.flow-label').remove();
   svg.selectAll('.flow-marker').remove();
-  svg.selectAll('.arrow-marker').remove();
   svg.selectAll('line').remove();
   svg.selectAll('path[class*="flow"]').remove();
   svg.selectAll('g[class*="flow"]').remove();
@@ -201,11 +200,14 @@ export function drawUnidirectionalFlow(
   let startPoint = { x: points.start.x, y: points.start.y };
   let endPoint = { x: points.end.x, y: points.end.y };
   
-  // For outFlow, reverse the direction (from target to source)
-  if (flowDirection === 'out') {
+  // For inFlow, reverse the direction to show flow coming INTO the startBubble
+  if (flowDirection === 'in') {
     startPoint = { x: points.end.x, y: points.end.y };
     endPoint = { x: points.start.x, y: points.start.y };
   }
+  // For outFlow, keep normal direction to show flow going OUT from startBubble
+  // (no reversal needed - arrows will point away from the startBubble)
+  
   // For netFlow, determine direction based on the value
   else if (flowDirection === 'net' && value < 0) {
     startPoint = { x: points.end.x, y: points.end.y };
@@ -268,7 +270,9 @@ export function drawUnidirectionalFlow(
   // Add marker for the flow (except for affinity)
   if (flowOption !== 'affinity') {
     const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-    createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, flowDirection);
+    createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, 'out');
+    
+    // Always apply marker at the end of the line
     flowLine.attr('marker-end', `url(#${markerId})`);
   } else {
     flowLine.attr('stroke-linecap', 'round');
@@ -460,7 +464,7 @@ export function createFlowMarker(
     .append('marker')
     .attr('id', id)
     .attr('viewBox', '0 -5 10 10')
-    .attr('refX', flowDirection === 'in' ? 0 : 8) // Adjust reference point based on direction
+    .attr('refX', 8) // Always use the same reference point
     .attr('refY', 0)
     .attr('markerWidth', size)
     .attr('markerHeight', size)
@@ -468,11 +472,8 @@ export function createFlowMarker(
 
   if (flowDirection === 'interaction') {
     marker.append('circle').attr('cx', '5').attr('cy', '0').attr('r', '4').attr('fill', color);
-  } else if (flowDirection === 'in') {
-    // For inflow, arrow points toward the start of the path (←)
-    marker.append('path').attr('d', 'M10,-5L0,0L10,5').attr('fill', color);
   } else {
-    // For outflow, arrow points toward the end of the path (→)
+    // Always use the same arrow shape pointing right (→)
     marker.append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', color);
   }
 }
@@ -596,9 +597,10 @@ export function drawBidirectionalFlowLine(
   const splitY = points.start.y + (points.end.y - points.start.y) * splitRatio;
 
   // Inflow segment (closer to source bubble) - gets destination bubble color
+  // This segment represents flow coming INTO the source bubble, so reverse the path direction
   const segmentStart = svg
     .append('path')
-    .attr('d', d3.line()([[points.start.x, points.start.y], [splitX, splitY]]))
+    .attr('d', d3.line()([[splitX, splitY], [points.start.x, points.start.y]]))
     .attr('class', 'flow-line flow-bidirectional-inflow')
     .attr('stroke', destColor) // Use destination color for inflow segment
     .attr('stroke-width', lineThickness)
@@ -609,7 +611,8 @@ export function drawBidirectionalFlowLine(
     .attr('data-segment-type', 'inflow')
     .datum(flow);
 
-  // Outflow segment (closer to destination bubble) - gets source bubble color
+  // Outflow segment (closer to destination bubble) - gets source bubble color  
+  // This segment represents flow going OUT from the source bubble, so keep normal direction
   const segmentEnd = svg
     .append('path')
     .attr('d', d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
@@ -617,16 +620,16 @@ export function drawBidirectionalFlowLine(
     .attr('stroke', sourceColor) // Use source color for outflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
-    .attr('marker-start', `url(#bi-end-${startBubble.id}-${endBubble.id})`)
+    .attr('marker-end', `url(#bi-end-${startBubble.id}-${endBubble.id})`)
     .attr('data-from-id', startBubble.id.toString())
     .attr('data-to-id', endBubble.id.toString())
     .attr('data-segment-type', 'outflow')
     .datum(flow);
 
-  // Create markers with appropriate colors
+  // Create markers with appropriate colors and directions
   createFlowMarker(svg, `bi-start-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), destColor, 'out');
-  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'in');
-
+  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'out');
+  
   const offset = 15;
   const angle1 = Math.atan2(splitY - points.start.y, splitX - points.start.x);
   const angle2 = Math.atan2(points.end.y - splitY, points.end.x - splitX);
