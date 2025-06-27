@@ -113,9 +113,23 @@ export function prepareFlowData(
     // Filter flows if there's a focus bubble
     let filteredFlows = marketFlows;
     if (focusBubbleId !== null) {
-      filteredFlows = marketFlows.filter(flow => 
-        flow.from === focusBubbleId || flow.to === focusBubbleId
-      );
+      console.log(`DEBUG - Market Focus Filtering: focusBubbleId=${focusBubbleId}, flowType=${flowType}`);
+      
+      if (flowType === 'in') {
+        // For 'in' type, only show flows where focus bubble is the destination
+        filteredFlows = marketFlows.filter(flow => flow.to === focusBubbleId);
+        console.log(`DEBUG - IN FLOW: Filtered to ${filteredFlows.length} flows where focus bubble is target`);
+      } else if (flowType === 'out') {
+        // For 'out' type, only show flows where focus bubble is the source
+        filteredFlows = marketFlows.filter(flow => flow.from === focusBubbleId);
+        console.log(`DEBUG - OUT FLOW: Filtered to ${filteredFlows.length} flows where focus bubble is source`);
+      } else {
+        // For 'net' and 'both' types, show all flows connected to focus bubble
+        filteredFlows = marketFlows.filter(flow => 
+          flow.from === focusBubbleId || flow.to === focusBubbleId
+        );
+        console.log(`DEBUG - NET/BOTH FLOW: Filtered to ${filteredFlows.length} flows connected to focus bubble`);
+      }
     }
 
     // Apply threshold filtering
@@ -181,8 +195,32 @@ export function prepareFlowData(
     // Filter out null values and cast to Flow type
     const brandFlows = brandFlowsWithNulls.filter((flow): flow is NonNullable<typeof flow> => flow !== null) as unknown as Flow[];
 
+    // Add debug log for brand flows
+    console.log(`DEBUG - Brand Flows before focus filtering: ${brandFlows.length} flows`);
+
     // Handle centre flow aggregation for brands
     let flows = centreFlow ? prepareCentreFlowData(brandFlows, data.itemIDs.length) : brandFlows;
+
+    // Filter flows for focus bubble if specified
+    if (focusBubbleId !== null) {
+      console.log(`DEBUG - Brand Focus Filtering: focusBubbleId=${focusBubbleId}, flowType=${flowType}`);
+      
+      if (flowType === 'in') {
+        // For 'in' type, only show flows where focus bubble is the destination
+        flows = flows.filter(flow => flow.to === focusBubbleId);
+        console.log(`DEBUG - IN FLOW: Filtered to ${flows.length} flows where focus bubble is target`);
+      } else if (flowType === 'out') {
+        // For 'out' type, only show flows where focus bubble is the source
+        flows = flows.filter(flow => flow.from === focusBubbleId);
+        console.log(`DEBUG - OUT FLOW: Filtered to ${flows.length} flows where focus bubble is source`);
+      } else {
+        // For 'net' and 'both' types, show all flows connected to focus bubble
+        flows = flows.filter(flow => 
+          flow.from === focusBubbleId || flow.to === focusBubbleId
+        );
+        console.log(`DEBUG - NET/BOTH FLOW: Filtered to ${flows.length} flows connected to focus bubble`);
+      }
+    }
 
     // Generic deduplication logic: ALL flow types should show only one flow per bubble pair
     // The difference between flow types is in how they're drawn (bidirectional vs unidirectional), not in data

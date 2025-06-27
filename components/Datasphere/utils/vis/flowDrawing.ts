@@ -200,21 +200,49 @@ export function drawUnidirectionalFlow(
   let startPoint = { x: points.start.x, y: points.start.y };
   let endPoint = { x: points.end.x, y: points.end.y };
   
-  // For inFlow, reverse the direction to show flow coming INTO the startBubble
-  if (flowDirection === 'in') {
-    startPoint = { x: points.end.x, y: points.end.y };
-    endPoint = { x: points.start.x, y: points.start.y };
-  }
-  // For outFlow, keep normal direction to show flow going OUT from startBubble
-  // (no reversal needed - arrows will point away from the startBubble)
+  // CRITICAL DEBUG - Log detailed flow and direction info
+  console.log(`FLOW-DEBUG: unidirectional flow [${flow.from}->${flow.to}], flowDirection=${flowDirection}`);
+  console.log(`FLOW-DEBUG: bubble info - startBubble=${startBubble.id} (${startBubble.label}), endBubble=${endBubble.id} (${endBubble.label})`);
   
+  const flowData = flow[flowOption]?.[0];
+  if (flowData) {
+    console.log(`FLOW-DEBUG: flow values - in=${JSON.stringify(flowData.in)}, out=${JSON.stringify(flowData.out)}`);
+  }
+
+  // Determine which way arrow should point based on data structure and flow type
+  let shouldReverseDirection = false;
+  // Get focus bubble ID safely from window object (or from parameters)
+  const focusBubbleId = (window as any).datasphere?.focusBubbleId;
+  
+  // CRITICAL: Arrow direction decision logic
+  if (flowDirection === 'in') {
+    // IMPORTANT: For 'in' flows with focus bubble, the filtering already gives us flows
+    // where the focus bubble is the target, so we should NOT reverse the path.
+    // The arrow should point FROM source TO target (which is the focus bubble)
+    shouldReverseDirection = false;
+    console.log(`FLOW-DEBUG: For 'in' flow - keeping original direction: ${flow.from}->${flow.to}`);
+  }
+  // For 'out' flows, arrow should point AWAY from the focus bubble when it exists
+  else if (flowDirection === 'out') {
+    // If flow is already in right direction (FROM->TO for 'out' type), no reversal needed
+    shouldReverseDirection = false;
+  }
   // For netFlow, determine direction based on the value
   else if (flowDirection === 'net' && value < 0) {
-    startPoint = { x: points.end.x, y: points.end.y };
-    endPoint = { x: points.start.x, y: points.start.y };
+    shouldReverseDirection = true;
+    console.log(`FLOW-DEBUG: Reversing netFlow path due to negative value`);
     value = Math.abs(value); // Use absolute value for display
   }
-  else {
+  
+  console.log(`FLOW-DEBUG: Path direction decision - shouldReverse=${shouldReverseDirection}`);
+  
+  if (shouldReverseDirection) {
+    startPoint = { x: points.end.x, y: points.end.y };
+    endPoint = { x: points.start.x, y: points.start.y };
+  } else {
+    // Keep default direction
+    startPoint = { x: points.start.x, y: points.start.y };
+    endPoint = { x: points.end.x, y: points.end.y };
   }
 
   // Color calculation
@@ -590,39 +618,78 @@ export function drawBidirectionalFlowLine(
       // Keep the colors as is - already handled by direct assignment above
     }
   }
+  console.log(`FLOW-DEBUG: bidirectional flow [${flow.from}->${flow.to}]`);
+  console.log(`FLOW-DEBUG: bubble info - startBubble=${startBubble.id} (${startBubble.label}), endBubble=${endBubble.id} (${endBubble.label})`);
+  console.log(`FLOW-DEBUG: bidirectional values - inPerc=${inPerc}, outPerc=${outPerc}`);
+  
+  const flowData = flow[flowOption]?.[0];
+  if (flowData) {
+    console.log(`FLOW-DEBUG: flow data - in=${JSON.stringify(flowData.in)}, out=${JSON.stringify(flowData.out)}`);
+    console.log(`FLOW-DEBUG: bidirectional data - ${JSON.stringify(flowData.both)}`);
+  }
+
   const points = calculateFlowPoints(startBubble, endBubble, 'bi-directional', 'in', flow);
   const total = inPerc + outPerc;
   const splitRatio = total === 0 ? 0.5 : inPerc / total;
   const splitX = points.start.x + (points.end.x - points.start.x) * splitRatio;
   const splitY = points.start.y + (points.end.y - points.start.y) * splitRatio;
+  
+  // Determine if we need to reverse flow direction based on bubble focus
+  // For bidirectional flows, we need special handling for the two segments
+  const isFocused = startBubble.id === flow.to || endBubble.id === flow.to;
+  console.log(`FLOW-DEBUG: bidirectional focus check - isFocused=${isFocused}`);
 
-  // Inflow segment (closer to source bubble) - gets destination bubble color
-  // This segment represents flow coming INTO the source bubble, so reverse the path direction
+  // IMPORTANT: Ensure arrow directions correctly show flows relative to focus bubble
+  let inflowSource, inflowTarget, outflowSource, outflowTarget;
+  
+  // Determine which direction each segment should point
+  if (startBubble.id === flow.to && endBubble.id === flow.from) {
+    // If the start bubble is the target in the data, and end bubble is the source
+    // This means flow data is FROM end bubble TO start bubble (reversed from visual order)
+    // So inflow should go FROM end TO split (showing flow coming into focus)
+    // And outflow should go FROM split TO start (showing flow going out from focus)
+    console.log(`FLOW-DEBUG: bidirectional reverse case - data flow is opposite of visual order`);
+    inflowSource = points.end; // End bubble (source in data)
+    inflowTarget = { x: splitX, y: splitY }; // Split point
+    outflowSource = { x: splitX, y: splitY }; // Split point
+    outflowTarget = points.start; // Start bubble (target in data)
+  } else {
+    // Normal case - flow data matches visual order
+    console.log(`FLOW-DEBUG: bidirectional normal case - data flow matches visual order`);
+    inflowSource = { x: splitX, y: splitY }; // Split point
+    inflowTarget = points.start; // Start bubble
+    outflowSource = { x: splitX, y: splitY }; // Split point
+    outflowTarget = points.end; // End bubble
+  }
+
+  console.log(`FLOW-DEBUG: bidirectional path coords - inflow: [${inflowSource.x},${inflowSource.y}]->[${inflowTarget.x},${inflowTarget.y}]`);
+  console.log(`FLOW-DEBUG: bidirectional path coords - outflow: [${outflowSource.x},${outflowSource.y}]->[${outflowTarget.x},${outflowTarget.y}]`);
+  
+  // Inflow segment - shows flow coming INTO the focus bubble
   const segmentStart = svg
     .append('path')
-    .attr('d', d3.line()([[splitX, splitY], [points.start.x, points.start.y]]))
+    .attr('d', d3.line()([[inflowSource.x, inflowSource.y], [inflowTarget.x, inflowTarget.y]]))
     .attr('class', 'flow-line flow-bidirectional-inflow')
     .attr('stroke', destColor) // Use destination color for inflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
     .attr('marker-end', `url(#bi-start-${startBubble.id}-${endBubble.id})`)
-    .attr('data-from-id', startBubble.id.toString())
-    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-from-id', endBubble.id.toString()) // Use actual data flow direction for tooltip
+    .attr('data-to-id', startBubble.id.toString()) // Use actual data flow direction for tooltip
     .attr('data-segment-type', 'inflow')
     .datum(flow);
 
-  // Outflow segment (closer to destination bubble) - gets source bubble color  
-  // This segment represents flow going OUT from the source bubble, so keep normal direction
+  // Outflow segment - shows flow going OUT from the focus bubble  
   const segmentEnd = svg
     .append('path')
-    .attr('d', d3.line()([[splitX, splitY], [points.end.x, points.end.y]]))
+    .attr('d', d3.line()([[outflowSource.x, outflowSource.y], [outflowTarget.x, outflowTarget.y]]))
     .attr('class', 'flow-line flow-bidirectional-outflow')
     .attr('stroke', sourceColor) // Use source color for outflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
     .attr('marker-end', `url(#bi-end-${startBubble.id}-${endBubble.id})`)
-    .attr('data-from-id', startBubble.id.toString())
-    .attr('data-to-id', endBubble.id.toString())
+    .attr('data-from-id', startBubble.id.toString()) // Use actual data flow direction for tooltip
+    .attr('data-to-id', endBubble.id.toString()) // Use actual data flow direction for tooltip
     .attr('data-segment-type', 'outflow')
     .datum(flow);
 
