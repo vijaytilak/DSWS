@@ -634,33 +634,36 @@ export function drawBidirectionalFlowLine(
   const splitX = points.start.x + (points.end.x - points.start.x) * splitRatio;
   const splitY = points.start.y + (points.end.y - points.start.y) * splitRatio;
   
-  // Determine if we need to reverse flow direction based on bubble focus
-  // For bidirectional flows, we need special handling for the two segments
-  const isFocused = startBubble.id === flow.to || endBubble.id === flow.to;
-  console.log(`FLOW-DEBUG: bidirectional focus check - isFocused=${isFocused}`);
+  // IMPORTANT: We will strictly use flow.from and flow.to to determine flow direction,
+  // regardless of which bubble is focused or the visual ordering of the bubbles.
+  // This ensures the visualization always accurately reflects the data structure.
+  console.log(`FLOW-DEBUG: bidirectional flow direction strictly based on JSON data (from=${flow.from}, to=${flow.to})`);
 
-  // IMPORTANT: Ensure arrow directions correctly show flows relative to focus bubble
-  let inflowSource, inflowTarget, outflowSource, outflowTarget;
+  // Determine which bubbles are source and target based on the flow data
+  const fromBubble = flow.from === startBubble.id ? startBubble : endBubble;
+  const toBubble = flow.to === startBubble.id ? startBubble : endBubble;
+  console.log(`FLOW-DEBUG: identified fromBubble=${fromBubble.id}, toBubble=${toBubble.id}`);
   
-  // Determine which direction each segment should point
-  if (startBubble.id === flow.to && endBubble.id === flow.from) {
-    // If the start bubble is the target in the data, and end bubble is the source
-    // This means flow data is FROM end bubble TO start bubble (reversed from visual order)
-    // So inflow should go FROM end TO split (showing flow coming into focus)
-    // And outflow should go FROM split TO start (showing flow going out from focus)
-    console.log(`FLOW-DEBUG: bidirectional reverse case - data flow is opposite of visual order`);
-    inflowSource = points.end; // End bubble (source in data)
-    inflowTarget = { x: splitX, y: splitY }; // Split point
-    outflowSource = { x: splitX, y: splitY }; // Split point
-    outflowTarget = points.start; // Start bubble (target in data)
-  } else {
-    // Normal case - flow data matches visual order
-    console.log(`FLOW-DEBUG: bidirectional normal case - data flow matches visual order`);
-    inflowSource = { x: splitX, y: splitY }; // Split point
-    inflowTarget = points.start; // Start bubble
-    outflowSource = { x: splitX, y: splitY }; // Split point
-    outflowTarget = points.end; // End bubble
-  }
+  // Set up coordinates for each segment:
+  // 1. Inflow - shows flow FROM source (flow.from) TO split point
+  // 2. Outflow - shows flow FROM split point TO target (flow.to)
+  const inDirection = toBubble.id === startBubble.id ? 'split-to-start' : 'split-to-end';
+  const outDirection = fromBubble.id === startBubble.id ? 'split-to-start' : 'split-to-end';
+  console.log(`FLOW-DEBUG: flow direction - inDirection=${inDirection}, outDirection=${outDirection}`);
+  
+  // BOTH segments should start from split point and go toward respective bubbles
+  // But we maintain the correct tooltip data attributes to reflect the actual flow direction
+  
+  // The outflow segment should go FROM split point TO the flow.to bubble (target)
+  let outflowSource = { x: splitX, y: splitY };
+  let outflowTarget = toBubble.id === startBubble.id ? points.start : points.end;
+  
+  // The inflow segment should go FROM split point TO the flow.from bubble (source)
+  let inflowSource = { x: splitX, y: splitY };
+  let inflowTarget = fromBubble.id === startBubble.id ? points.start : points.end;
+  
+  console.log(`FLOW-DEBUG: bidirectional segments now both start from split point - visual correction`);
+  console.log(`FLOW-DEBUG: outflow goes to flow.to=${flow.to}, inflow goes to flow.from=${flow.from}`);
 
   console.log(`FLOW-DEBUG: bidirectional path coords - inflow: [${inflowSource.x},${inflowSource.y}]->[${inflowTarget.x},${inflowTarget.y}]`);
   console.log(`FLOW-DEBUG: bidirectional path coords - outflow: [${outflowSource.x},${outflowSource.y}]->[${outflowTarget.x},${outflowTarget.y}]`);
@@ -673,9 +676,9 @@ export function drawBidirectionalFlowLine(
     .attr('stroke', destColor) // Use destination color for inflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
-    .attr('marker-end', `url(#bi-start-${startBubble.id}-${endBubble.id})`)
-    .attr('data-from-id', endBubble.id.toString()) // Use actual data flow direction for tooltip
-    .attr('data-to-id', startBubble.id.toString()) // Use actual data flow direction for tooltip
+    .attr('marker-end', `url(#bi-to-${startBubble.id}-${endBubble.id})`)
+    .attr('data-from-id', flow.from.toString()) // Always use flow.from for inflow source
+    .attr('data-to-id', flow.to.toString()) // Always use flow.to for inflow target
     .attr('data-segment-type', 'inflow')
     .datum(flow);
 
@@ -687,15 +690,16 @@ export function drawBidirectionalFlowLine(
     .attr('stroke', sourceColor) // Use source color for outflow segment
     .attr('stroke-width', lineThickness)
     .attr('fill', 'none')
-    .attr('marker-end', `url(#bi-end-${startBubble.id}-${endBubble.id})`)
-    .attr('data-from-id', startBubble.id.toString()) // Use actual data flow direction for tooltip
-    .attr('data-to-id', endBubble.id.toString()) // Use actual data flow direction for tooltip
+    .attr('marker-end', `url(#bi-from-${startBubble.id}-${endBubble.id})`)
+    .attr('data-from-id', flow.to.toString()) // Always use flow.to for outflow source
+    .attr('data-to-id', flow.from.toString()) // Always use flow.from for outflow target
     .attr('data-segment-type', 'outflow')
     .datum(flow);
 
   // Create markers with appropriate colors and directions
-  createFlowMarker(svg, `bi-start-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), destColor, 'out');
-  createFlowMarker(svg, `bi-end-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'out');
+  createFlowMarker(svg, `bi-to-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), destColor, 'out');
+  createFlowMarker(svg, `bi-from-${startBubble.id}-${endBubble.id}`, calculateMarkerSize(lineThickness), sourceColor, 'out');
+  console.log(`FLOW-DEBUG: created markers for bidirectional flow segments pointing to respective bubbles`);
   
   const offset = 15;
   const angle1 = Math.atan2(splitY - points.start.y, splitX - points.start.x);
