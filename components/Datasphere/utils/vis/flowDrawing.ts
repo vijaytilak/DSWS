@@ -209,23 +209,22 @@ export function drawUnidirectionalFlow(
     console.log(`FLOW-DEBUG: flow values - in=${JSON.stringify(flowData.in)}, out=${JSON.stringify(flowData.out)}`);
   }
 
-  // Determine which way arrow should point based on data structure and flow type
+  // Determine which way arrow should point based strictly on flow.from/flow.to and flowType
+  // NOT based on which bubble is focused
   let shouldReverseDirection = false;
-  // Get focus bubble ID safely from window object (or from parameters)
-  const focusBubbleId = (window as any).datasphere?.focusBubbleId;
   
-  // CRITICAL: Arrow direction decision logic
+  // CRITICAL: Arrow direction decision logic - strictly data-driven, not focus-driven
   if (flowDirection === 'in') {
-    // IMPORTANT: For 'in' flows with focus bubble, the filtering already gives us flows
-    // where the focus bubble is the target, so we should NOT reverse the path.
-    // The arrow should point FROM source TO target (which is the focus bubble)
-    shouldReverseDirection = false;
-    console.log(`FLOW-DEBUG: For 'in' flow - keeping original direction: ${flow.from}->${flow.to}`);
+    // For 'in' flows: Arrow should point FROM flow.to TO flow.from (reversed from data)
+    // This is reversed to show the flow coming IN to its destination
+    shouldReverseDirection = true;
+    console.log(`FLOW-DEBUG: For 'in' flow - reversing direction: arrow will point ${flow.to}->${flow.from}`);
   }
-  // For 'out' flows, arrow should point AWAY from the focus bubble when it exists
   else if (flowDirection === 'out') {
-    // If flow is already in right direction (FROM->TO for 'out' type), no reversal needed
+    // For 'out' flows: Arrow should point FROM flow.from TO flow.to (matching data)
+    // This shows the flow going OUT from its source
     shouldReverseDirection = false;
+    console.log(`FLOW-DEBUG: For 'out' flow - using original direction: arrow will point ${flow.from}->${flow.to}`);
   }
   // For netFlow, determine direction based on the value
   else if (flowDirection === 'net' && value < 0) {
