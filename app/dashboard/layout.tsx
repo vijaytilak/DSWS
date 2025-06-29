@@ -43,7 +43,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [centreFlow, setCentreFlow] = useState(false); // false for Brands
-  const [flowType, setFlowType] = useState("outFlow only"); // "outFlow only" for Out
+  const [flowType, setFlowType] = useState("out"); // "out" for Out
   const [isMarketView, setIsMarketView] = useState(true); // true for Markets as default
   const [flowOption, setFlowOption] = useState<FlowOption>("churn"); // "churn" for Churn
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null); // null for no bubble selected

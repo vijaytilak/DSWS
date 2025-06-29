@@ -9,24 +9,11 @@ export function calculateRelativeSizePercent<T>(
   const maxSize = Math.max(...values);
   const sizeRange = maxSize - minSize;
 
-  console.log('DEBUG - Size Calculation:', {
-    sizeProperty,
-    values,
-    minSize,
-    maxSize,
-    sizeRange
-  });
-
   return array.map(obj => {
     const sizePercent = sizeRange > 0 
       ? ((obj[sizeProperty] as number - minSize) / sizeRange) * 100 
       : 100;
     
-    console.log('DEBUG - Individual Size:', {
-      value: obj[sizeProperty],
-      sizePercent
-    });
-
     return {
       ...obj,
       sizePercent

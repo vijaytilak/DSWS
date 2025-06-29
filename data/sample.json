@@ -711,61 +711,165 @@
   ],
   "flows_brands": [
     {
-      "from": 0,
-      "to": 1,
+      "from": 3,
+      "to": 6,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "46787",
+          "abs": "7.7%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "10108",
+          "abs": "17.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.3",
+          "abs": "4.1%"
+        },
+        {
+          "item": "Health Score",
+          "index": "70.1",
+          "abs": "87%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 121,
-            "switch_perc": 0.5495406229253076,
-            "other_perc": 0.45045937707469236,
-            "switch_index": 1.6349462288909178,
-            "other_index": 1.340168186104998
+            "abs": 199,
+            "out_perc": 0.698819,
+            "in_perc": 0.301181,
+            "out_index": 1.372391,
+            "in_index": 1.911284
           },
           "out": {
-            "abs": 115,
-            "switch_perc": 0.5420795281090731,
-            "other_perc": 0.457920471890927,
-            "switch_index": 1.4654997309658324,
-            "other_index": 1.23797762793372
+            "abs": 211,
+            "out_perc": 0.595923,
+            "in_perc": 0.404077,
+            "out_index": 1.989468,
+            "in_index": 1.965052
           },
           "net": {
-            "abs": 45,
-            "perc": 0.0410958904109589,
-            "index": 2.7808708414872796
+            "abs": 12,
+            "perc": 0.118879,
+            "index": 3.904463
           },
           "both": {
-            "abs": 45,
-            "out_perc": 0.4610051993067591,
-            "in_perc": 0.5389948006932409,
-            "out_index": 0.9811068499137119,
-            "in_index": 1.0167464194949152
+            "abs": 12,
+            "out_perc": 0.393208,
+            "in_perc": 0.606792,
+            "out_index": 0.952637,
+            "in_index": 0.834074
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 121,
-            "perc": 0.02416134185303515,
-            "index": 1.6349462288909178
+            "abs": 109,
+            "perc": 0.262202,
+            "index": 1.537199
           },
           "out": {
-            "abs": 115,
-            "perc": 0.02165725047080979,
-            "index": 1.4654997309658324
+            "abs": 137,
+            "perc": 0.568134,
+            "index": 1.621916
           },
           "net": {
-            "abs": -6,
-            "perc": -0.019867549668874173,
-            "index": 1.3443945127719963
+            "abs": 28,
+            "perc": 0.191614,
+            "index": 1.80661
           },
           "both": {
-            "abs": -6,
-            "out_perc": 0.4872881355932203,
-            "in_perc": 0.5127118644067796,
-            "out_index": 0.9745762711864406,
-            "in_index": 1.0254237288135593
+            "abs": 28,
+            "out_perc": 0.596362,
+            "in_perc": 0.403638,
+            "out_index": 1.070984,
+            "in_index": 1.090571
+          }
+        }
+      ]
+    },
+    {
+      "from": 7,
+      "to": 0,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "36199",
+          "abs": "3.4%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "17172",
+          "abs": "18.7%"
+        },
+        {
+          "item": "Market Share",
+          "index": "8.3",
+          "abs": "1.1%"
+        },
+        {
+          "item": "Health Score",
+          "index": "94.7",
+          "abs": "72.6%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 143,
+            "out_perc": 0.698271,
+            "in_perc": 0.301729,
+            "out_index": 1.316503,
+            "in_index": 1.641647
+          },
+          "out": {
+            "abs": 267,
+            "out_perc": 0.624242,
+            "in_perc": 0.375758,
+            "out_index": 1.439146,
+            "in_index": 1.857539
+          },
+          "net": {
+            "abs": 124,
+            "perc": 0.239767,
+            "index": 1.462782
+          },
+          "both": {
+            "abs": 124,
+            "out_perc": 0.624914,
+            "in_perc": 0.375086,
+            "out_index": 1.11902,
+            "in_index": 1.153439
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 259,
+            "perc": 0.432551,
+            "index": 1.089668
+          },
+          "out": {
+            "abs": 298,
+            "perc": 0.379044,
+            "index": 1.878525
+          },
+          "net": {
+            "abs": 39,
+            "perc": 0.089541,
+            "index": 3.389748
+          },
+          "both": {
+            "abs": 39,
+            "out_perc": 0.60314,
+            "in_perc": 0.39686,
+            "out_index": 1.011829,
+            "in_index": 0.98346
           }
         }
       ]
@@ -773,359 +877,737 @@
     {
       "from": 0,
       "to": 2,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "29675",
+          "abs": "4%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "18352",
+          "abs": "14.9%"
+        },
+        {
+          "item": "Market Share",
+          "index": "10",
+          "abs": "8.4%"
+        },
+        {
+          "item": "Health Score",
+          "index": "80.8",
+          "abs": "82.4%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 186,
-            "switch_perc": 0.44280124114209435,
-            "other_perc": 0.5571987588579057,
-            "switch_index": 1.3649940113849153,
-            "other_index": 1.7176396503100178
+            "abs": 299,
+            "out_perc": 0.433288,
+            "in_perc": 0.566712,
+            "out_index": 1.26519,
+            "in_index": 1.885359
           },
           "out": {
-            "abs": 277,
-            "switch_perc": 0.6376956259144793,
-            "other_perc": 0.3623043740855207,
-            "switch_index": 1.917199777754831,
-            "other_index": 1.089249850946158
+            "abs": 120,
+            "out_perc": 0.695679,
+            "in_perc": 0.304321,
+            "out_index": 1.153756,
+            "in_index": 1.659693
           },
           "net": {
-            "abs": 112,
-            "perc": 0.10228310502283106,
-            "index": 3.75911857912188
+            "abs": 179,
+            "perc": 0.170464,
+            "index": 3.005013
           },
           "both": {
-            "abs": 112,
-            "out_perc": 0.451473136915078,
-            "in_perc": 0.548526863084922,
-            "out_index": 0.9608208060245187,
-            "in_index": 1.0347274654988445
+            "abs": 179,
+            "out_perc": 0.394135,
+            "in_perc": 0.605865,
+            "out_index": 0.976112,
+            "in_index": 0.869311
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 186,
-            "perc": 0.03714057507987221,
-            "index": 1.3649940113849153
+            "abs": 141,
+            "perc": 0.347361,
+            "index": 1.14465
           },
           "out": {
-            "abs": 277,
-            "perc": 0.05216572504708098,
-            "index": 1.917199777754831
+            "abs": 217,
+            "perc": 0.226782,
+            "index": 1.644687
           },
           "net": {
-            "abs": 91,
-            "perc": 0.30132450331125826,
-            "index": 11.074307320736747
+            "abs": 76,
+            "perc": 0.18251,
+            "index": 2.108698
           },
           "both": {
-            "abs": 91,
-            "out_perc": 0.5982721382289417,
-            "in_perc": 0.4017278617710583,
-            "out_index": 1.1965442764578833,
-            "in_index": 0.8034557235421166
+            "abs": 76,
+            "out_perc": 0.604528,
+            "in_perc": 0.395472,
+            "out_index": 1.109548,
+            "in_index": 1.092496
           }
         }
       ]
     },
     {
-      "from": 0,
-      "to": 3,
+      "from": 2,
+      "to": 1,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "49354",
+          "abs": "2.6%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "13608",
+          "abs": "19.2%"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.2",
+          "abs": "6.6%"
+        },
+        {
+          "item": "Health Score",
+          "index": "88.9",
+          "abs": "90.8%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 785,
-            "switch_perc": 0.5206863066664972,
-            "other_perc": 0.4793136933335028,
-            "switch_index": 1.6684851779899885,
-            "other_index": 1.5359109365762884
+            "abs": 266,
+            "out_perc": 0.581628,
+            "in_perc": 0.418372,
+            "out_index": 1.218167,
+            "in_index": 1.986043
           },
           "out": {
-            "abs": 783,
-            "switch_perc": 0.4954928546272826,
-            "other_perc": 0.5045071453727173,
-            "switch_index": 1.5695828956267426,
-            "other_index": 1.5981376496219009
+            "abs": 269,
+            "out_perc": 0.573441,
+            "in_perc": 0.426559,
+            "out_index": 1.091825,
+            "in_index": 1.586765
           },
           "net": {
-            "abs": 159,
-            "perc": 0.14520547945205478,
-            "index": 1.5456103651786566
+            "abs": 3,
+            "perc": 0.107821,
+            "index": 1.831651
           },
           "both": {
-            "abs": 159,
-            "out_perc": 0.4810669206954037,
-            "in_perc": 0.5189330793045963,
-            "out_index": 1.023802013233036,
-            "in_index": 0.9789024860013564
+            "abs": 3,
+            "out_perc": 0.334111,
+            "in_perc": 0.665889,
+            "out_index": 0.855677,
+            "in_index": 1.031805
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 785,
-            "perc": 0.1567492012779553,
-            "index": 1.6684851779899885
+            "abs": 244,
+            "perc": 0.394705,
+            "index": 1.140619
           },
           "out": {
-            "abs": 783,
-            "perc": 0.14745762711864405,
-            "index": 1.5695828956267426
+            "abs": 136,
+            "perc": 0.45146,
+            "index": 1.096044
           },
           "net": {
-            "abs": -2,
-            "perc": -0.006622516556291391,
-            "index": 0.07049203839687739
+            "abs": 108,
+            "perc": 0.189918,
+            "index": 3.34417
           },
           "both": {
-            "abs": -2,
-            "out_perc": 0.49936224489795916,
-            "in_perc": 0.5006377551020408,
-            "out_index": 0.9987244897959183,
-            "in_index": 1.0012755102040816
+            "abs": 108,
+            "out_perc": 0.419635,
+            "in_perc": 0.580365,
+            "out_index": 1.130915,
+            "in_index": 0.952839
           }
         }
       ]
     },
     {
-      "from": 0,
-      "to": 4,
+      "from": 10,
+      "to": 9,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "21484",
+          "abs": "6.9%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "15071",
+          "abs": "14.2%"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.1",
+          "abs": "4.7%"
+        },
+        {
+          "item": "Health Score",
+          "index": "80.9",
+          "abs": "78.8%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 955,
-            "switch_perc": 0.5062314038982346,
-            "other_perc": 0.4937685961017654,
-            "switch_index": 1.1748775763656647,
-            "other_index": 1.1459535046745881
+            "abs": 274,
+            "out_perc": 0.667077,
+            "in_perc": 0.332923,
+            "out_index": 1.89563,
+            "in_index": 1.09664
           },
           "out": {
-            "abs": 900,
-            "switch_perc": 0.4544849835367678,
-            "other_perc": 0.5455150164632321,
-            "switch_index": 1.0442429501178894,
-            "other_index": 1.2533972095011798
+            "abs": 276,
+            "out_perc": 0.319335,
+            "in_perc": 0.680665,
+            "out_index": 1.257598,
+            "in_index": 1.101087
           },
           "net": {
-            "abs": 156,
-            "perc": 0.14246575342465753,
-            "index": 0.8777362660168999
+            "abs": 2,
+            "perc": 0.101594,
+            "index": 3.037939
           },
           "both": {
-            "abs": 156,
-            "out_perc": 0.48535486293653773,
-            "in_perc": 0.5146451370634623,
-            "out_index": 1.0329275708430958,
-            "in_index": 0.9708138181420995
+            "abs": 2,
+            "out_perc": 0.659995,
+            "in_perc": 0.340005,
+            "out_index": 0.906855,
+            "in_index": 0.863431
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 955,
-            "perc": 0.19069488817891378,
-            "index": 1.1748775763656647
+            "abs": 187,
+            "perc": 0.338764,
+            "index": 1.430518
           },
           "out": {
-            "abs": 900,
-            "perc": 0.1694915254237288,
-            "index": 1.0442429501178894
+            "abs": 267,
+            "perc": 0.369015,
+            "index": 1.486973
           },
           "net": {
-            "abs": -55,
-            "perc": -0.18211920529801323,
-            "index": 1.122042507659785
+            "abs": 80,
+            "perc": 0.285739,
+            "index": 2.434846
           },
           "both": {
-            "abs": -55,
-            "out_perc": 0.48517520215633425,
-            "in_perc": 0.5148247978436657,
-            "out_index": 0.9703504043126685,
-            "in_index": 1.0296495956873315
+            "abs": 80,
+            "out_perc": 0.505797,
+            "in_perc": 0.494203,
+            "out_index": 0.941092,
+            "in_index": 1.087058
           }
         }
       ]
     },
     {
-      "from": 0,
-      "to": 5,
-      "churn": [
-        {
-          "in": {
-            "abs": 1180,
-            "switch_perc": 0.4569713087950727,
-            "other_perc": 0.5430286912049272,
-            "switch_index": 0.5212622178940717,
-            "other_index": 0.6194269410566711
-          },
-          "out": {
-            "abs": 1371,
-            "switch_perc": 0.48576349064297936,
-            "other_perc": 0.5142365093570207,
-            "switch_index": 0.5711911819192638,
-            "other_index": 0.6046715432995631
-          },
-          "net": {
-            "abs": 228,
-            "perc": 0.20821917808219179,
-            "index": 0.4606374976276453
-          },
-          "both": {
-            "abs": 228,
-            "out_perc": 0.48478783026421135,
-            "in_perc": 0.5152121697357886,
-            "out_index": 1.0317208173405739,
-            "in_index": 0.9718834545070199
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 1180,
-            "perc": 0.23562300319488821,
-            "index": 0.5212622178940717
-          },
-          "out": {
-            "abs": 1371,
-            "perc": 0.2581920903954802,
-            "index": 0.5711911819192638
-          },
-          "net": {
-            "abs": 191,
-            "perc": 0.6324503311258278,
-            "index": 1.3991522807211263
-          },
-          "both": {
-            "abs": 191,
-            "out_perc": 0.537436299490396,
-            "in_perc": 0.4625637005096041,
-            "out_index": 1.074872598980792,
-            "in_index": 0.9251274010192082
-          }
-        }
-      ]
-    },
-    {
-      "from": 0,
-      "to": 6,
-      "churn": [
-        {
-          "in": {
-            "abs": 131,
-            "switch_perc": 0.5934642328676798,
-            "other_perc": 0.4065357671323203,
-            "switch_index": 1.2637726580595323,
-            "other_index": 0.86571145921044
-          },
-          "out": {
-            "abs": 148,
-            "switch_perc": 0.5164082608162764,
-            "other_perc": 0.4835917391837236,
-            "switch_index": 1.3465707419260735,
-            "other_index": 1.260999361227535
-          },
-          "net": {
-            "abs": -60,
-            "perc": 1.0,
-            "index": 48.31277459207738
-          },
-          "both": {
-            "abs": -60,
-            "out_perc": 0.5451807228915663,
-            "in_perc": 0.45481927710843373,
-            "out_index": 1.160248393020635,
-            "in_index": 0.8579598002104897
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 131,
-            "perc": 0.026158146964856233,
-            "index": 1.2637726580595323
-          },
-          "out": {
-            "abs": 148,
-            "perc": 0.02787193973634651,
-            "index": 1.3465707419260735
-          },
-          "net": {
-            "abs": 17,
-            "perc": 0.056291390728476824,
-            "index": 2.719593271739455
-          },
-          "both": {
-            "abs": 17,
-            "out_perc": 0.5304659498207885,
-            "in_perc": 0.46953405017921146,
-            "out_index": 1.060931899641577,
-            "in_index": 0.9390681003584229
-          }
-        }
-      ]
-    },
-    {
-      "from": 0,
+      "from": 8,
       "to": 7,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "35935",
+          "abs": "2%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "19948",
+          "abs": "10.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "6.6",
+          "abs": "4.1%"
+        },
+        {
+          "item": "Health Score",
+          "index": "76.3",
+          "abs": "83.7%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 604,
-            "switch_perc": 0.511545325230454,
-            "other_perc": 0.48845467476954607,
-            "switch_index": 1.529353528287412,
-            "other_index": 1.4603200213602754
+            "abs": 292,
+            "out_perc": 0.303763,
+            "in_perc": 0.696237,
+            "out_index": 1.90668,
+            "in_index": 1.218056
           },
           "out": {
-            "abs": 650,
-            "switch_perc": 0.5203884348361014,
-            "other_perc": 0.47961156516389847,
-            "switch_index": 1.5522229721758216,
-            "other_index": 1.4305930711221058
+            "abs": 161,
+            "out_perc": 0.596927,
+            "in_perc": 0.403073,
+            "out_index": 1.280232,
+            "in_index": 1.182898
           },
           "net": {
-            "abs": 126,
-            "perc": 0.11506849315068493,
-            "index": 1.4591223066581742
+            "abs": 131,
+            "perc": 0.066634,
+            "index": 1.838559
           },
           "both": {
-            "abs": 126,
-            "out_perc": 0.4808975136446331,
-            "in_perc": 0.5191024863553669,
-            "out_index": 1.0234414827700724,
-            "in_index": 0.9792220512589187
+            "abs": 131,
+            "out_perc": 0.328014,
+            "in_perc": 0.671986,
+            "out_index": 1.173464,
+            "in_index": 1.164995
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 604,
-            "perc": 0.12060702875399362,
-            "index": 1.529353528287412
+            "abs": 275,
+            "perc": 0.475427,
+            "index": 1.265702
           },
           "out": {
-            "abs": 650,
-            "perc": 0.12241054613935967,
-            "index": 1.5522229721758216
+            "abs": 134,
+            "perc": 0.565968,
+            "index": 1.568063
           },
           "net": {
-            "abs": 46,
-            "perc": 0.152317880794702,
-            "index": 1.93146196221939
+            "abs": 141,
+            "perc": 0.069669,
+            "index": 3.049806
           },
           "both": {
-            "abs": 46,
-            "out_perc": 0.518341307814992,
-            "in_perc": 0.48165869218500795,
-            "out_index": 1.036682615629984,
-            "in_index": 0.9633173843700159
+            "abs": 141,
+            "out_perc": 0.473842,
+            "in_perc": 0.526158,
+            "out_index": 0.827687,
+            "in_index": 0.96991
+          }
+        }
+      ]
+    },
+    {
+      "from": 6,
+      "to": 0,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "33880",
+          "abs": "8.7%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "13909",
+          "abs": "13.9%"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.5",
+          "abs": "8.3%"
+        },
+        {
+          "item": "Health Score",
+          "index": "90.1",
+          "abs": "79.4%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 146,
+            "out_perc": 0.507569,
+            "in_perc": 0.492431,
+            "out_index": 1.199516,
+            "in_index": 1.872007
+          },
+          "out": {
+            "abs": 145,
+            "out_perc": 0.624895,
+            "in_perc": 0.375105,
+            "out_index": 1.980233,
+            "in_index": 1.86912
+          },
+          "net": {
+            "abs": 1,
+            "perc": 0.063611,
+            "index": 3.38924
+          },
+          "both": {
+            "abs": 1,
+            "out_perc": 0.376066,
+            "in_perc": 0.623934,
+            "out_index": 0.905983,
+            "in_index": 1.165336
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 150,
+            "perc": 0.459634,
+            "index": 1.258086
+          },
+          "out": {
+            "abs": 201,
+            "perc": 0.263391,
+            "index": 1.214017
+          },
+          "net": {
+            "abs": 51,
+            "perc": 0.225208,
+            "index": 2.671728
+          },
+          "both": {
+            "abs": 51,
+            "out_perc": 0.621055,
+            "in_perc": 0.378945,
+            "out_index": 1.004992,
+            "in_index": 0.864726
+          }
+        }
+      ]
+    },
+    {
+      "from": 9,
+      "to": 1,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "21551",
+          "abs": "1.7%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "18286",
+          "abs": "13.6%"
+        },
+        {
+          "item": "Market Share",
+          "index": "2.2",
+          "abs": "5.1%"
+        },
+        {
+          "item": "Health Score",
+          "index": "87.2",
+          "abs": "70.8%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 172,
+            "out_perc": 0.498201,
+            "in_perc": 0.501799,
+            "out_index": 1.383291,
+            "in_index": 1.424579
+          },
+          "out": {
+            "abs": 153,
+            "out_perc": 0.470336,
+            "in_perc": 0.529664,
+            "out_index": 1.801755,
+            "in_index": 1.145199
+          },
+          "net": {
+            "abs": 19,
+            "perc": 0.146402,
+            "index": 3.091172
+          },
+          "both": {
+            "abs": 19,
+            "out_perc": 0.423754,
+            "in_perc": 0.576246,
+            "out_index": 1.157041,
+            "in_index": 0.896401
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 264,
+            "perc": 0.554158,
+            "index": 1.997737
+          },
+          "out": {
+            "abs": 153,
+            "perc": 0.41138,
+            "index": 1.603531
+          },
+          "net": {
+            "abs": 111,
+            "perc": 0.217875,
+            "index": 2.330922
+          },
+          "both": {
+            "abs": 111,
+            "out_perc": 0.410023,
+            "in_perc": 0.589977,
+            "out_index": 0.869275,
+            "in_index": 0.861021
+          }
+        }
+      ]
+    },
+    {
+      "from": 2,
+      "to": 8,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "13451",
+          "abs": "8%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "15506",
+          "abs": "13.8%"
+        },
+        {
+          "item": "Market Share",
+          "index": "8.3",
+          "abs": "9.6%"
+        },
+        {
+          "item": "Health Score",
+          "index": "74.5",
+          "abs": "81.9%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 103,
+            "out_perc": 0.61785,
+            "in_perc": 0.38215,
+            "out_index": 1.033345,
+            "in_index": 1.249209
+          },
+          "out": {
+            "abs": 182,
+            "out_perc": 0.458635,
+            "in_perc": 0.541365,
+            "out_index": 1.811314,
+            "in_index": 1.29156
+          },
+          "net": {
+            "abs": 79,
+            "perc": 0.200998,
+            "index": 2.567805
+          },
+          "both": {
+            "abs": 79,
+            "out_perc": 0.606412,
+            "in_perc": 0.393588,
+            "out_index": 0.875124,
+            "in_index": 0.814651
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 226,
+            "perc": 0.281413,
+            "index": 1.241722
+          },
+          "out": {
+            "abs": 115,
+            "perc": 0.256264,
+            "index": 1.836428
+          },
+          "net": {
+            "abs": 111,
+            "perc": 0.216392,
+            "index": 2.946252
+          },
+          "both": {
+            "abs": 111,
+            "out_perc": 0.508048,
+            "in_perc": 0.491952,
+            "out_index": 0.916575,
+            "in_index": 1.04227
+          }
+        }
+      ]
+    },
+    {
+      "from": 2,
+      "to": 5,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "44272",
+          "abs": "4.9%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "12137",
+          "abs": "16%"
+        },
+        {
+          "item": "Market Share",
+          "index": "1.7",
+          "abs": "2.1%"
+        },
+        {
+          "item": "Health Score",
+          "index": "70.2",
+          "abs": "70.4%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 137,
+            "out_perc": 0.660532,
+            "in_perc": 0.339468,
+            "out_index": 1.958353,
+            "in_index": 1.470176
+          },
+          "out": {
+            "abs": 217,
+            "out_perc": 0.563239,
+            "in_perc": 0.436761,
+            "out_index": 1.411375,
+            "in_index": 1.173045
+          },
+          "net": {
+            "abs": 80,
+            "perc": 0.290714,
+            "index": 1.988446
+          },
+          "both": {
+            "abs": 80,
+            "out_perc": 0.596551,
+            "in_perc": 0.403449,
+            "out_index": 0.803098,
+            "in_index": 0.994207
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 145,
+            "perc": 0.551222,
+            "index": 1.909
+          },
+          "out": {
+            "abs": 292,
+            "perc": 0.42083,
+            "index": 1.77321
+          },
+          "net": {
+            "abs": 147,
+            "perc": 0.282562,
+            "index": 1.872807
+          },
+          "both": {
+            "abs": 147,
+            "out_perc": 0.506422,
+            "in_perc": 0.493578,
+            "out_index": 0.827039,
+            "in_index": 0.946986
+          }
+        }
+      ]
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "37214",
+          "abs": "8.9%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "16298",
+          "abs": "13.2%"
+        },
+        {
+          "item": "Market Share",
+          "index": "3",
+          "abs": "1.3%"
+        },
+        {
+          "item": "Health Score",
+          "index": "70.5",
+          "abs": "89.3%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 209,
+            "out_perc": 0.523172,
+            "in_perc": 0.476828,
+            "out_index": 1.019464,
+            "in_index": 1.671159
+          },
+          "out": {
+            "abs": 134,
+            "out_perc": 0.609552,
+            "in_perc": 0.390448,
+            "out_index": 1.367169,
+            "in_index": 1.979974
+          },
+          "net": {
+            "abs": 75,
+            "perc": 0.153268,
+            "index": 2.222567
+          },
+          "both": {
+            "abs": 75,
+            "out_perc": 0.688483,
+            "in_perc": 0.311517,
+            "out_index": 0.94251,
+            "in_index": 1.007098
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 208,
+            "perc": 0.379994,
+            "index": 1.402222
+          },
+          "out": {
+            "abs": 299,
+            "perc": 0.286316,
+            "index": 1.082732
+          },
+          "net": {
+            "abs": 91,
+            "perc": 0.18882,
+            "index": 3.923664
+          },
+          "both": {
+            "abs": 91,
+            "out_perc": 0.632548,
+            "in_perc": 0.367452,
+            "out_index": 0.892732,
+            "in_index": 1.119453
           }
         }
       ]
@@ -1133,179 +1615,491 @@
     {
       "from": 0,
       "to": 8,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "31442",
+          "abs": "7.7%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "11186",
+          "abs": "14.9%"
+        },
+        {
+          "item": "Market Share",
+          "index": "3",
+          "abs": "4.9%"
+        },
+        {
+          "item": "Health Score",
+          "index": "94.5",
+          "abs": "80.8%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 120,
-            "switch_perc": 0.6086950975264387,
-            "other_perc": 0.3913049024735612,
-            "switch_index": 1.637413055904214,
-            "other_index": 1.052625129976021
+            "abs": 153,
+            "out_perc": 0.31251,
+            "in_perc": 0.68749,
+            "out_index": 1.280314,
+            "in_index": 1.42583
           },
           "out": {
-            "abs": 118,
-            "switch_perc": 0.6029119788219721,
-            "other_perc": 0.3970880211780278,
-            "switch_index": 1.518548997031167,
-            "other_index": 1.0001420397570804
+            "abs": 223,
+            "out_perc": 0.660257,
+            "in_perc": 0.339743,
+            "out_index": 1.877915,
+            "in_index": 1.453834
           },
           "net": {
-            "abs": 29,
-            "perc": 0.026484018264840183,
-            "index": 1.8097775718042677
+            "abs": 70,
+            "perc": 0.262676,
+            "index": 1.719995
           },
           "both": {
-            "abs": 29,
-            "out_perc": 0.47128712871287126,
-            "in_perc": 0.5287128712871287,
-            "out_index": 1.002988753601209,
-            "in_index": 0.9973508429592636
+            "abs": 70,
+            "out_perc": 0.381397,
+            "in_perc": 0.618603,
+            "out_index": 1.04449,
+            "in_index": 1.134036
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 120,
-            "perc": 0.023961661341853038,
-            "index": 1.637413055904214
+            "abs": 278,
+            "perc": 0.365081,
+            "index": 1.325901
           },
           "out": {
-            "abs": 118,
-            "perc": 0.02222222222222222,
-            "index": 1.518548997031167
+            "abs": 243,
+            "perc": 0.558735,
+            "index": 1.142849
           },
           "net": {
-            "abs": -2,
-            "perc": -0.006622516556291391,
-            "index": 0.45254771434703656
+            "abs": 35,
+            "perc": 0.169536,
+            "index": 2.758668
           },
           "both": {
-            "abs": -2,
-            "out_perc": 0.4957983193277311,
-            "in_perc": 0.5042016806722689,
-            "out_index": 0.9915966386554622,
-            "in_index": 1.0084033613445378
+            "abs": 35,
+            "out_perc": 0.379104,
+            "in_perc": 0.620896,
+            "out_index": 1.021366,
+            "in_index": 0.923436
           }
         }
       ]
     },
     {
-      "from": 0,
-      "to": 9,
+      "from": 6,
+      "to": 7,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "41267",
+          "abs": "3.6%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "10582",
+          "abs": "18%"
+        },
+        {
+          "item": "Market Share",
+          "index": "2.5",
+          "abs": "8.9%"
+        },
+        {
+          "item": "Health Score",
+          "index": "90.2",
+          "abs": "90.6%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 199,
-            "switch_perc": 0.5007954735144108,
-            "other_perc": 0.49920452648558933,
-            "switch_index": 2.2081199897719586,
-            "other_index": 2.2011051461425706
+            "abs": 187,
+            "out_perc": 0.396322,
+            "in_perc": 0.603678,
+            "out_index": 1.003783,
+            "in_index": 1.38555
           },
           "out": {
-            "abs": 221,
-            "switch_perc": 0.5223800047222316,
-            "other_perc": 0.4776199952777685,
-            "switch_index": 2.312765848867625,
-            "other_index": 2.114597043970141
+            "abs": 148,
+            "out_perc": 0.409699,
+            "in_perc": 0.590301,
+            "out_index": 1.545463,
+            "in_index": 1.218554
           },
           "net": {
-            "abs": 44,
-            "perc": 0.04018264840182648,
-            "index": 2.2329164359983964
+            "abs": 39,
+            "perc": 0.117673,
+            "index": 1.73045
           },
           "both": {
-            "abs": 44,
-            "out_perc": 0.48025134649910234,
-            "in_perc": 0.5197486535008977,
-            "out_index": 1.0220663160395826,
-            "in_index": 0.9804409649307549
+            "abs": 39,
+            "out_perc": 0.564767,
+            "in_perc": 0.435233,
+            "out_index": 1.135581,
+            "in_index": 1.19855
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 199,
-            "perc": 0.03973642172523962,
-            "index": 2.2081199897719586
+            "abs": 269,
+            "perc": 0.270235,
+            "index": 1.429256
           },
           "out": {
-            "abs": 221,
-            "perc": 0.04161958568738229,
-            "index": 2.312765848867625
+            "abs": 117,
+            "perc": 0.468849,
+            "index": 1.341368
           },
           "net": {
-            "abs": 22,
-            "perc": 0.0728476821192053,
-            "index": 4.048085260626232
+            "abs": 152,
+            "perc": 0.091795,
+            "index": 2.966466
           },
           "both": {
-            "abs": 22,
-            "out_perc": 0.5261904761904762,
-            "in_perc": 0.4738095238095238,
-            "out_index": 1.0523809523809524,
-            "in_index": 0.9476190476190476
+            "abs": 152,
+            "out_perc": 0.405131,
+            "in_perc": 0.594869,
+            "out_index": 0.820262,
+            "in_index": 0.888584
           }
         }
       ]
     },
     {
-      "from": 0,
+      "from": 10,
+      "to": 6,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "45349",
+          "abs": "4.4%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "13777",
+          "abs": "19.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.5",
+          "abs": "2%"
+        },
+        {
+          "item": "Health Score",
+          "index": "92.1",
+          "abs": "93.1%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 146,
+            "out_perc": 0.448555,
+            "in_perc": 0.551445,
+            "out_index": 1.362129,
+            "in_index": 1.10903
+          },
+          "out": {
+            "abs": 238,
+            "out_perc": 0.358889,
+            "in_perc": 0.641111,
+            "out_index": 1.851034,
+            "in_index": 1.532298
+          },
+          "net": {
+            "abs": 92,
+            "perc": 0.132851,
+            "index": 2.617878
+          },
+          "both": {
+            "abs": 92,
+            "out_perc": 0.44854,
+            "in_perc": 0.55146,
+            "out_index": 1.170967,
+            "in_index": 1.125051
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 274,
+            "perc": 0.472171,
+            "index": 1.611663
+          },
+          "out": {
+            "abs": 191,
+            "perc": 0.575066,
+            "index": 1.895762
+          },
+          "net": {
+            "abs": 83,
+            "perc": 0.065765,
+            "index": 2.040471
+          },
+          "both": {
+            "abs": 83,
+            "out_perc": 0.625135,
+            "in_perc": 0.374865,
+            "out_index": 0.987193,
+            "in_index": 1.147988
+          }
+        }
+      ]
+    },
+    {
+      "from": 6,
+      "to": 2,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "45519",
+          "abs": "4.2%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "18818",
+          "abs": "17.6%"
+        },
+        {
+          "item": "Market Share",
+          "index": "2.4",
+          "abs": "2.8%"
+        },
+        {
+          "item": "Health Score",
+          "index": "74.4",
+          "abs": "90.6%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 137,
+            "out_perc": 0.383058,
+            "in_perc": 0.616942,
+            "out_index": 1.911941,
+            "in_index": 1.485402
+          },
+          "out": {
+            "abs": 124,
+            "out_perc": 0.327375,
+            "in_perc": 0.672625,
+            "out_index": 1.875435,
+            "in_index": 1.041422
+          },
+          "net": {
+            "abs": 13,
+            "perc": 0.206847,
+            "index": 1.604
+          },
+          "both": {
+            "abs": 13,
+            "out_perc": 0.433992,
+            "in_perc": 0.566008,
+            "out_index": 0.890839,
+            "in_index": 1.172573
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 293,
+            "perc": 0.281715,
+            "index": 1.451718
+          },
+          "out": {
+            "abs": 296,
+            "perc": 0.401235,
+            "index": 1.755485
+          },
+          "net": {
+            "abs": 3,
+            "perc": 0.164612,
+            "index": 1.890153
+          },
+          "both": {
+            "abs": 3,
+            "out_perc": 0.317557,
+            "in_perc": 0.682443,
+            "out_index": 0.947342,
+            "in_index": 1.14685
+          }
+        }
+      ]
+    },
+    {
+      "from": 6,
+      "to": 8,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "40663",
+          "abs": "9.1%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "16272",
+          "abs": "12.6%"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.9",
+          "abs": "1.5%"
+        },
+        {
+          "item": "Health Score",
+          "index": "77.2",
+          "abs": "77.8%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 183,
+            "out_perc": 0.48492,
+            "in_perc": 0.51508,
+            "out_index": 1.508476,
+            "in_index": 1.986001
+          },
+          "out": {
+            "abs": 258,
+            "out_perc": 0.354585,
+            "in_perc": 0.645415,
+            "out_index": 1.398018,
+            "in_index": 1.151256
+          },
+          "net": {
+            "abs": 75,
+            "perc": 0.152142,
+            "index": 3.938665
+          },
+          "both": {
+            "abs": 75,
+            "out_perc": 0.407677,
+            "in_perc": 0.592323,
+            "out_index": 1.071759,
+            "in_index": 1.150958
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 176,
+            "perc": 0.33211,
+            "index": 1.379701
+          },
+          "out": {
+            "abs": 191,
+            "perc": 0.309615,
+            "index": 1.013285
+          },
+          "net": {
+            "abs": 15,
+            "perc": 0.131036,
+            "index": 2.345602
+          },
+          "both": {
+            "abs": 15,
+            "out_perc": 0.504616,
+            "in_perc": 0.495384,
+            "out_index": 1.071238,
+            "in_index": 0.842509
+          }
+        }
+      ]
+    },
+    {
+      "from": 8,
       "to": 10,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "31076",
+          "abs": "1.3%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "14082",
+          "abs": "15.1%"
+        },
+        {
+          "item": "Market Share",
+          "index": "3.3",
+          "abs": "8.9%"
+        },
+        {
+          "item": "Health Score",
+          "index": "77.8",
+          "abs": "76.4%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 560,
-            "switch_perc": 0.5081206814191873,
-            "other_perc": 0.49187931858081274,
-            "switch_index": 2.2808731121561205,
-            "other_index": 2.207968211494816
+            "abs": 106,
+            "out_perc": 0.443383,
+            "in_perc": 0.556617,
+            "out_index": 1.755045,
+            "in_index": 1.264813
           },
           "out": {
-            "abs": 537,
-            "switch_perc": 0.48371346616476674,
-            "other_perc": 0.5162865338352333,
-            "switch_index": 2.062800288212606,
-            "other_index": 2.2017084189110383
+            "abs": 253,
+            "out_perc": 0.617394,
+            "in_perc": 0.382606,
+            "out_index": 1.397795,
+            "in_index": 1.83475
           },
           "net": {
-            "abs": 173,
-            "perc": 0.15799086757990868,
-            "index": 3.2226222609299873
+            "abs": 147,
+            "perc": 0.162933,
+            "index": 1.657999
           },
           "both": {
-            "abs": 173,
-            "out_perc": 0.47142385199867853,
-            "in_perc": 0.5285761480013215,
-            "out_index": 1.0032797267886044,
-            "in_index": 0.9970929315450398
+            "abs": 147,
+            "out_perc": 0.390577,
+            "in_perc": 0.609423,
+            "out_index": 1.155053,
+            "in_index": 1.131797
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 560,
-            "perc": 0.11182108626198084,
-            "index": 2.2808731121561205
+            "abs": 194,
+            "perc": 0.458695,
+            "index": 1.855622
           },
           "out": {
-            "abs": 537,
-            "perc": 0.10112994350282485,
-            "index": 2.062800288212606
+            "abs": 107,
+            "perc": 0.531339,
+            "index": 1.01969
           },
           "net": {
-            "abs": -23,
-            "perc": -0.076158940397351,
-            "index": 1.5534536929434164
+            "abs": 87,
+            "perc": 0.237827,
+            "index": 3.05698
           },
           "both": {
-            "abs": -23,
-            "out_perc": 0.48951686417502277,
-            "in_perc": 0.5104831358249772,
-            "out_index": 0.9790337283500455,
-            "in_index": 1.0209662716499543
+            "abs": 87,
+            "out_perc": 0.606283,
+            "in_perc": 0.393717,
+            "out_index": 0.810072,
+            "in_index": 0.816847
           }
         }
       ]
@@ -1313,540 +2107,491 @@
     {
       "from": 1,
       "to": 0,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "26061",
+          "abs": "5.4%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "13772",
+          "abs": "11.7%"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.2",
+          "abs": "7.5%"
+        },
+        {
+          "item": "Health Score",
+          "index": "80.4",
+          "abs": "83.3%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 115,
-            "switch_perc": 0.5319112043591533,
-            "other_perc": 0.46808879564084666,
-            "switch_index": 1.190095398102802,
-            "other_index": 1.0472994684645023
+            "abs": 130,
+            "out_perc": 0.592612,
+            "in_perc": 0.407388,
+            "out_index": 1.001268,
+            "in_index": 1.272652
           },
           "out": {
-            "abs": 121,
-            "switch_perc": 0.539859835819505,
-            "other_perc": 0.4601401641804951,
-            "switch_index": 1.2071142221065803,
-            "other_index": 1.0288628630829226
+            "abs": 135,
+            "out_perc": 0.404105,
+            "in_perc": 0.595895,
+            "out_index": 1.423339,
+            "in_index": 1.118265
           },
           "net": {
-            "abs": 34,
-            "perc": 0.060498220640569395,
-            "index": 1.0730929818944588
+            "abs": 5,
+            "perc": 0.123803,
+            "index": 2.249362
           },
           "both": {
-            "abs": 34,
-            "out_perc": 0.4704861111111111,
-            "in_perc": 0.5295138888888888,
-            "out_index": 1.0012840356128432,
-            "in_index": 0.9988618626898704
+            "abs": 5,
+            "out_perc": 0.433312,
+            "in_perc": 0.566688,
+            "out_index": 0.850082,
+            "in_index": 0.994909
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 115,
-            "perc": 0.06709451575262544,
-            "index": 1.190095398102802
-          },
-          "out": {
-            "abs": 121,
-            "perc": 0.06805399325084364,
-            "index": 1.2071142221065803
-          },
-          "net": {
-            "abs": 6,
-            "perc": 0.09375,
-            "index": 1.6628996024577736
-          },
-          "both": {
-            "abs": 6,
-            "out_perc": 0.5127118644067796,
-            "in_perc": 0.4872881355932203,
-            "out_index": 1.0254237288135593,
-            "in_index": 0.9745762711864406
-          }
-        }
-      ]
-    },
-    {
-      "from": 1,
-      "to": 2,
-      "churn": [
-        {
-          "in": {
-            "abs": 87,
-            "switch_perc": 0.4421432166348869,
-            "other_perc": 0.5578567833651131,
-            "switch_index": 1.8654798270547484,
-            "other_index": 2.3536956728042138
+            "abs": 232,
+            "perc": 0.506547,
+            "index": 1.969365
           },
           "out": {
             "abs": 140,
-            "switch_perc": 0.575818303273213,
-            "other_perc": 0.42418169672678685,
-            "switch_index": 2.89386589154841,
-            "other_index": 2.131792159087286
+            "perc": 0.267519,
+            "index": 1.547832
           },
           "net": {
-            "abs": 3,
-            "perc": 0.005338078291814947,
-            "index": 0.1961855702277481
+            "abs": 92,
+            "perc": 0.146133,
+            "index": 3.092356
           },
           "both": {
-            "abs": 3,
-            "out_perc": 0.49743589743589745,
-            "in_perc": 0.5025641025641026,
-            "out_index": 1.0586383127592163,
-            "in_index": 0.9480244543945828
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 87,
-            "perc": 0.05075845974329055,
-            "index": 1.8654798270547484
-          },
-          "out": {
-            "abs": 140,
-            "perc": 0.07874015748031496,
-            "index": 2.89386589154841
-          },
-          "net": {
-            "abs": 53,
-            "perc": 0.828125,
-            "index": 30.435330181269293
-          },
-          "both": {
-            "abs": 53,
-            "out_perc": 0.6167400881057269,
-            "in_perc": 0.3832599118942731,
-            "out_index": 1.2334801762114538,
-            "in_index": 0.7665198237885462
+            "abs": 92,
+            "out_perc": 0.364084,
+            "in_perc": 0.635916,
+            "out_index": 0.84204,
+            "in_index": 0.909691
           }
         }
       ]
     },
     {
-      "from": 1,
-      "to": 3,
+      "from": 0,
+      "to": 10,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "19316",
+          "abs": "2.9%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "19433",
+          "abs": "19%"
+        },
+        {
+          "item": "Market Share",
+          "index": "5.5",
+          "abs": "6.3%"
+        },
+        {
+          "item": "Health Score",
+          "index": "91.9",
+          "abs": "90.9%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 223,
-            "switch_perc": 0.5405379004209516,
-            "other_perc": 0.4594620995790484,
-            "switch_index": 1.384876551305748,
-            "other_index": 1.1771575821514166
+            "abs": 298,
+            "out_perc": 0.606808,
+            "in_perc": 0.393192,
+            "out_index": 1.345843,
+            "in_index": 1.567874
           },
           "out": {
-            "abs": 206,
-            "switch_perc": 0.5196103868235368,
-            "other_perc": 0.48038961317646334,
-            "switch_index": 1.233253850603638,
-            "other_index": 1.1401664694610174
+            "abs": 215,
+            "out_perc": 0.44689,
+            "in_perc": 0.55311,
+            "out_index": 1.634085,
+            "in_index": 1.356558
           },
           "net": {
-            "abs": 95,
-            "perc": 0.16903914590747332,
-            "index": 1.7993030085466302
+            "abs": 83,
+            "perc": 0.093757,
+            "index": 3.726186
           },
           "both": {
-            "abs": 95,
-            "out_perc": 0.4553151458137347,
-            "in_perc": 0.5446848541862653,
-            "out_index": 0.9689973325660194,
-            "in_index": 1.0274799952331712
+            "abs": 83,
+            "out_perc": 0.410198,
+            "in_perc": 0.589802,
+            "out_index": 0.831727,
+            "in_index": 1.166135
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 223,
-            "perc": 0.13010501750291714,
-            "index": 1.384876551305748
+            "abs": 191,
+            "perc": 0.433668,
+            "index": 1.51105
           },
           "out": {
-            "abs": 206,
-            "perc": 0.1158605174353206,
-            "index": 1.233253850603638
+            "abs": 241,
+            "perc": 0.206914,
+            "index": 1.847674
           },
           "net": {
-            "abs": -17,
-            "perc": -0.265625,
-            "index": 2.827391602574754
+            "abs": 50,
+            "perc": 0.130961,
+            "index": 2.077545
           },
           "both": {
-            "abs": -17,
-            "out_perc": 0.4801864801864802,
-            "in_perc": 0.5198135198135199,
-            "out_index": 0.9603729603729604,
-            "in_index": 1.0396270396270397
+            "abs": 50,
+            "out_perc": 0.570868,
+            "in_perc": 0.429132,
+            "out_index": 0.816721,
+            "in_index": 1.059051
           }
         }
       ]
     },
     {
-      "from": 1,
+      "from": 0,
       "to": 4,
-      "churn": [
+      "tabledata": [
         {
-          "in": {
-            "abs": 303,
-            "switch_perc": 0.558129216958467,
-            "other_perc": 0.44187078304153304,
-            "switch_index": 1.0891441784864357,
-            "other_index": 0.8622752157924417
-          },
-          "out": {
-            "abs": 248,
-            "switch_perc": 0.47354733716013964,
-            "other_perc": 0.5264526628398605,
-            "switch_index": 0.8593567405019662,
-            "other_index": 0.9553651955467574
-          },
-          "net": {
-            "abs": 102,
-            "perc": 0.18149466192170818,
-            "index": 1.1181946750550638
-          },
-          "both": {
-            "abs": 102,
-            "out_perc": 0.4637784090909091,
-            "in_perc": 0.5362215909090909,
-            "out_index": 0.9870087684160819,
-            "in_index": 1.011515105361799
-          }
+          "item": "Store Count",
+          "index": "14402",
+          "abs": "6.5%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "13476",
+          "abs": "17.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "8",
+          "abs": "3.2%"
+        },
+        {
+          "item": "Health Score",
+          "index": "70.7",
+          "abs": "94.3%"
         }
       ],
-      "switching": [
-        {
-          "in": {
-            "abs": 303,
-            "perc": 0.17677946324387397,
-            "index": 1.0891441784864357
-          },
-          "out": {
-            "abs": 248,
-            "perc": 0.13948256467941508,
-            "index": 0.8593567405019662
-          },
-          "net": {
-            "abs": -55,
-            "perc": -0.859375,
-            "index": 5.294638083019611
-          },
-          "both": {
-            "abs": -55,
-            "out_perc": 0.4500907441016334,
-            "in_perc": 0.5499092558983666,
-            "out_index": 0.9001814882032668,
-            "in_index": 1.0998185117967332
-          }
-        }
-      ]
-    },
-    {
-      "from": 1,
-      "to": 5,
       "churn": [
         {
           "in": {
-            "abs": 354,
-            "switch_perc": 0.45748325548158403,
-            "other_perc": 0.542516744518416,
-            "switch_index": 0.4569103594889458,
-            "other_index": 0.5418373629997492
+            "abs": 296,
+            "out_perc": 0.640712,
+            "in_perc": 0.359288,
+            "out_index": 1.97082,
+            "in_index": 1.604879
           },
           "out": {
-            "abs": 426,
-            "switch_perc": 0.5182306220257752,
-            "other_perc": 0.4817693779742248,
-            "switch_index": 0.5300494679572151,
-            "other_index": 0.49275668326024824
+            "abs": 160,
+            "out_perc": 0.539785,
+            "in_perc": 0.460215,
+            "out_index": 1.214465,
+            "in_index": 1.654413
           },
           "net": {
             "abs": 136,
-            "perc": 0.24199288256227758,
-            "index": 0.5353541248884696
+            "perc": 0.121683,
+            "index": 2.795163
           },
           "both": {
             "abs": 136,
-            "out_perc": 0.46834264432029793,
-            "in_perc": 0.5316573556797021,
-            "out_index": 0.9967223301175653,
-            "in_index": 1.0029052452643639
+            "out_perc": 0.448263,
+            "in_perc": 0.551737,
+            "out_index": 0.839104,
+            "in_index": 1.104782
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 354,
-            "perc": 0.20653442240373393,
-            "index": 0.4569103594889458
+            "abs": 111,
+            "perc": 0.416886,
+            "index": 1.694615
           },
           "out": {
-            "abs": 426,
-            "perc": 0.23959505061867264,
-            "index": 0.5300494679572151
+            "abs": 116,
+            "perc": 0.599674,
+            "index": 1.121324
           },
           "net": {
-            "abs": 72,
-            "perc": 1.125,
-            "index": 2.4888062166230505
+            "abs": 5,
+            "perc": 0.298015,
+            "index": 2.631891
           },
           "both": {
-            "abs": 72,
-            "out_perc": 0.5461538461538461,
-            "in_perc": 0.45384615384615384,
-            "out_index": 1.0923076923076922,
-            "in_index": 0.9076923076923077
+            "abs": 5,
+            "out_perc": 0.452434,
+            "in_perc": 0.547566,
+            "out_index": 1.14793,
+            "in_index": 1.106809
           }
         }
       ]
     },
-    {
-      "from": 1,
-      "to": 6,
-      "churn": [
-        {
-          "in": {
-            "abs": 50,
-            "switch_perc": 0.5858903116694852,
-            "other_perc": 0.41410968833051465,
-            "switch_index": 1.4093574851831208,
-            "other_index": 0.9961396823108741
-          },
-          "out": {
-            "abs": 46,
-            "switch_perc": 0.4886942518158215,
-            "other_perc": 0.5113057481841785,
-            "switch_index": 1.2499368004699436,
-            "other_index": 1.3077703872565416
-          },
-          "net": {
-            "abs": 0,
-            "perc": 0.0,
-            "index": 0.0
-          },
-          "both": {
-            "abs": 0,
-            "out_perc": 0.5,
-            "in_perc": 0.5,
-            "out_index": 1.0640952112785935,
-            "in_index": 0.943187594933386
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 50,
-            "perc": 0.029171528588098017,
-            "index": 1.4093574851831208
-          },
-          "out": {
-            "abs": 46,
-            "perc": 0.025871766029246346,
-            "index": 1.2499368004699436
-          },
-          "net": {
-            "abs": -4,
-            "perc": -0.0625,
-            "index": 3.0195484120048364
-          },
-          "both": {
-            "abs": -4,
-            "out_perc": 0.4791666666666667,
-            "in_perc": 0.5208333333333334,
-            "out_index": 0.9583333333333334,
-            "in_index": 1.0416666666666667
-          }
-        }
-      ]
-    },
-    {
-      "from": 1,
-      "to": 7,
-      "churn": [
-        {
-          "in": {
-            "abs": 268,
-            "switch_perc": 0.48805781132126985,
-            "other_perc": 0.51194218867873,
-            "switch_index": 1.9827102300008694,
-            "other_index": 2.0797393077563013
-          },
-          "out": {
-            "abs": 276,
-            "switch_perc": 0.4810806074372645,
-            "other_perc": 0.5189193925627354,
-            "switch_index": 1.9683965554226854,
-            "other_index": 2.1232182903895622
-          },
-          "net": {
-            "abs": 83,
-            "perc": 0.14768683274021352,
-            "index": 1.8727381071093623
-          },
-          "both": {
-            "abs": 83,
-            "out_perc": 0.4726072607260726,
-            "in_perc": 0.5273927392739274,
-            "out_index": 1.0057982459082153,
-            "in_index": 0.9948605786822117
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 268,
-            "perc": 0.15635939323220535,
-            "index": 1.9827102300008694
-          },
-          "out": {
-            "abs": 276,
-            "perc": 0.15523059617547805,
-            "index": 1.9683965554226854
-          },
-          "net": {
-            "abs": 8,
-            "perc": 0.125,
-            "index": 1.5850584581256952
-          },
-          "both": {
-            "abs": 8,
-            "out_perc": 0.5073529411764706,
-            "in_perc": 0.49264705882352944,
-            "out_index": 1.0147058823529411,
-            "in_index": 0.9852941176470589
-          }
-        }
-      ]
-    },
-    {
-      "from": 1,
-      "to": 8,
-      "churn": [
-        {
-          "in": {
-            "abs": 15,
-            "switch_perc": 0.44456275172445714,
-            "other_perc": 0.5554372482755429,
-            "switch_index": 0.5980283389708505,
-            "other_index": 0.7471773415570411
-          },
-          "out": {
-            "abs": 14,
-            "switch_perc": 0.3745654692931634,
-            "other_perc": 0.6254345307068366,
-            "switch_index": 0.538068542255138,
-            "other_index": 0.8984454622806209
-          },
-          "net": {
-            "abs": 2,
-            "perc": 0.0035587188612099642,
-            "index": 0.24318400308328297
-          },
-          "both": {
-            "abs": 2,
-            "out_perc": 0.4897959183673469,
-            "in_perc": 0.5102040816326531,
-            "out_index": 1.0423789824769896,
-            "in_index": 0.962436321360598
-          }
-        }
-      ],
-      "switching": [
-        {
-          "in": {
-            "abs": 15,
-            "perc": 0.008751458576429404,
-            "index": 0.5980283389708505
-          },
-          "out": {
-            "abs": 14,
-            "perc": 0.007874015748031496,
-            "index": 0.538068542255138
-          },
-          "net": {
-            "abs": -1,
-            "perc": -0.015625,
-            "index": 1.0677297635375393
-          },
-          "both": {
-            "abs": -1,
-            "out_perc": 0.4827586206896552,
-            "in_perc": 0.5172413793103449,
-            "out_index": 0.9655172413793104,
-            "in_index": 1.0344827586206897
-          }
-        }
-      ]
-    },
-
     {
       "from": 6,
-      "to": 10,
+      "to": 3,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "35491",
+          "abs": "5.1%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "11913",
+          "abs": "17.6%"
+        },
+        {
+          "item": "Market Share",
+          "index": "2.5",
+          "abs": "7.5%"
+        },
+        {
+          "item": "Health Score",
+          "index": "76.4",
+          "abs": "76.8%"
+        }
+      ],
       "churn": [
         {
           "in": {
-            "abs": 233,
-            "switch_perc": 0.5158029382793279,
-            "other_perc": 0.4841970617206721,
-            "switch_index": 2.0070197296867,
-            "other_index": 1.884039395299941
+            "abs": 113,
+            "out_perc": 0.357363,
+            "in_perc": 0.642637,
+            "out_index": 1.09099,
+            "in_index": 1.895665
           },
           "out": {
-            "abs": 209,
-            "switch_perc": 0.5011367507997969,
-            "other_perc": 0.49886324920020303,
-            "switch_index": 1.8921802850537945,
-            "other_index": 1.8835960515129013
+            "abs": 118,
+            "out_perc": 0.350221,
+            "in_perc": 0.649779,
+            "out_index": 1.245827,
+            "in_index": 1.807993
           },
           "net": {
-            "abs": 148,
-            "perc": 0.09866666666666667,
-            "index": 2.012555543762288
+            "abs": 5,
+            "perc": 0.101803,
+            "index": 3.426857
           },
           "both": {
-            "abs": 148,
-            "out_perc": 0.43823038397328884,
-            "in_perc": 0.5617696160267112,
-            "out_index": 0.932637706045512,
-            "in_index": 1.059708266093771
+            "abs": 5,
+            "out_perc": 0.370897,
+            "in_perc": 0.629103,
+            "out_index": 1.050242,
+            "in_index": 1.004584
           }
         }
       ],
       "switching": [
         {
           "in": {
-            "abs": 233,
-            "perc": 0.09839527027027027,
-            "index": 2.0070197296867
+            "abs": 126,
+            "perc": 0.558252,
+            "index": 1.466359
           },
           "out": {
-            "abs": 209,
-            "perc": 0.09276520195295164,
-            "index": 1.8921802850537945
+            "abs": 142,
+            "perc": 0.453401,
+            "index": 1.010322
           },
           "net": {
-            "abs": -24,
-            "perc": 0.20869565217391303,
-            "index": 4.256874240625286
+            "abs": 16,
+            "perc": 0.21359,
+            "index": 3.238765
           },
           "both": {
-            "abs": -24,
-            "out_perc": 0.47285067873303166,
-            "in_perc": 0.5271493212669683,
-            "out_index": 0.9457013574660633,
-            "in_index": 1.0542986425339367
+            "abs": 16,
+            "out_perc": 0.652937,
+            "in_perc": 0.347063,
+            "out_index": 0.897808,
+            "in_index": 0.89247
+          }
+        }
+      ]
+    },
+    {
+      "from": 9,
+      "to": 10,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "18151",
+          "abs": "2.3%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "16705",
+          "abs": "15%"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.1",
+          "abs": "9.9%"
+        },
+        {
+          "item": "Health Score",
+          "index": "80.7",
+          "abs": "71.2%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 186,
+            "out_perc": 0.410386,
+            "in_perc": 0.589614,
+            "out_index": 1.489205,
+            "in_index": 1.273927
+          },
+          "out": {
+            "abs": 289,
+            "out_perc": 0.447076,
+            "in_perc": 0.552924,
+            "out_index": 1.265982,
+            "in_index": 1.159061
+          },
+          "net": {
+            "abs": 103,
+            "perc": 0.162756,
+            "index": 3.324022
+          },
+          "both": {
+            "abs": 103,
+            "out_perc": 0.425669,
+            "in_perc": 0.574331,
+            "out_index": 1.181354,
+            "in_index": 1.057351
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 272,
+            "perc": 0.282377,
+            "index": 1.180457
+          },
+          "out": {
+            "abs": 156,
+            "perc": 0.294798,
+            "index": 1.509808
+          },
+          "net": {
+            "abs": 116,
+            "perc": 0.131518,
+            "index": 2.26125
+          },
+          "both": {
+            "abs": 116,
+            "out_perc": 0.585514,
+            "in_perc": 0.414486,
+            "out_index": 1.177891,
+            "in_index": 1.014542
+          }
+        }
+      ]
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "13818",
+          "abs": "6.7%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "12262",
+          "abs": "16.8%"
+        },
+        {
+          "item": "Market Share",
+          "index": "1.1",
+          "abs": "7.6%"
+        },
+        {
+          "item": "Health Score",
+          "index": "75",
+          "abs": "87%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 206,
+            "out_perc": 0.624867,
+            "in_perc": 0.375133,
+            "out_index": 1.476494,
+            "in_index": 1.820582
+          },
+          "out": {
+            "abs": 274,
+            "out_perc": 0.30207,
+            "in_perc": 0.69793,
+            "out_index": 1.425822,
+            "in_index": 1.345301
+          },
+          "net": {
+            "abs": 68,
+            "perc": 0.298392,
+            "index": 2.211969
+          },
+          "both": {
+            "abs": 68,
+            "out_perc": 0.460111,
+            "in_perc": 0.539889,
+            "out_index": 0.925591,
+            "in_index": 0.90323
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 219,
+            "perc": 0.218341,
+            "index": 1.530321
+          },
+          "out": {
+            "abs": 118,
+            "perc": 0.440443,
+            "index": 1.50217
+          },
+          "net": {
+            "abs": 101,
+            "perc": 0.124118,
+            "index": 2.940504
+          },
+          "both": {
+            "abs": 101,
+            "out_perc": 0.448989,
+            "in_perc": 0.551011,
+            "out_index": 1.031801,
+            "in_index": 1.023096
           }
         }
       ]
