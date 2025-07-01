@@ -22,7 +22,7 @@ interface NavFlowTypesProps {
   }[]
   focusBubbleId?: number | null;
   isMarketView?: boolean;
-  flowOption?: 'churn' | 'switching' | 'affinity';
+  flowOption?: 'churn' | 'switching';
 }
 
 const defaultItems = [

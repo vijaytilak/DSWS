@@ -131,11 +131,11 @@ export function getBubbleTooltip(bubble: Bubble): string {
  * @param target - Target bubble
  * @param flowDirection - Direction of the flow ('inFlow', 'outFlow', 'netFlow', 'inbound', 'outbound', 'both')
  * @param centreFlow - Whether the flow is centered
- * @param flowOption - Type of flow metric ('churn', 'switching', 'affinity')
+ * @param flowOption - Type of flow metric ('churn', 'switching')
  * @param isMarketView - Whether the view is market view
  * @returns Formatted tooltip content string
  */
-export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' | 'affinity' = 'churn', isMarketView: boolean = false): string {
+export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' = 'churn', isMarketView: boolean = false): string {
   // Use Markets/Brands for view as requested
   const view = isMarketView ? 'Markets' : 'Brands';
   

@@ -24,11 +24,6 @@ export interface MarketFlow {
     out: number;
     net: number;
   };
-  affinity: {
-    in: number;
-    out: number;
-    net: number;
-  };
   tabledata?: TableDataItem[];
 }
 
@@ -116,7 +111,6 @@ export interface Flow {
   sizePercent_absolute_netFlow?: number;
   churn?: ChurnFlow[];
   switching?: ChurnFlow[];
-  affinity?: ChurnFlow[];
   bidirectional_inPerc?: number;
   bidirectional_outPerc?: number;
   bidirectional_inIndex?: number;

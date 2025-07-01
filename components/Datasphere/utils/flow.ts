@@ -5,7 +5,6 @@ interface MarketFlow {
   itemID: number;
   churn: { in: number; out: number; net: number; both: number; };
   switching: { in: number; out: number; net: number; both: number; };
-  affinity: { in: number; out: number; net: number; both: number; };
 }
 
 interface ChurnFlowData {
@@ -71,7 +70,6 @@ interface LocalBrandFlow {
   interaction: number;
   churn: ChurnFlowData[];
   switching: SwitchingFlowData[];
-  affinity: ChurnFlowData[];
 }
 
 type FlowDirection = "inFlow" | "outFlow";
@@ -83,7 +81,7 @@ export function prepareFlowData(
   threshold: number,
   focusBubbleId: number | null,
   isMarketView: boolean = false,
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
+  flowOption: 'churn' | 'switching' = 'churn'
 ): Flow[] {
   const bidirectional = isBidirectionalFlowType(
     flowType, 
@@ -154,7 +152,7 @@ export function prepareFlowData(
     // For Brands view, use the original brand flows
     const brandFlowsWithNulls = data.flows_brands.map((flow) => {
       const brandFlow = flow as unknown as LocalBrandFlow;
-      // Since churn, switching, and affinity are arrays, we need to access the first element
+      // Since churn and switching are arrays, we need to access the first element
       const optionDataArray = brandFlow[flowOption];
       
       // Make sure we have data for this flow option
@@ -181,10 +179,9 @@ export function prepareFlowData(
         absolute_outFlow: bidirectional ? (100 - bothValue) : outValue,
         absolute_netFlowDirection: flowDirection,
         absolute_netFlow: Math.abs(optionData.net.abs),
-        // Include the original data arrays for churn, switching, and affinity
+        // Include the original data arrays for churn and switching
         churn: brandFlow.churn,
         switching: brandFlow.switching,
-        affinity: brandFlow.affinity,
         bidirectional_inPerc: bidirectional ? inPerc : undefined,
         bidirectional_outPerc: bidirectional ? outPerc : undefined,
         bidirectional_inIndex: bidirectional ? inIndex : undefined,

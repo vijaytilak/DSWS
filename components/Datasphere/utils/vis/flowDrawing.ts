@@ -12,7 +12,7 @@ export function drawFlows(
   focusBubbleId: number | null = null,
   centreFlow: boolean = false,
   isMarketView: boolean = false,
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  flowOption: 'churn' | 'switching' = 'churn',
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
 ) {
@@ -137,7 +137,7 @@ export function drawUnidirectionalFlow(
   flowType: string,
   centreFlow: boolean = false,
   allBubbles: Bubble[],
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  flowOption: 'churn' | 'switching' = 'churn',
   isMarketView: boolean = false,
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
@@ -253,9 +253,7 @@ export function drawUnidirectionalFlow(
       : isDarkTheme
         ? '#ffffff'
         : '#000000'
-    : flowOption === 'affinity'
-      ? endBubble.color
-      : !isMarketView && flowOption === 'switching' && flowDirection === 'out'
+    : !isMarketView && flowOption === 'switching' && flowDirection === 'out'
         ? endBubble.color
         : startBubble.color;
 
@@ -294,16 +292,13 @@ export function drawUnidirectionalFlow(
     .attr('data-to-id', endBubble.id.toString())
     .datum(flow);
 
-  // Add marker for the flow (except for affinity)
-  if (flowOption !== 'affinity') {
-    const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
-    createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, 'out');
-    
-    // Always apply marker at the end of the line
-    flowLine.attr('marker-end', `url(#${markerId})`);
-  } else {
-    flowLine.attr('stroke-linecap', 'round');
-  }
+  // Add marker for the flow
+  const markerId = `${flowDirection}-${startBubble.id}-${endBubble.id}`;
+  createFlowMarker(svg, markerId, calculateMarkerSize(lineThickness), lineColor, 'out');
+  
+  // Always apply marker at the end of the line
+  flowLine.attr('marker-end', `url(#${markerId})`);
+  //flowLine.attr('stroke-linecap', 'round');
 
   // Calculate label positions along the line
   const lineAngle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
@@ -402,14 +397,13 @@ export function drawFlowLine(
   flowType: string,
   centreFlow: boolean = false,
   allBubbles: Bubble[],
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn',
+  flowOption: 'churn' | 'switching' = 'churn',
   isMarketView: boolean = false,
   onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void,
   focusedFlow: { from: number; to: number } | null = null
 ) {
   const viewType = isMarketView ? 'Markets' : 'Brands';
-  const metricType = flowOption === 'churn' ? 'Churn' : 
-                   flowOption === 'switching' ? 'Switching' : 'Affinity';
+  const metricType = flowOption === 'churn' ? 'Churn' : 'Switching';
   
   // Use the existing isBidirectionalFlowType function to correctly determine flow type
   const shouldUseBidirectional = isBidirectionalFlowType(
@@ -513,7 +507,7 @@ function calculateFlowPoints(
   flow: Flow,
   centreFlow: boolean = false,
   isMarketView: boolean = false,
-  flowOption: 'churn' | 'switching' | 'affinity' = 'churn'
+  flowOption: 'churn' | 'switching' = 'churn'
 ) {
   const angle = Math.atan2(target.y - source.y, target.x - source.x);
 
@@ -530,7 +524,7 @@ function calculateFlowPoints(
   if (isBidirectionalFlowType(
     flowType, 
     isMarketView ? 'Markets' : 'Brands', 
-    flowOption === 'churn' ? 'Churn' : flowOption === 'switching' ? 'Switching' : 'Affinity'
+    flowOption === 'churn' ? 'Churn' : 'Switching'
   )) {
     const lineThickness = calculateLineThickness(flow);
     const offsetScale = d3
@@ -585,7 +579,7 @@ export function drawBidirectionalFlowLine(
   endBubble: Bubble,
   centreFlow: boolean,
   allBubbles: Bubble[],
-  flowOption: 'churn' | 'switching' | 'affinity',
+  flowOption: 'churn' | 'switching',
   isMarketView: boolean,
   inPerc: number,
   outPerc: number,
@@ -611,11 +605,6 @@ export function drawBidirectionalFlowLine(
     // Normal color assignment
     sourceColor = startBubble.color;
     destColor = endBubble.color;
-    
-    // Special case for affinity or switching flows
-    if (flowOption === 'affinity' || (!isMarketView && flowOption === 'switching')) {
-      // Keep the colors as is - already handled by direct assignment above
-    }
   }
   console.log(`FLOW-DEBUG: bidirectional flow [${flow.from}->${flow.to}]`);
   console.log(`FLOW-DEBUG: bubble info - startBubble=${startBubble.id} (${startBubble.label}), endBubble=${endBubble.id} (${endBubble.label})`);
