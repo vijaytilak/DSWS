@@ -102,17 +102,23 @@ export class ConfigurationService {
   }
   
   /**
-   * Get flow colors
+   * Get flow colors - Note: Flow colors should be determined by rules engine
+   * based on View, Metric, FlowType, and direction
    */
   public getFlowColors() {
-    return CONFIG.colors.flow;
+    // Flow colors are determined dynamically by rules engine
+    throw new Error('Flow colors should be determined by rules engine, not hardcoded');
   }
   
   /**
    * Get bubble colors
    */
   public getBubbleColors() {
-    return CONFIG.colors.bubble;
+    return {
+      default: CONFIG.colors[8],   // Light purple
+      focused: CONFIG.colors[2],   // Deep purple  
+      related: CONFIG.colors[13]   // Medium purple
+    };
   }
   
   /**

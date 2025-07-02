@@ -139,18 +139,7 @@ export function DashboardHeader({
       // For now, we'll simulate a delay to represent the API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      console.log('API call would be made with these parameters:', {
-        firstYear: {
-          start: selection.firstYear.start.toISOString(),
-          end: selection.firstYear.end.toISOString()
-        },
-        secondYear: {
-          start: selection.secondYear.start.toISOString(),
-          end: selection.secondYear.end.toISOString()
-        },
-        market: selection.market,
-        category: selection.category
-      });
+      // API call parameters prepared
       
     } catch (error) {
       console.error('Error fetching data:', error);

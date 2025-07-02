@@ -36,13 +36,13 @@ export function prepareBubbleData(
   );
 
   // Calculate relative sizes and percentile ranks
-  const itemsWithSizes = data.itemIDs.map(item => ({
+  const itemsWithSizes = data.bubbles.map(item => ({
     ...item,
-    itemID: item.itemID
+    bubbleID: item.bubbleID
   }));
   
   const itemsWithRanks = calculatePercentRanks(
-    calculateRelativeSizePercent(itemsWithSizes, 'itemSize_absolute')
+    calculateRelativeSizePercent(itemsWithSizes, 'bubbleSize_absolute')
   );
 
   // Create bubbles for all items except center
@@ -90,17 +90,17 @@ export function prepareBubbleData(
     const fontSize = Math.max(scaledRadius * 0.8, CONFIG.bubble.minFontSize);
 
     return {
-      id: item.itemID,
-      label: formatLabel(item.itemLabel),
+      id: item.bubbleID,
+      label: formatLabel(item.bubbleLabel),
       radius: scaledRadius,
       x,
       y,
       textX,
       textY,
       angle,
-      itemSizeAbsolute: item.itemSize_absolute,
+      itemSizeAbsolute: item.bubbleSize_absolute,
       sizeRankPercentage: item.percentRank,
-      color: CONFIG.colors.palette[item.itemID % CONFIG.colors.palette.length],
+      color: CONFIG.colors[item.bubbleID % CONFIG.colors.length],
       focus: false,
       fontSize,
       outerRingRadius,
@@ -111,10 +111,7 @@ export function prepareBubbleData(
   });
 
   // Add center bubble with appropriate sizing relative to the visualization
-  const centerBubbleRadius = Math.min(
-    0.15 * positionCircleRadius,
-    CONFIG.bubble.maxCenterBubbleRadius || 50
-  );
+  const centerBubbleRadius = 0.15 * positionCircleRadius;
   
   const centerBubble: Bubble = {
     id: noOfBubbles,
@@ -128,7 +125,7 @@ export function prepareBubbleData(
     itemSizeAbsolute: 0,
     itemSizeRelative: 0,
     sizeRankPercentage: 0,
-    color: CONFIG.colors.palette[0 % CONFIG.colors.palette.length], // Use last color from config
+    color: CONFIG.colors[0 % CONFIG.colors.length], // Use first color from config
     focus: false,
     isCentre: true, // Mark as center bubble
     isSelected: false,
@@ -173,15 +170,15 @@ export function calculateBubbleLayout(
   const minRequiredRadius = minRequiredCircumference / (2 * Math.PI);
   
   // Calculate adjusted radius based on container size and minimum requirements
-  // Use a proportion of the available space to ensure bubbles aren't too close to the edge
-  const containerRadius = Math.min(centerX, centerY) * 0.85;
+  // Use 95% of available space to maximize positioning ring while keeping labels visible
+  const containerRadius = Math.min(centerX, centerY) * 1.2;
   const adjustedRadius = Math.max(
     minRequiredRadius,
-    Math.min(positionCircleRadius, containerRadius)
+    containerRadius // Use the larger container radius instead of limiting to positionCircleRadius
   );
   
-  // Calculate maximum label offset based on container size
-  const maxLabelOffset = Math.min(centerX, centerY) * 0.25;
+  // Calculate maximum label offset based on container size - increase to utilize more space
+  const maxLabelOffset = Math.min(centerX, centerY) * 0.4;
 
   return bubbles.map((bubble, index) => {
     if (index === bubbles.length - 1) {
@@ -263,7 +260,10 @@ export function initializeBubbleVisualization(
     CONFIG.bubble.minFontSize
   );
 
-  const positionCircleRadius = Math.min(width, height) / 2;
+  // Maximize positioning ring size to utilize available space
+  // Use 85% of available radius to ensure bubbles aren't too close to edges
+  // This is consistent with the containerRadius calculation in calculateBubbleLayout
+  const positionCircleRadius = Math.min(width, height) * 0.425; // 85% of half the container
 
   const bubbleData = prepareBubbleData(data, positionCircleRadius, noOfBubbles);
 

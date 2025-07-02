@@ -1,202 +1,171 @@
-# DataSphere Bubble Drawing Rules
+# DataSphere Bubble Visualization Logic
 
-This document outlines the rules and steps for drawing bubbles in the DataSphere visualization based on the reference implementation.
+This document outlines the logic behind bubble visualization in the DataSphere application, including configuration values, rules, limits, and interaction behaviors.
 
-## Data Source
-All input data should be loaded from `data/ds.json`, which contains:
-- `itemIDs`: Array of items with properties like `itemID`, `itemLabel`, `itemSize_absolute`, etc.
-- `flow_brands`: Flow data between brands
-- `flow_markets`: Flow data for markets
+## Bubble Initialization and Configuration
 
-## Bubble Sizing and Preparation
+### Core Configuration Values
 
-### 1. Bubble Radius Calculation
-- **Outer ring radius** is calculated based on available circumference space:
-  ```typescript
-  const circumference = 2 * Math.PI * positionCircleRadius;
-  const totalGapSpace = (noOfBubbles - 1) * CONFIG.bubble.minDistanceBetweenRings;
-  const availableSpace = Math.max(circumference - totalGapSpace, 0);
-  const outerRingRadius = Math.min(
-    Math.max(availableSpace / (2 * noOfBubbles), CONFIG.bubble.minBubbleRadius * 2),
-    CONFIG.bubble.maxOuterRingRadius
-  );
-  ```
+The bubble visualization uses several key configuration parameters:
 
-- **Maximum bubble radius** is derived from outer ring radius:
-  ```typescript
-  const maxBubbleRadius = Math.max(
-    outerRingRadius - CONFIG.bubble.minDistanceBetweenBubbleAndRing,
-    CONFIG.bubble.minBubbleRadius
-  );
-  ```
+- **Minimum Distance Between Rings**: `30px` - Controls minimum spacing between outer rings
+- **Minimum Distance Between Bubble and Ring**: `20px` - Specifies padding between a bubble and its outer ring
+- **Minimum Bubble Radius Percentage**: `0.2` (20%) - Smallest bubbles are at least 20% of max size
+- **Label Offset**: `20px` - Base distance of labels from bubble edges
+- **Maximum Outer Ring Radius**: `100px` - Cap for outer ring size
+- **Minimum Bubble Radius**: `6px` - Absolute minimum bubble size
+- **Minimum Font Size**: `16px` - Smallest allowed text size for labels
 
-- **Minimum bubble radius** is a percentage of the maximum:
-  ```typescript
-  const minBubbleRadius = Math.max(
-    CONFIG.bubble.minBubbleRadiusPercentage * maxBubbleRadius,
-    CONFIG.bubble.minBubbleRadius
-  );
-  ```
+### Outer Ring Configuration
 
-- **Actual bubble radius** is scaled based on percentile rank:
-  ```typescript
-  const scaledRadius = Math.max(
-    minBubbleRadius + (maxBubbleRadius - minBubbleRadius) * (item.percentRank / 100),
-    CONFIG.bubble.minBubbleRadius
-  );
-  ```
+- **Show**: `true` by default - Can be toggled
+- **Stroke Width**: `1px` - Line thickness
+- **Stroke Dasharray**: `"3,3"` - Creates dashed line appearance
+- **Opacity**: `0.3` - Subtle transparency for outer rings
 
-### 2. Center Bubble
-- Has a fixed radius (15% of position circle radius)
-- Positioned at the center coordinates (centerX, centerY)
-- Has special styling for market vs. non-market views
-- Created separately from regular bubbles:
-  ```typescript
-  const centerBubble: Bubble = {
-    id: noOfBubbles,
-    label: "Market",
-    radius: 0.15 * positionCircleRadius,
-    x: 0,
-    y: 0,
-    textX: 0,
-    textY: 0,
-    angle: 0,
-    itemSizeAbsolute: 0,
-    sizeRankPercentage: 0,
-    color: isDark ? "white" : "black",
-    focus: false,
-    fontSize: CONFIG.bubble.minFontSize * 0.7,
-    outerRingRadius: 0.15 * positionCircleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
-    totalBubbles: noOfBubbles + 1
-  };
-  ```
+## Bubble Drawing Logic Flow
 
-### 3. Bubble Layout
-- Regular bubbles are positioned on a circle with radius based on minimum required spacing
-- Positions are calculated using angle and radius from center:
-  ```typescript
-  const angle = ((2 * Math.PI * index) / noOfBubbles) - Math.PI / 2;
-  const x = centerX + adjustedRadius * Math.cos(angle);
-  const y = centerY + adjustedRadius * Math.sin(angle);
-  ```
-- Angles are distributed evenly around the circle
+### 1. Data Preparation
 
-## Bubble Appearance
+1. **Circumference Calculation**:
+   - Calculate available circumference based on visualization space
+   - Determine how much space is needed for all bubbles including gap spacing
 
-### 1. Outer Ring
-- Only shown if `CONFIG.bubble.outerRing.show` is true
-- Uses bubble color with configurable stroke width, dash array, and opacity:
-  ```typescript
-  .attr('stroke', (d) => d.color)
-  .attr('stroke-width', CONFIG.bubble.outerRing.strokeWidth)
-  .attr('stroke-dasharray', CONFIG.bubble.outerRing.strokeDasharray)
-  ```
-- Center bubble in non-market view has opacity 0:
-  ```typescript
-  .attr('opacity', (d) => {
-    if (d.id === bubbles.length - 1 && !isMarketView) {
-      return 0;
-    }
-    return CONFIG.bubble.outerRing.opacity;
-  });
-  ```
+2. **Outer Ring Sizing**:
+   - Calculate optimal outer ring size based on:
+     - Available circumference space
+     - Number of bubbles
+     - Minimum distance requirements
+     - Within configured constraints (min/max values)
 
-### 2. Main Circle
-- Regular bubbles use color from CONFIG.colors array (indexed by itemID)
-- Center bubble uses dark/light theme colors:
-  ```typescript
-  .attr('fill', (d) => {
-    if (d.id === bubbles.length - 1) {
-      return isDark ? '#1a1a1a' : '#ffffff';
-    }
-    return d.color;
-  })
-  ```
-- Focused bubble gets a stroke:
-  ```typescript
-  .attr('stroke', (d) => {
-    if (d.id === bubbles.length - 1) return isDark ? '#ffffff' : '#000000';
-    if (focusedBubbleId === d.id) return isDark ? '#ffffff' : '#000000';
-    return 'none';
-  })
-  ```
-- Center bubble in non-market view has opacity 0:
-  ```typescript
-  .attr('opacity', (d) => {
-    if (d.id === bubbles.length - 1) return isMarketView ? 1 : 0;
-    return 1;
-  })
-  ```
+3. **Bubble Radius Determination**:
+   - Max bubble radius = outer ring radius - minimum distance between bubble and ring
+   - Min bubble radius = max(configured min percentage × max radius, absolute minimum)
 
-### 3. Labels
-- Position calculated based on angle and label offset:
-  ```typescript
-  const labelOffset = Math.min(
-    bubble.radius * 3 + bubble.label.length * (baseTextSize * 0.3),
-    maxLabelOffset
-  );
-  const labelRadius = adjustedRadius + labelOffset;
-  const textX = centerX + labelRadius * Math.cos(angle);
-  const textY = centerY + labelRadius * Math.sin(angle);
-  ```
-- Font size based on bubble radius (with minimum size from config)
-- Text anchor based on angle:
-  ```typescript
-  .attr('text-anchor', (d) => {
-    if (d.id === bubbles.length - 1) return 'middle';
-    const angle = Math.atan2(d.y - centerY, d.x - centerX);
-    const degrees = (angle * 180) / Math.PI;
-    if (degrees > -45 && degrees <= 45) return 'start';
-    if (degrees > 135 || degrees <= -135) return 'end';
-    return 'middle';
-  })
-  ```
-- Multi-line formatting for words longer than 3 letters
-- Center bubble label in non-market view is transparent
+4. **Relative Size Calculation**:
+   - Convert raw data values to percentile ranks
+   - Scale bubble sizes proportionally based on percentile rank
+   - Apply min/max constraints for visual consistency
 
-## Interactivity
+### 2. Layout Calculation
 
-### 1. Click Handling
-- Regular bubbles trigger onClick callback:
-  ```typescript
-  .on('click', (event: MouseEvent, d: Bubble) => {
-    if (d.id !== bubbles.length - 1) {
-      onClick(d);
-    }
-  })
-  ```
-- Center bubble has no click action
+1. **Positioning Logic**:
+   - Regular bubbles: Positioned in a circular arrangement around the center
+   - Center bubble: Fixed at (centerX, centerY)
 
-### 2. Hover Effects
-- Regular non-focused bubbles get stroke on hover:
-  ```typescript
-  .on('mouseover', (event: MouseEvent, d: Bubble) => {
-    if (d.id !== bubbles.length - 1 && d.id !== focusedBubbleId) {
-      const target = event.currentTarget as SVGCircleElement;
-      d3.select<SVGCircleElement, Bubble>(target)
-        .attr('stroke', isDark ? '#ffffff' : '#000000')
-        .attr('stroke-width', 2)
-        .raise();
-      showTooltip(event, getBubbleTooltip(d));
-    }
-  })
-  ```
-- Tooltip shows on hover with bubble information
-- Hover effects removed on mouseout:
-  ```typescript
-  .on('mouseout', (event: MouseEvent, d: Bubble) => {
-    if (d.id !== bubbles.length - 1 && d.id !== focusedBubbleId) {
-      const target = event.currentTarget as SVGCircleElement;
-      d3.select<SVGCircleElement, Bubble>(target)
-        .attr('stroke', 'none')
-        .attr('stroke-width', 0);
-    }
-    hideTooltip();
-  });
-  ```
+2. **Space Optimization**:
+   - Calculate minimum required radius to maintain spacing constraints
+   - Adjust position circle radius based on available viewport space
+   - Ensure bubbles don't overlap by enforcing minimum distance between rings
 
-## Important Notes
-1. All bubble sizing and appearance should be configuration-driven, not hardcoded
-2. All input data should come from `data/ds.json`
-3. Bubble sizes should be scaled based on the `itemSize_absolute` values from the data
-4. Theme and view type should be determined from context/configuration, not hardcoded on bubble objects
+### 3. Bubble Scaling Rules
+
+- **Size Range**: Bubbles scale between minimum and maximum radius based on their percentile rank
+- **Size Formula**: `minRadius + (maxRadius - minRadius) * (percentRank/100)`
+- **Radius Constraints**: Regardless of calculated size, bubbles never shrink below `minBubbleRadius`
+
+## Label Positioning Logic
+
+### 1. Text Placement Strategy
+
+- **Radial Positioning**: Labels are positioned radially outward from bubbles
+- **Distance Calculation**:
+   ```
+   labelRadius = adjustedCircleRadius + 
+                 min(bubble.radius * 3 + bubble.label.length * (baseTextSize * 0.3), maxLabelOffset)
+   ```
+- **Center Alignment**: Center bubble label is always centered
+
+### 2. Text Anchor Determination
+
+- **Dynamic Anchor Point**: Determined based on angle relative to center:
+  - `start` (left-aligned): For angles between -45° and 45° (right side)
+  - `end` (right-aligned): For angles between 135° and -135° (left side) 
+  - `middle` (center-aligned): For all other angles (top and bottom)
+
+### 3. Label Formatting
+
+- **Line Breaking**: Long labels are split with newlines:
+  - Words longer than 3 letters trigger new lines when preceded by other content
+  - Multiline labels are centered vertically around anchor point
+  - Line height is calculated as `fontSize * 1.2`
+
+## Styling Logic
+
+### 1. Bubble Styling
+
+- **Color Assignment**: Colors are assigned from a predefined array in configuration
+- **Fill Color**: 
+  - Regular bubbles: From color array based on bubble ID
+  - Center bubble: Dark theme: #1a1a1a, Light theme: #ffffff
+
+- **Stroke (Border)**:
+  - Focused bubble: 4px stroke in contrasting color (white in dark mode, black in light mode)
+  - Center bubble: 2px stroke in contrasting color
+  - Regular bubbles: No stroke by default
+
+- **Opacity**:
+  - Center bubble: Visible only in market view (opacity 1), hidden otherwise (opacity 0)
+  - Regular bubbles: Always fully opaque (opacity 1)
+
+### 2. Label Styling
+
+- **Font Size**: 
+  - Regular bubbles: Maximum of (bubble radius × 0.8) or minimum font size
+  - Center bubble: 70% of the minimum font size
+
+- **Color**: 
+  - Matches the bubble color for consistent visual relationship
+  - Center bubble label is transparent when not in market view
+
+- **Weight**: Bold for all labels
+
+## Interaction Behavior
+
+### 1. Click Events
+
+- **Regular Bubbles**:
+  - Trigger focus state when clicked
+  - Click the focussed bubble to remove focus
+  - Changes visualization to show flows connected to the selected bubble
+  - Applies focused styling (4px stroke)
+
+- **Center Bubble**: 
+  - No click behavior (cursor set to 'default')
+  - Does not trigger focus state
+
+### 2. Hover Events
+
+- **Mouse Over**:
+  - Applies highlight styling (2px stroke)
+  - Displays tooltip with formatted information about the bubble
+  - Includes bubble label and size metrics
+  - Only applies to non-focused, regular bubbles
+
+- **Mouse Out**:
+  - Removes highlight styling
+  - Hides tooltip
+  - Returns bubble to default visual state
+
+### 3. Tooltip Display
+
+- **Content**: Shows formatted bubble data (e.g., visitor count)
+- **Positioning**: Appears near the cursor position
+- **Styling**: 
+  - Semi-transparent background with blur effect
+  - Themed based on light/dark mode
+  - Animates in/out with opacity transitions
+
+## Theme Adaptation
+
+- **Theme Detection**: Observes changes for theme switching
+- **Color Updates**: Dynamically updates:
+  - Bubble fill colors
+  - Stroke colors
+  - Label colors
+  - Tooltip styles
+
+- **Center Element Handling**: Special logic for center bubble during theme changes
+  - Updates center bubble fill and stroke
+  - Updates connected flow colors
+  - Updates label visibility

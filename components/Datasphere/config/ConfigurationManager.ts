@@ -64,7 +64,7 @@ export class ConfigurationManager {
         defaultOption: 'churn',
         defaultType: 'net'
       },
-      colors: CONFIG.colors.palette
+      colors: CONFIG.colors
     };
   }
   

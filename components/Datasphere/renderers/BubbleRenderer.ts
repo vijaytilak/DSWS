@@ -219,32 +219,31 @@ export class BubbleRenderer {
         const angle = Math.atan2(d.y - centerY, d.x - centerX);
         const degrees = (angle * 180) / Math.PI;
 
-        // Determine text anchor based on position around the circle
+        // Use documented angle ranges for text positioning
         // Right side: start (left-aligned), Left side: end (right-aligned)
         // Top and bottom: middle (center-aligned)
-        if (degrees > -60 && degrees <= 60) return 'start';
-        if (degrees > 120 || degrees <= -120) return 'end';
+        if (degrees > -45 && degrees <= 45) return 'start';
+        if (degrees > 135 || degrees <= -135) return 'end';
         return 'middle';
       })
       .attr('font-size', d => {
-        // Adjust font size based on bubble state and size
-        if (d.focus || d.isSelected) return d.fontSize * 1.2;
-        if (d.isCentre) return d.fontSize * 1.1;
-        return d.fontSize;
+        // Follow documented font size rules
+        if (d.isCentre) return CONFIG.bubble.minFontSize * 0.7; // 70% of minimum font size for center
+        if (d.focus || d.isSelected) return Math.max(d.radius * 0.8, CONFIG.bubble.minFontSize) * 1.2;
+        return Math.max(d.radius * 0.8, CONFIG.bubble.minFontSize); // radius × 0.8 or minimum font size
       })
-      .attr('font-weight', d => d.focus || d.isSelected ? 'bold' : 'normal')
+      .attr('font-weight', 'bold') // Bold for all labels per documentation
       .attr('dominant-baseline', 'middle')
       .attr('fill', d => {
-        // Apply appropriate text color based on bubble state and theme
-        if ((d.isCentre || d.id === bubbles.length - 1) && !isMarketView) {
+        // Apply text color per documentation rules
+        if (d.isCentre && !isMarketView) {
           return 'transparent';
         }
         if (d.focus || d.isSelected) {
           return isDarkTheme ? '#ffffff' : '#000000';
         }
-        // Use a slightly darker shade of the bubble color for better contrast
-        const color = d3.color(d.color);
-        return color ? color.darker(0.5).toString() : d.color;
+        // Use exact bubble color for consistent visual relationship
+        return d.color;
       })
       .each(function(d) {
         const lines = d.label.split('\n');
@@ -267,7 +266,7 @@ export class BubbleRenderer {
    * Clear all rendered bubbles
    */
   clear(): void {
-    this.bubbleContainer.selectAll('*').remove();
-    this.labelContainer.selectAll('*').remove();
+    this.bubbleContainer?.selectAll('*').remove();
+    this.labelContainer?.selectAll('*').remove();
   }
 }

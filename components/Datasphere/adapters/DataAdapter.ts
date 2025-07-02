@@ -122,7 +122,7 @@ export class DataAdapter {
     }
     
     if (!Array.isArray(data.itemIDs)) {
-      throw new Error('Data is missing itemIDs array');
+      throw new Error('Data is missing bubbles array');
     }
     
     if (!Array.isArray(data.flow_brands)) {
@@ -133,13 +133,13 @@ export class DataAdapter {
       throw new Error('Data is missing flow_markets array');
     }
     
-    // Validate item IDs
-    for (const item of data.itemIDs) {
-      if (typeof item.itemID !== 'number') {
-        throw new Error(`Invalid itemID in itemIDs: ${JSON.stringify(item)}`);
+    // Validate bubbles
+    for (const item of data.bubbles) {
+      if (typeof item.bubbleID !== 'number') {
+        throw new Error(`Invalid bubbleID in bubbles: ${JSON.stringify(item)}`);
       }
-      if (typeof item.itemLabel !== 'string') {
-        throw new Error(`Invalid itemLabel in itemIDs: ${JSON.stringify(item)}`);
+      if (typeof item.bubbleLabel !== 'string') {
+        throw new Error(`Invalid bubbleLabel in bubbles: ${JSON.stringify(item)}`);
       }
     }
     
@@ -152,7 +152,7 @@ export class DataAdapter {
     
     // Basic validation of market flows
     for (const flow of data.flow_markets) {
-      if (typeof flow.itemID !== 'number') {
+      if (typeof flow.bubbleID !== 'number') {
         throw new Error(`Invalid market flow: ${JSON.stringify(flow)}`);
       }
     }

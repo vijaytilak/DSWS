@@ -82,7 +82,7 @@ export default function DataSphere({
   }, [focusedFlow]);
 
   useEffect(() => {
-    if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
+    if (!svgRef.current || !data || !data.bubbles || !dimensions.width) return;
 
     // Get the VisualizationManager instance from the DI container
     const visualizationManager = container.resolve<VisualizationManager>('visualizationManager');
@@ -99,7 +99,7 @@ export default function DataSphere({
     // Calculate bubble positions and sizes
     const centerX = dimensions.width / 2;
     const centerY = dimensions.height / 2;
-    const noOfBubbles = data.itemIDs.length;
+    const noOfBubbles = data.bubbles.length;
     const isDarkTheme = resolvedTheme === 'dark';
     
     // Initialize bubble visualization using reference implementation logic

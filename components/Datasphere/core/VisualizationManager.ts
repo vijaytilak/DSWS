@@ -184,7 +184,24 @@ export class VisualizationManager {
   public render(): void {
     if (!this.svg) return;
     
-    // Clear previous rendering
+    // Complete SVG clear - remove all children to ensure clean slate
+    this.svg.selectAll('*').remove();
+    
+    // Re-initialize containers after complete clear
+    this.bubbleRenderer.initialize({
+      svg: this.svg,
+      onBubbleClick: (bubble) => this.handleBubbleClick(bubble)
+    });
+    
+    // Initialize flow renderer if it has an initialize method
+    if (typeof this.flowRenderer.initialize === 'function') {
+      this.flowRenderer.initialize({
+        svg: this.svg,
+        onFlowClick: (flow, source, target) => this.handleFlowClick(flow, source, target)
+      });
+    }
+    
+    // Clear individual renderers (this will now be redundant but keeping for consistency)
     this.bubbleRenderer.clear();
     this.flowRenderer.clear();
     
@@ -249,6 +266,19 @@ export class VisualizationManager {
     if (this.themeObserver) {
       this.themeObserver.disconnect();
     }
+    
+    // Clear all SVG content
+    if (this.svg) {
+      this.svg.selectAll('*').remove();
+    }
+    
+    // Clear renderer states
+    this.bubbleRenderer.clear();
+    this.flowRenderer.clear();
+    
+    // Reset state
+    this.bubbles = [];
+    this.flows = [];
   }
 
   /**

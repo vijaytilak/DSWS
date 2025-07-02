@@ -6,15 +6,15 @@ import { FlowData, BrandFlow } from '@/components/Datasphere/types';
  * @returns Data formatted according to the FlowData type
  */
 export function adaptFlowData(rawData: any): FlowData {
-  // Copy itemIDs and flows_markets as they are
+  // Copy bubbles and flow_markets as they are
   const adaptedData: FlowData = {
-    itemIDs: rawData.itemIDs,
-    flows_markets: rawData.flows_markets,
-    flows_brands: []
+    bubbles: rawData.bubbles,
+    flow_markets: rawData.flow_markets,
+    flow_brands: []
   };
 
-  // Transform flows_brands to match BrandFlow type if available
-  adaptedData.flows_brands = rawData.flows_brands ? rawData.flows_brands.map((flow: any): BrandFlow => {
+  // Transform flow_brands to match BrandFlow type if available
+  adaptedData.flow_brands = rawData.flow_brands ? rawData.flow_brands.map((flow: any): BrandFlow => {
     // Calculate outFlow, inFlow, and interaction from churn and switching data if available
     let outFlow = 0;
     let inFlow = 0;

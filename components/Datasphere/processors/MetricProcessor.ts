@@ -134,8 +134,8 @@ export class MetricProcessor {
    * Get center bubble ID for market flows
    */
   private getCenterBubbleId(marketData: unknown[]): number {
-    // Find the maximum itemID and add 1 for center bubble
-    const maxId = Math.max(...marketData.map(flow => flow.itemID || 0));
+    // Find the maximum bubbleID and add 1 for center bubble
+    const maxId = Math.max(...marketData.map(flow => flow.bubbleID || 0));
     return maxId + 1;
   }
 

@@ -112,8 +112,8 @@ export class DataService {
         const flowDirection = optionData.net >= 0 ? "inFlow" : "outFlow";
         
         return {
-          from: marketFlow.itemID,
-          to: this.flowData!.itemIDs.length, // Center bubble ID
+          from: marketFlow.bubbleID,
+          to: this.flowData!.bubbles.length, // Center bubble ID
           absolute_inFlow: bidirectional ? optionData.both : optionData.in,
           absolute_outFlow: bidirectional ? (100 - optionData.both) : optionData.out,
           absolute_netFlowDirection: flowDirection,
@@ -164,7 +164,7 @@ export class DataService {
     
     // Apply center flow processing if required
     if (centreFlow) {
-      flows = this.processCentreFlows(flows, this.flowData.itemIDs.length);
+      flows = this.processCentreFlows(flows, this.flowData.bubbles.length);
     }
     
     // Apply focus filter if required

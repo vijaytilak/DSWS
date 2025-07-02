@@ -194,15 +194,6 @@ export class DataPipeline<T = unknown> {
     const totalTime = executionLog.reduce((sum, stage) => sum + (stage.executionTime || 0), 0);
     const successfulStages = executionLog.filter(stage => !stage.error).length;
     
-    console.log('Pipeline Execution Summary:');
-    console.log(`Total execution time: ${totalTime.toFixed(2)}ms`);
-
-    
-    console.table(executionLog.map(stage => ({
-      Stage: stage.name,
-      'Time (ms)': stage.executionTime?.toFixed(2) || 'N/A',
-      Status: stage.error ? 'Failed' : 'Success',
-      Error: stage.error?.message || 'None'
-    })));
+    // Pipeline execution complete
   }
 }

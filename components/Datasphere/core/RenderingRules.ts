@@ -55,16 +55,17 @@ export const DEFAULT_RENDERING_RULES: RenderingRuleConfig = {
   theme: 'light',
   viewType: 'brand',
   flowColors: {
-    inflow: CONFIG.colors.flow.inflow,
-    outflow: CONFIG.colors.flow.outflow,
-    positive: CONFIG.colors.flow.positive,
-    negative: CONFIG.colors.flow.negative,
-    neutral: CONFIG.colors.flow.neutral
+    // Placeholder values - actual flow colors determined by rules engine
+    inflow: CONFIG.colors[1],    // Blue
+    outflow: CONFIG.colors[0],   // Orange
+    positive: CONFIG.colors[4],  // Green
+    negative: CONFIG.colors[5],  // Red
+    neutral: CONFIG.colors[6]    // Yellow
   },
   bubbleColors: {
-    default: CONFIG.colors.bubble.default,
-    focused: CONFIG.colors.bubble.focused,
-    related: CONFIG.colors.bubble.related
+    default: CONFIG.colors[8],   // Light purple
+    focused: CONFIG.colors[2],   // Deep purple  
+    related: CONFIG.colors[13]   // Medium purple
   },
   labelConfig: {
     fontSize: 12,

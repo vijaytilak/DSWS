@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { DashboardHeader } from "@/components/layout/header/dashboard-header";
 import sampleData from '@/data/ds.json';
+import type { FlowData } from '@/components/Datasphere/types';
 import { useCentreFlow } from './layout';
-import { adaptFlowData } from '@/utils/data-adapter';
 
 const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
   ssr: false
@@ -29,7 +29,7 @@ export default function Page() {
         <div className="h-full p-4 pt-0">
           <div className="h-full bg-muted/0 p-4">
             <DataSphere 
-              data={adaptFlowData(sampleData)}
+              data={sampleData as FlowData}
               flowType={flowType}
               centreFlow={centreFlow}
               threshold={threshold}

@@ -13,7 +13,7 @@ export interface BrandFlow {
 }
 
 export interface MarketFlow {
-  itemID: number;
+  bubbleID: number;
   churn: {
     in: number;
     out: number;
@@ -28,15 +28,15 @@ export interface MarketFlow {
 }
 
 export interface FlowData {
-  itemIDs: Array<{
-    itemID: number;
-    itemLabel: string;
-    itemSize_absolute: number;
-    itemSize_relative: number;
+  bubbles: Array<{
+    bubbleID: number;
+    bubbleLabel: string;
+    bubbleSize_absolute: number;
+    bubbleSize_relative: number;
     tabledata: TableDataItem[];
   }>;
-  flows_brands: BrandFlow[];
-  flows_markets: MarketFlow[];
+  flow_brands: BrandFlow[];
+  flow_markets: MarketFlow[];
 }
 
 export interface Bubble {

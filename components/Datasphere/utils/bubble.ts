@@ -27,13 +27,13 @@ export function prepareBubbleData(
   );
 
   // Calculate relative sizes and percentile ranks
-  const itemsWithSizes = data.itemIDs.map(item => ({
+  const itemsWithSizes = data.bubbles.map(item => ({
     ...item,
-    itemID: item.itemID
+    bubbleID: item.bubbleID
   }));
   
   const itemsWithRanks = calculatePercentRanks(
-    calculateRelativeSizePercent(itemsWithSizes, 'itemSize_absolute')
+    calculateRelativeSizePercent(itemsWithSizes, 'bubbleSize_absolute')
   );
 
   // Create bubbles for all items except center
@@ -79,17 +79,17 @@ export function prepareBubbleData(
     const fontSize = Math.max(scaledRadius * 0.8, CONFIG.bubble.minFontSize);
 
     return {
-      id: item.itemID,
-      label: formatLabel(item.itemLabel),
+      id: item.bubbleID,
+      label: formatLabel(item.bubbleLabel),
       radius: scaledRadius,
       x,
       y,
       textX,
       textY,
       angle,
-      itemSizeAbsolute: item.itemSize_absolute,
+      itemSizeAbsolute: item.bubbleSize_absolute,
       sizeRankPercentage: item.percentRank,
-      color: CONFIG.colors[item.itemID % CONFIG.colors.length],
+      color: CONFIG.colors[item.bubbleID % CONFIG.colors.length],
       focus: false,
       fontSize,
       outerRingRadius,
