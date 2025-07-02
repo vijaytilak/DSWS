@@ -49,12 +49,21 @@ export interface Bubble {
   textY: number;
   angle: number;
   itemSizeAbsolute: number;
+  itemSizeRelative?: number; // Relative size of the bubble
   sizeRankPercentage: number;
   color: string;
   focus: boolean;
+  isCentre?: boolean; // Whether this is the center bubble
+  isSelected?: boolean; // Whether this bubble is currently selected
   fontSize: number;
   outerRingRadius: number;
   totalBubbles: number; // Total number of bubbles including center
+  // Additional properties needed by rendering code
+  r?: number; // Alias for radius used in d3 simulations
+  relatedTo?: number[]; // Related bubble IDs
+  percentRank?: number; // Percentage rank for sizing
+  isMarketView?: boolean; // Whether the bubble is in market view
+  isDarkTheme?: boolean; // Whether the theme is dark
 }
 
 interface FlowDataWithPercentages {
@@ -115,4 +124,11 @@ export interface Flow {
   bidirectional_outPerc?: number;
   bidirectional_inIndex?: number;
   bidirectional_outIndex?: number;
+  displayValue?: number;
+  displayDirection?: 'from-to' | 'to-from' | 'bidirectional';
+  isBidirectional?: boolean;
+  // Additional properties needed by FlowRenderer
+  inFlow?: number;
+  outFlow?: number;
+  netFlow?: number;
 }

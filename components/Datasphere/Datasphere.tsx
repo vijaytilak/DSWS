@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
-import * as d3 from 'd3';
 import type { FlowData, Bubble, Flow } from './types';
-import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/visualization';
-import { prepareFlowData } from './utils/flow';
+import { VisualizationManager } from './core/VisualizationManager';
+import { DependencyContainer } from './core/DependencyContainer';
+import FlowManager from './services/FlowManager';
 import { useDimensions } from './hooks/useDimensions';
-import { useCentreFlow } from '@/app/dashboard/layout';
-import { useTableData } from '@/app/contexts/table-data-context';
+import { initializeBubbleVisualization } from './utils/bubble-utils';
 
 interface DataSphereProps {
   data: FlowData;
@@ -30,144 +29,175 @@ export default function DataSphere({
   threshold,
   outerRingConfig,
 }: DataSphereProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const { resolvedTheme } = useTheme();
-  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
-  const { setTableData, setSelectedItemLabel } = useTableData();
+  const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [selectedItemLabel, setSelectedItemLabel] = useState<string>("");
   const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
+  const isMarketView = true; // Default market view
+  const flowOption: 'churn' | 'switching' = 'churn'; // Default flow option
+
+  // Handle bubble click
+  const handleBubbleClick = (bubble: Bubble) => {
+    // Clear focused flow when clicking a bubble
+    setFocusedFlow(null);
+    
+    const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
+    setFocusBubbleId(newFocusId);
+
+    // If toggling off (deselecting), reset the table data
+    if (newFocusId === null) {
+      setTableData([]);
+      setSelectedItemLabel("");
+      return;
+    }
+
+    // Otherwise, update table data for the clicked bubble
+    const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
+    if (bubbleData && bubbleData.tabledata) {
+      setTableData(bubbleData.tabledata);
+      setSelectedItemLabel(bubbleData.itemLabel);
+    }
+  };
+
+  // Handle flow click
+  const handleFlowClick = (flow: Flow) => {
+    // Check if we're toggling this flow off (clicking the same flow again)
+    const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
+    
+    // Set focused flow state
+    setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
+    
+    // If toggling off (deselecting), reset the table data
+    if (isToggleOff) {
+      setTableData([]);
+      setSelectedItemLabel("");
+      return;
+    }
+    
+    // Find the flow data
+    if (isMarketView) {
+      const marketFlows = data.flows_markets;
+      if (!marketFlows) return;
+      
+      const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
+      
+      if (selectedFlow?.tabledata) {
+        setTableData(selectedFlow.tabledata);
+        const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+        const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
+        setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
+      }
+    } else {
+      const brandFlows = data.flows_brands;
+      if (!brandFlows) return;
+      
+      const selectedFlow = brandFlows.find(f => 
+        (f.from === flow.from && f.to === flow.to) || 
+        (f.from === flow.to && f.to === flow.from)
+      );
+
+      if (selectedFlow?.tabledata) {
+        setTableData(selectedFlow.tabledata);
+        const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
+        const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
+        setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
 
-    const svg = d3.select(svgRef.current);
-    svg.attr("width", "100%")
-      .attr("height", "100%")
-      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
-      .attr("preserveAspectRatio", "xMidYMid meet");
-
-    // Clear previous content
-    svg.selectAll("*").remove();
-
-    // Initialize visualization with minimum constraints
-    const centerX = dimensions.width / 2;
-    const centerY = dimensions.height / 2;
-    const noOfBubbles = Object.keys(data.itemIDs).length;
+    // Get the VisualizationManager instance from the DI container
+    const container = DependencyContainer.getInstance();
+    const visualizationManager = container.resolve<VisualizationManager>('visualizationManager');
+    
+    // Initialize the visualization manager if needed
+    visualizationManager.initialize({
+      svgElement: svgRef.current,
+      width: dimensions.width,
+      height: dimensions.height,
+      onBubbleClick: handleBubbleClick,
+      onFlowClick: handleFlowClick
+    });
     
     // Calculate bubble positions and sizes
-    const { bubbles: initialBubbles } = initializeBubbleVisualization(
+    const centerX = dimensions.width / 2;
+    const centerY = dimensions.height / 2;
+    const noOfBubbles = data.itemIDs.length;
+    const isDarkTheme = resolvedTheme === 'dark';
+    
+    // Initialize bubble visualization using reference implementation logic
+    const { bubbles } = initializeBubbleVisualization(
       data,
       dimensions.width,
       dimensions.height,
       noOfBubbles,
       centerX,
-      centerY
-    );
-
-    // Draw bubbles
-    const handleBubbleClick = (bubble: Bubble) => {
-      if (bubble.id === initialBubbles.length) return; // Ignore center bubble click
-      
-      // Clear focused flow when clicking a bubble
-      setFocusedFlow(null);
-      
-      const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
-      setFocusBubbleId(newFocusId);
-
-      // If toggling off (deselecting), reset the table data
-      if (newFocusId === null) {
-        setTableData([]);
-        setSelectedItemLabel("");
-        return;
-      }
-
-      // Otherwise, update table data for the clicked bubble
-      const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
-      if (bubbleData && bubbleData.tabledata) {
-        setTableData(bubbleData.tabledata);
-        setSelectedItemLabel(bubbleData.itemLabel);
-      }
-    };
-
-    // Handle flow click
-    const handleFlowClick = (flow: Flow) => {
-      // Check if we're toggling this flow off (clicking the same flow again)
-      const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
-      
-      // Set focused flow state
-      setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
-      
-      // If toggling off (deselecting), reset the table data
-      if (isToggleOff) {
-        setTableData([]);
-        setSelectedItemLabel("");
-        return;
-      }
-      
-      // Find the flow data
-      if (isMarketView) {
-        const marketFlows = data.flows_markets;
-        const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
-        
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          setSelectedItemLabel(`Market: ${sourceBubble?.itemLabel || 'Unknown'}`);
-        }
-      } else {
-        const brandFlows = data.flows_brands;
-        const selectedFlow = brandFlows.find(f => 
-          (f.from === flow.from && f.to === flow.to) || 
-          (f.from === flow.to && f.to === flow.from)
-        );
-
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
-          setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
-        }
-      }
-    };
-
-    if (outerRingConfig) {
-      drawBubbles(
-        svg,
-        initialBubbles,
-        resolvedTheme === 'dark',
-        isMarketView,
-        centerX,
-        centerY,
-        focusBubbleId,
-        handleBubbleClick,
-        outerRingConfig
-      );
-    } else {
-      drawBubbles(
-        svg,
-        initialBubbles,
-        resolvedTheme === 'dark',
-        isMarketView,
-        centerX,
-        centerY,
-        focusBubbleId,
-        handleBubbleClick
-      );
-    }
-
-    const initialFlows = prepareFlowData(
-      data, 
-      flowType, 
-      centreFlow, 
-      threshold, 
-      focusBubbleId,
-      isMarketView,
-      flowOption
+      centerY,
+      isMarketView
     );
     
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
+    // Update focus state for bubbles and set center bubble properties
+    const updatedBubbles = bubbles.map(bubble => ({
+      ...bubble,
+      focus: bubble.id === focusBubbleId,
+      isCentre: bubble.id === noOfBubbles, // Set center bubble flag
+      isSelected: bubble.id === focusBubbleId,
+      isMarketView,
+      isDarkTheme
+    }));
+
+    // Prepare flows using FlowManager service
+    const flowManager = FlowManager.getInstance();
+    
+    // Process flows using FlowManager service
+    flowManager.processFlows(
+      data,
+      flowType,
+      flowOption,
+      threshold,
+      focusBubbleId,
+      centreFlow
+    ).then(flows => {
+      // When flows are ready, update the visualization
+    
+      // Update the visualization with the flows and bubbles
+      visualizationManager.update(
+        updatedBubbles,
+        flows,
+        flowType,
+        focusBubbleId,
+        centreFlow,
+        isMarketView,
+        flowOption,
+        focusedFlow
+      );
+    }).catch(error => {
+      console.error('Error processing flows:', error);
+    });
+
+    // Cleanup when component unmounts
+    return () => {
+      visualizationManager.cleanup();
+    };
+  }, [
+    data, 
+    flowType, 
+    centreFlow, 
+    threshold, 
+    focusBubbleId, 
+    focusedFlow, 
+    dimensions, 
+    isMarketView, 
+    flowOption, 
+    resolvedTheme, 
+    outerRingConfig
+  ]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

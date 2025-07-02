@@ -4,6 +4,7 @@ import type { FlowData, Bubble } from '../../types';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip } from '../tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from '../bubble';
 import VisualizationManager from './VisualizationManager';
+import ViewManager from '../../services/ViewManager';
 
 export function initializeBubbleVisualization(
   data: FlowData,
@@ -41,7 +42,7 @@ export function drawBubbles(
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   bubbles: Bubble[],
   isDark: boolean,
-  isMarketView: boolean,
+  isMarketView: boolean, // Parameter kept for backward compatibility
   centerX: number,
   centerY: number,
   focusedBubbleId: number | null,

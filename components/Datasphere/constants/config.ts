@@ -10,6 +10,7 @@ export const CONFIG = {
     minBubbleRadiusPercentage: 0.2,
     labelOffset: 20,
     maxOuterRingRadius: 100,
+    maxCenterBubbleRadius: 50,
     minBubbleRadius: 6,
     minFontSize: 16,
     outerRing: {
@@ -25,10 +26,27 @@ export const CONFIG = {
     controlsHeight: 64,
     headerHeight: 64 // Height of the dashboard header
   },
-  colors: [
-    "#FF5733", "#03a9f4", "#5733FF", "#FF33A6", "#33FF00",
-    "#FF0033", "#FFE701", "#33C866", "#d289ff", "#009688",
-    "#ff98a1", "#FF3366", "#3382FF", "#A633FF", "#FF33F0",
-    "#9DFF33", "#FF4033", "#335DFF", "#E733FF", "#FF338C"
-  ],
+  colors: {
+    // Palette for general use
+    palette: [
+      "#FF5733", "#03a9f4", "#5733FF", "#FF33A6", "#33FF00",
+      "#FF0033", "#FFE701", "#33C866", "#d289ff", "#009688",
+      "#ff98a1", "#FF3366", "#3382FF", "#A633FF", "#FF33F0",
+      "#9DFF33", "#FF4033", "#335DFF", "#E733FF", "#FF338C"
+    ],
+    // Flow colors
+    flow: {
+      inflow: "#03a9f4",    // Blue
+      outflow: "#FF5733",   // Orange
+      positive: "#33FF00",  // Green
+      negative: "#FF0033",  // Red
+      neutral: "#FFE701"    // Yellow
+    },
+    // Bubble colors
+    bubble: {
+      default: "#d289ff",   // Light purple
+      focused: "#5733FF",   // Deep purple
+      related: "#A633FF"    // Medium purple
+    }
+  }
 };

@@ -13,8 +13,8 @@ export function adaptFlowData(rawData: any): FlowData {
     flows_brands: []
   };
 
-  // Transform flows_brands to match BrandFlow type
-  adaptedData.flows_brands = rawData.flows_brands.map((flow: any): BrandFlow => {
+  // Transform flows_brands to match BrandFlow type if available
+  adaptedData.flows_brands = rawData.flows_brands ? rawData.flows_brands.map((flow: any): BrandFlow => {
     // Calculate outFlow, inFlow, and interaction from churn and switching data if available
     let outFlow = 0;
     let inFlow = 0;
@@ -57,7 +57,7 @@ export function adaptFlowData(rawData: any): FlowData {
       churn: flow.churn,
       switching: flow.switching
     } as BrandFlow;
-  });
+  }) : [];
 
   return adaptedData;
 }

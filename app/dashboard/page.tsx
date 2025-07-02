@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { DashboardHeader } from "@/components/layout/header/dashboard-header";
-import sampleData from '@/data/sample.json';
+import sampleData from '@/data/ds.json';
 import { useCentreFlow } from './layout';
 import { adaptFlowData } from '@/utils/data-adapter';
 
