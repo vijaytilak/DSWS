@@ -1,6 +1,5 @@
-import { FlowData, Flow, Bubble } from '../types';
+import { FlowData, Flow } from '../types';
 import { ConfigurationService } from './ConfigurationService';
-import { FlowIntegrationProcessor } from '../processors/FlowIntegrationProcessor';
 import { isBidirectionalFlowType } from '../utils/flowTypeUtils';
 import { FlowType, MetricType } from '../config/ViewConfigurations';
 import ViewManager from './ViewManager';

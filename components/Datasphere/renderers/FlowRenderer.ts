@@ -32,10 +32,14 @@ export class FlowRenderer {
   private onFlowClick?: (flow: Flow, source: Bubble, target: Bubble) => void;
   private eventManager: EventManager;
   
-  constructor(renderingRules: RenderingRules) {
+  constructor(
+    renderingRules: RenderingRules,
+    arrowFactory: ArrowFactory,
+    eventManager: EventManager
+  ) {
     this.renderingRules = renderingRules;
-    this.arrowFactory = new ArrowFactory();
-    this.eventManager = EventManager.getInstance();
+    this.arrowFactory = arrowFactory;
+    this.eventManager = eventManager;
   }
   
   /**

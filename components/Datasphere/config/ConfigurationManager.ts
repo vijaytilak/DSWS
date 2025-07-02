@@ -26,6 +26,10 @@ export interface ApplicationConfig {
     centerX: number;
     centerY: number;
   };
+  flow: {
+    defaultOption: 'churn' | 'switching';
+    defaultType: string;
+  };
   colors: string[];
 }
 
@@ -55,6 +59,10 @@ export class ConfigurationManager {
         positionCircleRadius: 300, // Default value
         centerX: 400, // Default value
         centerY: 300  // Default value
+      },
+      flow: {
+        defaultOption: 'churn',
+        defaultType: 'net'
       },
       colors: CONFIG.colors.palette
     };
@@ -101,28 +109,28 @@ export class ConfigurationManager {
   /**
    * Get bubble configuration
    */
-  getBubbleConfig(): any {
+  getBubbleConfig(): Record<string, unknown> {
     return this.config.bubble;
   }
   
   /**
    * Update bubble configuration
    */
-  updateBubbleConfig(config: Partial<any>): void {
+  updateBubbleConfig(config: Partial<Record<string, unknown>>): void {
     this.config.bubble = { ...this.config.bubble, ...config };
   }
   
   /**
    * Get layout configuration
    */
-  getLayoutConfig(): any {
+  getLayoutConfig(): Record<string, unknown> {
     return this.config.layout;
   }
   
   /**
    * Update layout configuration
    */
-  updateLayoutConfig(config: Partial<any>): void {
+  updateLayoutConfig(config: Partial<Record<string, unknown>>): void {
     this.config.layout = { ...this.config.layout, ...config };
   }
   
@@ -138,6 +146,32 @@ export class ConfigurationManager {
    */
   updateColors(colors: string[]): void {
     this.config.colors = [...colors];
+  }
+  
+  /**
+   * Get default flow option
+   */
+  getFlowOption(): 'churn' | 'switching' {
+    return this.config.flow.defaultOption;
+  }
+  
+  /**
+   * Get default flow type
+   */
+  getFlowType(): string {
+    return this.config.flow.defaultType;
+  }
+  
+  /**
+   * Update flow configuration
+   */
+  updateFlowConfig(option?: 'churn' | 'switching', type?: string): void {
+    if (option) {
+      this.config.flow.defaultOption = option;
+    }
+    if (type) {
+      this.config.flow.defaultType = type;
+    }
   }
   
   /**

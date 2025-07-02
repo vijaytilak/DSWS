@@ -1,198 +1,252 @@
 # DataSphere Component Blueprint
 
 ## Overview
-This document provides a comprehensive guide to the DataSphere component structure, designed to help AI agents and developers understand the codebase organization and identify opportunities for optimization. It documents file structures, key variables, and potential areas for improvement.
+This document provides a comprehensive guide to the DataSphere component structure, designed to help AI agents and developers understand the codebase organization. The component uses modern architectural patterns including dependency injection, service layers, and modular design.
 
 ## Directory Structure
 
 ```
 components/Datasphere/
-├── Datasphere.tsx            # Main component entry point
+├── Datasphere.tsx            # Main React component (uses DI pattern)
 ├── types.ts                  # Core type definitions
-├── __tests__/                # Test files
-├── adapters/                 # Data adapter layer
-├── arrows/                   # Arrow visualization components
+├── __tests__/                # Test files for all components
+├── adapters/                 # Data transformation layer
+│   ├── DataAdapter.ts        # Main data loading/transformation
+│   └── FlowAdapter.ts        # Flow-specific transformations
+├── arrows/                   # Arrow visualization system
+│   ├── ArrowBase.ts          # Abstract base class
+│   ├── ArrowFactory.ts       # Factory for arrow creation
+│   ├── BidirectionalArrow.ts # Two-way arrows
+│   └── UnidirectionalArrow.ts# One-way arrows
 ├── components/               # UI components
-├── config/                   # Configuration definitions
+│   └── Controls.tsx          # Visualization controls
+├── config/                   # Configuration system
+│   ├── ArrowTypes.ts         # Arrow type definitions
+│   ├── ConfigurationManager.ts # Central config manager
+│   ├── FlowTypes.ts          # Flow type definitions
+│   └── ViewConfigurations.ts # View-specific configs
 ├── constants/                # Constants and hardcoded values
-├── core/                     # Core visualization logic
-├── examples/                 # Example implementations
+│   ├── config.ts             # Global CONFIG object
+│   └── flowTypes.ts          # Flow type constants
+├── core/                     # Core architecture
+│   ├── DataPipeline.ts       # Generic pipeline infrastructure
+│   ├── DataProcessor.ts      # Main data processing pipeline
+│   ├── DependencyContainer.ts# Dependency injection container
+│   ├── FlowRenderer.ts       # Flow visualization logic
+│   ├── RenderingRules.ts     # Visual styling rules
+│   ├── VisualizationManager.ts # Central coordinator (DI version)
+│   └── VisualizationState.ts # State management
 ├── hooks/                    # React hooks
-├── processors/               # Data processing logic
+│   └── useDimensions.ts      # Window/container dimensions
+├── processors/               # Specialized data processors
+│   ├── FilterProcessor.ts    # Data filtering logic
+│   ├── FlowIntegrationProcessor.ts # Flow integration
+│   ├── FlowProcessor.ts      # Flow-specific processing
+│   └── MetricProcessor.ts    # Metric calculations
 ├── renderers/                # Rendering components
-├── utils/                    # Utility functions
+│   ├── BubbleRenderer.ts     # Bubble visualization
+│   ├── FlowRenderer.ts       # Flow line rendering
+│   ├── InteractionManager.ts # User interaction handling
+│   └── TooltipManager.ts     # Tooltip management
+├── services/                 # Service layer
+│   ├── ArrowStyleManager.ts  # Arrow styling service
+│   ├── ConfigurationService.ts # Config access service
+│   ├── DataService.ts        # Data access service
+│   ├── EventManager.ts       # Event handling service
+│   ├── FlowManager.ts        # Flow data management
+│   ├── ThemeManager.ts       # Theme detection/management
+│   └── ViewManager.ts        # View state management
+├── tests/                    # Integration tests
+│   └── VisualizationManagerTest.tsx
+└── utils/                    # Utility functions
+    ├── bubble-utils.ts       # Bubble calculations
+    ├── bubble.ts             # Bubble utilities
+    ├── calculations.ts       # Mathematical utilities
+    ├── flowTypeUtils.ts      # Flow type helpers
+    ├── format.ts             # Data formatting
+    ├── time-selector.tsx     # Time selection component
+    ├── tooltip.ts            # Tooltip utilities
+    └── vis/                  # Visualization utilities
+        └── bubbleDrawing.ts  # Bubble drawing utilities
 ```
+
+## Quick Reference for AI Agents
+
+### When Making Edits, Look Here:
+
+| **Task** | **Primary Files** | **Supporting Files** |
+|----------|-------------------|---------------------|
+| **View Logic** | `services/ViewManager.ts` | `Datasphere.tsx` (service integration) |
+| **Theme Changes** | `services/ThemeManager.ts` | All components (theme integration) |
+| **Flow Processing** | `services/FlowManager.ts`, `core/DataProcessor.ts` | `processors/FlowProcessor.ts` |
+| **Arrow Styling** | `services/ArrowStyleManager.ts` | `arrows/ArrowBase.ts`, `arrows/ArrowFactory.ts` |
+| **Configuration** | `config/ConfigurationManager.ts` | `config/ViewConfigurations.ts`, `core/RenderingRules.ts` |
+| **Event Handling** | `services/EventManager.ts` | `renderers/InteractionManager.ts` |
+| **Data Loading** | `adapters/DataAdapter.ts` | `services/DataService.ts` |
+| **Rendering Rules** | `core/RenderingRules.ts` | `config/ViewConfigurations.ts` |
+| **Tooltip Management** | `renderers/TooltipManager.ts` | `utils/tooltip.ts` |
+| **DI Configuration** | `core/DependencyContainer.ts` | `Datasphere.tsx` (main setup) |
+
+## Architectural Patterns
+
+### Dependency Injection Pattern
+- **DependencyContainer.ts**: Full DI container with automatic dependency resolution
+- **Service registration**: All services registered in container during initialization
+- **Constructor injection**: Components receive dependencies through constructors
+- **Service location**: Clean separation of concerns through service layer
+
+### Service Layer Architecture
+- **ViewManager**: Centralized view state management (market/brand views)
+- **ThemeManager**: Automatic theme detection with MutationObserver
+- **FlowManager**: Flow data processing and filtering logic
+- **EventManager**: Centralized event handling and delegation
+- **ConfigurationManager**: Unified configuration access
+
+### Factory Pattern
+- **ArrowFactory**: Creates different arrow types based on configuration
+- **ArrowBase**: Abstract base class with proper inheritance hierarchy
+- **Type-safe creation**: Proper typing for bidirectional/unidirectional arrows
+
+### Pipeline Pattern
+- **DataPipeline**: Generic chainable pipeline infrastructure
+- **DataProcessor**: Main processing pipeline with async support
+- **Modular processing**: Separate processors for different data types
 
 ## Key Components & Purpose
 
 ### Entry Point
-- **Datasphere.tsx**: Main React component that orchestrates the data visualization, manages state, and connects the various parts of the system.
+- **Datasphere.tsx**: Main React component using dependency injection
+  - Uses `DependencyContainer.getInstance()` for service management
+  - Manages React state and coordinates visualization lifecycle
+  - Integrates with service layer for view state and configuration
+
+### Core Infrastructure
+- **DependencyContainer.ts**: Complete DI implementation with singleton registry
+- **VisualizationManager.ts**: Central coordinator with proper DI (328 lines)
+- **DataProcessor.ts**: Pipeline-based data processing with async support
+- **DataPipeline.ts**: Generic chainable pipeline infrastructure
+- **RenderingRules.ts**: Centralized rendering configuration
 
 ### Type System
-- **types.ts**: Contains all the core type definitions including:
+- **types.ts**: Core type definitions including:
   - `FlowData`: Primary data structure for flows and items
   - `Bubble`: Data structure for bubble visualization elements
   - `Flow`: Data structure for flow connections between bubbles
-  - Supporting interfaces for flow types, metrics, and rendering
-
-### Core Classes
-- **VisualizationManager.ts**: Central coordinator for the visualization system that manages state, rendering, and interactions.
-- **DependencyContainer.ts**: Implements dependency injection for loosely coupled components.
-- **RenderingRules.ts**: Contains logic for appearance rules, styles, and visual decisions.
-- **DataProcessor.ts**: Processes raw data into visualization-ready format.
-- **FlowRenderer.ts**: Handles flow visualization between bubbles.
+  - `ViewId`, `FlowType`, `MetricType`: Proper typing for configuration system
+  - Supporting interfaces for rendering and interaction
 
 ### Arrow System
-- **ArrowBase.ts**: Abstract base class for arrow visualization.
-- **ArrowFactory.ts**: Factory pattern implementation for creating different arrow types.
-- **UnidirectionalArrow.ts**: Implementation of one-way arrows.
-- **BidirectionalArrow.ts**: Implementation of bidirectional arrows.
+- **ArrowBase.ts**: Abstract base class with standardized interface
+- **ArrowFactory.ts**: Factory pattern for type-safe arrow creation
+- **UnidirectionalArrow.ts**: One-way arrow implementation
+- **BidirectionalArrow.ts**: Two-way arrow implementation
+- **ArrowStyleManager.ts**: Centralized styling service with theme integration
 
 ### Data Pipeline
-- **DataAdapter.ts**: Adapter for loading and transforming data from external sources.
-- **FlowAdapter.ts**: Specialized adapter for flow data transformations.
-- **FlowIntegrationProcessor.ts**: Processes flow data for visualization.
+- **DataAdapter.ts**: Main data loading and transformation
+- **FlowAdapter.ts**: Flow-specific data transformations
+- **DataProcessor.ts**: Pipeline-based processing with async support
+- **FlowIntegrationProcessor.ts**: Flow integration logic
+- **FilterProcessor.ts**: Data filtering operations
+- **MetricProcessor.ts**: Metric calculations and aggregations
 
-### Renderers
-- **BubbleRenderer.ts**: Handles rendering of bubbles in the visualization.
-- **FlowRenderer.ts**: Renders flow connections between bubbles.
-- **TooltipManager.ts**: Manages tooltip creation and display.
-- **InteractionManager.ts**: Manages user interactions with visualization elements.
+### Rendering System
+- **BubbleRenderer.ts**: Bubble visualization with theme-aware styling
+- **FlowRenderer.ts**: Flow line rendering with optimization
+- **TooltipManager.ts**: Tooltip creation and lifecycle management
+- **InteractionManager.ts**: User interaction handling and event delegation
+- **RenderingRules.ts**: Centralized visual styling rules
 
-### Configuration
-- **ArrowTypes.ts**: Type definitions for arrows, markers, and related styles.
-- **ViewConfigurations.ts**: Configurations for different view types (market, brand).
-- **FlowTypes.ts**: Type definitions for different flow types.
-- **ConfigurationManager.ts**: Manages configuration loading and application.
+### Service Layer
+- **ViewManager.ts**: View state management (market/brand)
+- **ThemeManager.ts**: Theme detection with MutationObserver
+- **FlowManager.ts**: Flow data processing and filtering
+- **EventManager.ts**: Centralized event handling
+- **DataService.ts**: Unified data access layer
+- **ConfigurationService.ts**: Configuration access abstraction
+
+### Configuration System
+- **ConfigurationManager.ts**: Central configuration coordination
+- **ViewConfigurations.ts**: Rule-based view-specific configurations
+- **ArrowTypes.ts**: Arrow styling and behavior definitions
+- **FlowTypes.ts**: Flow type definitions and mappings
+- **RenderingRules.ts**: Visual appearance rules with priority system
 
 ### Utilities
-- **bubble-utils.ts**: Utilities for bubble calculations and layout.
-- **flowTypeUtils.ts**: Helpers for flow type decisions.
-- **flow-refactored.ts**: Refactored flow data preparation functions.
-- **tooltip.ts**: Functions for tooltip generation and display.
+- **bubble-utils.ts**: Bubble calculations and layout algorithms
+- **flowTypeUtils.ts**: Flow type decision helpers
+- **tooltip.ts**: Tooltip generation and display functions
+- **calculations.ts**: Mathematical utilities and helpers
+- **format.ts**: Data formatting utilities
 
-## Key Variables & Configuration Flags
+## State Variables & Configuration
 
-### View Type Controls
-- **isMarketView**: Boolean flag that controls whether visualization is in market view or brand view.
-- Many files directly access this variable rather than using a centralized getter.
+### View State Management
+- **ViewManager.getViewType()**: Returns `ViewId` ('market' | 'brands')
+- **ViewManager.isMarketView()**: Boolean getter for view type
+- **ConfigurationManager.getFlowOption()**: Flow option ('churn' | 'switching')
+- **ConfigurationManager.getFlowType()**: Flow direction type
 
-### Theme Controls
-- **isDarkTheme**: Boolean flag for dark/light theme.
-- **resolvedTheme**: Value from next-themes used to detect current theme.
-- Theme detection is duplicated in several places.
+### Flow Configuration
+- **flowType**: Flow direction ('in', 'out', 'net', 'both')
+- **flowOption**: Data type selection ('churn' | 'switching')
+- **focusBubbleId**: Currently selected bubble (number | null)
+- **focusedFlow**: Currently selected flow data
+- **threshold**: Flow filtering threshold value
+- **centreFlow**: Center flow visualization toggle
 
-### Flow Type & Options
-- **flowType**: String that determines flow direction ('in', 'out', 'net', 'both').
-- **flowOption**: Enum ('churn', 'switching') that selects the data type to visualize.
-- **centreFlow**: Boolean flag that enables/disables center flow visualization.
+### Theme Management
+- **ThemeManager.isDark()**: Centralized theme detection using MutationObserver
+- **ThemeManager.getThemedColor(light, dark)**: Theme-aware color selection
+- **ThemeManager.onThemeChange(callback)**: Theme change observer pattern
 
-### Visual Configuration
-- **CONFIG**: Global configuration object in constants/config.ts with visualization settings.
-- **VIEW_CONFIGURATIONS**: Map of view-specific configurations.
+### Configuration Hierarchy
+1. **ConfigurationManager**: Top-level coordination
+2. **ViewConfigurations**: View-specific rendering rules with priorities
+3. **RenderingRules**: Visual styling rules (321 lines of configuration)
+4. **CONFIG**: Global configuration constants
+5. **ArrowTypes**: Arrow-specific styling and behavior
 
-## Generic Opportunities
+## Data Flow
 
-### View Management ✅
-- ✅ Implemented `ViewManager` service (in `services/ViewManager.ts`)
-- ✅ Provides centralized `getViewType()` and `isMarketView()` methods
-- ✅ Abstracts view-specific logic into a singleton service
-- ✅ Replaces direct boolean checks with proper type-safe accessors
+### Component Initialization
+1. **Datasphere.tsx** initializes and gets services from DI container
+2. **DependencyContainer** resolves all service dependencies
+3. **Services** are injected into renderers and processors
+4. **VisualizationManager** coordinates the visualization pipeline
 
-### Theme Management ✅
-- ✅ Implemented `ThemeManager` service (in `services/ThemeManager.ts`)
-- ✅ Provides centralized theme state management
-- ✅ Includes theme change detection and notification system
-- ✅ Offers helper methods like `getThemedColor(light, dark)` for theme-aware styling
+### Data Processing Pipeline
+1. **DataAdapter** loads and transforms raw data
+2. **FlowAdapter** processes flow-specific transformations
+3. **DataProcessor** runs pipeline with specialized processors
+4. **FlowManager** filters and processes flow data
+5. **Renderers** visualize the processed data
 
-### Configuration Access ✅
-- ✅ Implemented `ConfigurationService` (in `services/ConfigurationService.ts`)
-- ✅ Provides unified access to all configuration settings
-- ✅ Centralizes view-specific config access
-- ✅ Organizes configs by domain (flow, bubble, visualization)
+### Event Flow
+1. **EventManager** centralizes all event handling
+2. **InteractionManager** processes user interactions
+3. **Services** update state based on events
+4. **VisualizationManager** triggers re-renders as needed
 
-### Data Access ✅
-- ✅ Implemented `DataService` (in `services/DataService.ts`)
-- ✅ Provides consistent access to processed flow data
-- ✅ Abstracts data source specifics behind a unified API
-- ✅ Consolidates flow data processing logic in one place
+### Configuration Access
+1. **ConfigurationManager** provides unified configuration access
+2. **ViewConfigurations** supplies view-specific settings
+3. **RenderingRules** defines visual styling rules
+4. **Services** use configuration for behavior customization
 
-## Redundant Logic
+## Performance Considerations
 
-### Tooltip Creation ✅
-- ✅ Consolidated tooltip logic into a singleton `TooltipManager` service
-- ✅ Refactored `tooltip.ts` to use `TooltipManager` for all tooltip operations
-- ✅ Implemented theme-aware styling through `ThemeManager` integration
-- ✅ Added configuration options and robust fallback handling
+### Optimized Patterns
+- **Pipeline-based data processing** with async support
+- **Event delegation** through EventManager
+- **Theme-aware rendering** with observer pattern
+- **Configuration-driven** rendering rules
+- **Memoized calculations** in utility functions
 
-### Flow Data Processing ✅
-- ✅ Implemented `FlowManager` service (in `services/FlowManager.ts`)
-- ✅ Centralized flow data processing logic in one place
-- ✅ Standardized flow direction and value calculation
-- ✅ Provides consistent filtering for focus bubble and threshold
+### Memory Management
+- **Service singletons** reduce object creation
+- **Event cleanup** in component unmount
+- **Observer disconnection** in theme manager
+- **Pipeline reuse** for data processing
 
-### Theme Handling ✅
-- ✅ Unified theme handling through ThemeManager service
-- ✅ Replaced direct DOM class inspection with ThemeManager.isDark()
-- ✅ Implemented theme change observer pattern via ThemeManager.onThemeChange()
-- ✅ Consolidated theme-dependent styling with ThemeManager.getThemedColor()
-
-### Arrow Style Handling ✅
-- ✅ Implemented `ArrowStyleManager` service (in `services/ArrowStyleManager.ts`)
-- ✅ Standardized stroke/strokeWidth conventions across all arrow components
-- ✅ Centralized style conversion and application
-- ✅ Integrated with ThemeManager for theme-aware arrow styling
-
-### Event Handling
-- Mouse event handling follows similar patterns across components but with minor inconsistencies.
-- Event delegation is not consistently implemented.
-
-## Improvement Suggestions
-
-1. **Unified View System**
-   - Create a `ViewManager` class that provides centralized view state.
-   - Replace all direct `isMarketView` checks with `viewManager.getViewType()`.
-
-2. **Theme Service**
-   - Implement a `ThemeService` that handles all theme-related logic.
-   - Use theme context instead of direct theme checks.
-
-3. **Configuration Management**
-   - Consolidate all config constants into a hierarchical configuration system.
-   - Implement a central `ConfigService` for accessing configuration values.
-
-4. **Data Pipeline Standardization**
-   - Standardize data access patterns through consistent services.
-   - Implement clear data transformation pipeline with defined stages.
-
-5. **Consistent Type Usage**
-   - Enforce strict typing throughout the codebase.
-   - Refactor interfaces to eliminate redundancy.
-
-6. **Component Composition**
-   - Break large components into smaller, focused components.
-   - Use composition over inheritance where applicable.
-
-7. **Arrow System Refactoring** ✅
-   - ✅ Standardized arrow property naming with `StandardizedArrowStyle` interface
-   - ✅ Created clear interfaces for arrow configurations
-   - ✅ Implemented centralized `ArrowStyleManager` service
-
-8. **Service Locator Pattern**
-   - Extend the dependency injection system to support more flexible service location.
-   - Register services with a service container accessible throughout the app.
-
-9. **Event Delegation**
-   - Implement a consistent event delegation model.
-   - Centralize event handling logic.
-
-10. **Documentation Improvements**
-    - Add JSDoc comments to all public methods and properties.
-    - Include examples in documentation.
-
-## Future Considerations
-
-- Consider moving to a more reactive data flow pattern (RxJS, etc.).
-- Evaluate performance optimizations for large data sets.
-- Explore WebGL rendering for improved performance with complex visualizations.
-- Consider extracting reusable visualization components into a separate library.
+---

@@ -1,119 +1,90 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import type { FlowData, Bubble, Flow } from './types';
 import { VisualizationManager } from './core/VisualizationManager';
 import { DependencyContainer } from './core/DependencyContainer';
 import FlowManager from './services/FlowManager';
+import ViewManager from './services/ViewManager';
+import { ConfigurationManager } from './config/ConfigurationManager';
 import { useDimensions } from './hooks/useDimensions';
 import { initializeBubbleVisualization } from './utils/bubble-utils';
 
+/**
+ * Props interface for the DataSphere component
+ */
 interface DataSphereProps {
+  /** Flow data containing items and relationships */
   data: FlowData;
+  /** Type of flow visualization ('in', 'out', 'net', 'both') */
   flowType: string;
+  /** Whether to show center flow visualization */
   centreFlow: boolean;
+  /** Threshold value for filtering flows */
   threshold: number;
-  outerRingConfig?: {
-    show?: boolean;
-    strokeWidth?: number;
-    strokeDasharray?: string;
-    opacity?: number;
-  };
+  /** View type override - if not provided, uses ViewManager service default */
+  isMarketView?: boolean;
+  /** Flow option override - if not provided, uses ConfigurationManager default */
+  flowOption?: 'churn' | 'switching';
 }
 
+/**
+ * DataSphere Component
+ * 
+ * A React component that renders an interactive data visualization using D3.js.
+ * Features include bubble visualization with flow connections, tooltips, and
+ * interactive controls for data exploration.
+ * 
+ * @param props - Component properties
+ * @returns JSX element containing the data sphere visualization
+ */
 export default function DataSphere({ 
   data,
   flowType,
   centreFlow,
   threshold,
-  outerRingConfig,
+  isMarketView: propIsMarketView,
+  flowOption: propFlowOption,
 }: DataSphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const { resolvedTheme } = useTheme();
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [selectedItemLabel, setSelectedItemLabel] = useState<string>("");
   const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
   const dimensions = useDimensions(containerRef);
-  const isMarketView = true; // Default market view
-  const flowOption: 'churn' | 'switching' = 'churn'; // Default flow option
+
+  // Get services from DI container
+  const container = DependencyContainer.getInstance();
+  const viewManager = container.get<ViewManager>('ViewManager');
+  const configManager = container.get<ConfigurationManager>('ConfigurationManager');
+  
+  // Use props or service defaults for view state
+  const isMarketView = propIsMarketView ?? viewManager.isMarketView();
+  const flowOption = propFlowOption ?? configManager.getFlowOption();
 
   // Handle bubble click
-  const handleBubbleClick = (bubble: Bubble) => {
+  const handleBubbleClick = useCallback((bubble: Bubble) => {
     // Clear focused flow when clicking a bubble
     setFocusedFlow(null);
     
     const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
     setFocusBubbleId(newFocusId);
-
-    // If toggling off (deselecting), reset the table data
-    if (newFocusId === null) {
-      setTableData([]);
-      setSelectedItemLabel("");
-      return;
-    }
-
-    // Otherwise, update table data for the clicked bubble
-    const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
-    if (bubbleData && bubbleData.tabledata) {
-      setTableData(bubbleData.tabledata);
-      setSelectedItemLabel(bubbleData.itemLabel);
-    }
-  };
+  }, [focusBubbleId]);
 
   // Handle flow click
-  const handleFlowClick = (flow: Flow) => {
+  const handleFlowClick = useCallback((flow: Flow) => {
     // Check if we're toggling this flow off (clicking the same flow again)
     const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
     
     // Set focused flow state
     setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
-    
-    // If toggling off (deselecting), reset the table data
-    if (isToggleOff) {
-      setTableData([]);
-      setSelectedItemLabel("");
-      return;
-    }
-    
-    // Find the flow data
-    if (isMarketView) {
-      const marketFlows = data.flows_markets;
-      if (!marketFlows) return;
-      
-      const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
-      
-      if (selectedFlow?.tabledata) {
-        setTableData(selectedFlow.tabledata);
-        const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-        const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
-        setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
-      }
-    } else {
-      const brandFlows = data.flows_brands;
-      if (!brandFlows) return;
-      
-      const selectedFlow = brandFlows.find(f => 
-        (f.from === flow.from && f.to === flow.to) || 
-        (f.from === flow.to && f.to === flow.from)
-      );
-
-      if (selectedFlow?.tabledata) {
-        setTableData(selectedFlow.tabledata);
-        const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-        const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
-        setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
-      }
-    }
-  };
+  }, [focusedFlow]);
 
   useEffect(() => {
     if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
 
     // Get the VisualizationManager instance from the DI container
-    const container = DependencyContainer.getInstance();
     const visualizationManager = container.resolve<VisualizationManager>('visualizationManager');
     
     // Initialize the visualization manager if needed
@@ -152,8 +123,8 @@ export default function DataSphere({
       isDarkTheme
     }));
 
-    // Prepare flows using FlowManager service
-    const flowManager = FlowManager.getInstance();
+    // Get FlowManager from DI container
+    const flowManager = container.get<FlowManager>('FlowManager');
     
     // Process flows using FlowManager service
     flowManager.processFlows(
@@ -195,8 +166,7 @@ export default function DataSphere({
     dimensions, 
     isMarketView, 
     flowOption, 
-    resolvedTheme, 
-    outerRingConfig
+    resolvedTheme
   ]);
 
   return (

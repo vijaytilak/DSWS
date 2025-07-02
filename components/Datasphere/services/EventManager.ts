@@ -12,7 +12,8 @@ export enum EventType {
   MOUSEOUT = 'mouseout',
   MOUSEMOVE = 'mousemove',
   DRAG = 'drag',
-  ZOOM = 'zoom'
+  ZOOM = 'zoom',
+  WINDOW_RESIZE = 'windowResize'
 }
 
 /**
@@ -59,6 +60,7 @@ export default class EventManager {
   private eventHandlers: Map<string, EventHandlerFunction[]> = new Map();
   private bubblesById: Map<number, Bubble> = new Map();
   private flowsById: Map<string, Flow> = new Map();
+  private windowEventHandlers: Map<string, EventHandlerFunction[]> = new Map();
 
   /**
    * Private constructor (singleton pattern)
@@ -141,7 +143,39 @@ export default class EventManager {
    * @param eventType Event type
    * @param handler Event handler function
    */
-  public on(target: EventTarget, eventType: EventType, handler: EventHandlerFunction): void {
+  public on(target: EventTarget, eventType: EventType, handler: EventHandlerFunction): void;
+  public on(eventType: string, handler: EventHandlerFunction): void;
+  public on(targetOrEventType: EventTarget | string, eventTypeOrHandler: EventType | EventHandlerFunction, handler?: EventHandlerFunction): void {
+    // Handle window events (string-based)
+    if (typeof targetOrEventType === 'string' && typeof eventTypeOrHandler === 'function') {
+      const eventType = targetOrEventType;
+      const eventHandler = eventTypeOrHandler;
+      
+      if (eventType === 'windowResize') {
+        if (!this.windowEventHandlers.has('resize')) {
+          this.windowEventHandlers.set('resize', []);
+          
+          // Add actual window event listener
+          const windowHandler = (event: Event) => {
+            const handlers = this.windowEventHandlers.get('resize') || [];
+            handlers.forEach(h => h(event));
+          };
+          window.addEventListener('resize', windowHandler);
+        }
+        
+        const handlers = this.windowEventHandlers.get('resize');
+        if (handlers) {
+          handlers.push(eventHandler);
+        }
+      }
+      return;
+    }
+    
+    // Handle SVG element events
+    const target = targetOrEventType as EventTarget;
+    const eventType = eventTypeOrHandler as EventType;
+    const eventHandler = handler as EventHandlerFunction;
+    
     const key = `${target}:${eventType}`;
     if (!this.eventHandlers.has(key)) {
       this.eventHandlers.set(key, []);
@@ -149,7 +183,7 @@ export default class EventManager {
     
     const handlers = this.eventHandlers.get(key);
     if (handlers) {
-      handlers.push(handler);
+      handlers.push(eventHandler);
     }
 
     // Apply event handler to elements

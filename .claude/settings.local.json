@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(npx madge:*)",
+      "Bash(grep:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)"
+    ],
+    "deny": []
+  }
+}

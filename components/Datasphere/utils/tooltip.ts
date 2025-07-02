@@ -1,9 +1,14 @@
 import type { Flow, Bubble } from '../types';
 import { TooltipManager } from '../renderers/TooltipManager';
-import ViewManager from '../services/ViewManager';
+import { DependencyContainer } from '../core/DependencyContainer';
 
-// Use the centralized TooltipManager
-const tooltipManager = TooltipManager.getInstance();
+/**
+ * Get TooltipManager from DI container
+ */
+function getTooltipManager(): TooltipManager {
+  const container = DependencyContainer.getInstance();
+  return container.get<TooltipManager>('tooltipManager');
+}
 
 /**
  * Initialize the tooltip system
@@ -12,6 +17,9 @@ const tooltipManager = TooltipManager.getInstance();
 export function createTooltip(): void {
   // Get the SVG container element
   const svgContainer = document.querySelector('svg')?.parentElement || document.body;
+  
+  // Get TooltipManager from DI container
+  const tooltipManager = getTooltipManager();
   
   // Initialize the tooltip manager with the container
   tooltipManager.initialize({
@@ -24,8 +32,6 @@ export function createTooltip(): void {
       fontSize: '12px'
     }
   });
-  
-  // Subscribe to theme changes (handled internally by TooltipManager)
 }
 
 /**
@@ -33,7 +39,7 @@ export function createTooltip(): void {
  * This is just a wrapper around TooltipManager's internal theme handling for backward compatibility
  * @param isDark Optional boolean indicating dark theme (ignored as ThemeManager handles this internally)
  */
-export function updateTooltipTheme(isDark?: boolean): void {
+export function updateTooltipTheme(_isDark?: boolean): void {
   // Theme updates are handled internally by TooltipManager through ThemeManager subscription
   // isDark parameter is ignored as ThemeManager is the source of truth
 }
@@ -44,7 +50,7 @@ export function updateTooltipTheme(isDark?: boolean): void {
  * @param content Tooltip content HTML
  */
 export function showTooltip(event: MouseEvent, content: string): void {
-  // Use TooltipManager to show tooltip
+  const tooltipManager = getTooltipManager();
   tooltipManager.showOnEvent(event, content);
 }
 
@@ -52,7 +58,7 @@ export function showTooltip(event: MouseEvent, content: string): void {
  * Hide tooltip
  */
 export function hideTooltip(): void {
-  // Use TooltipManager to hide tooltip
+  const tooltipManager = getTooltipManager();
   tooltipManager.hide();
 }
 
@@ -61,7 +67,7 @@ export function getBubbleTooltip(bubble: Bubble): string {
   if (bubble.id === bubble.totalBubbles - 1) {
     return ''; // No tooltip for center bubble
   }
-  // Use TooltipManager to generate bubble tooltip
+  const tooltipManager = getTooltipManager();
   return tooltipManager.getBubbleTooltip(bubble);
 }
 
@@ -78,7 +84,7 @@ export function getBubbleTooltip(bubble: Bubble): string {
  * @param isMarketView - Whether the view is market view (kept for backward compatibility)
  * @returns Formatted tooltip content string
  */
-export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' = 'churn', isMarketView: boolean = false): string {
-  // Use the TooltipManager to generate the tooltip content
+export function getFlowTooltip(flow: Flow, source: Bubble, target: Bubble, flowDirection: string, centreFlow: boolean = false, flowOption: 'churn' | 'switching' = 'churn', _isMarketView: boolean = false): string {
+  const tooltipManager = getTooltipManager();
   return tooltipManager.getFlowTooltip(flow, source, target, flowDirection, centreFlow, flowOption);
 }

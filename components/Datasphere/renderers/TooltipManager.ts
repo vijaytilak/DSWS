@@ -37,7 +37,6 @@ type TooltipDatum = {
  * Serves as the central tooltip system for the entire application
  */
 export class TooltipManager {
-  private static instance: TooltipManager;
   private tooltip: d3.Selection<HTMLDivElement, TooltipDatum, any, any> | null = null;
   private container: HTMLElement | null = null;
   private themeManager: ThemeManager;
@@ -51,21 +50,11 @@ export class TooltipManager {
     fontSize: '12px'
   };
   
-  private constructor() {
-    // Initialize the managers
-    this.themeManager = ThemeManager.getInstance();
-    this.viewManager = ViewManager.getInstance();
+  constructor(themeManager: ThemeManager, viewManager: ViewManager) {
+    this.themeManager = themeManager;
+    this.viewManager = viewManager;
   }
   
-  /**
-   * Get the singleton instance of TooltipManager
-   */
-  public static getInstance(): TooltipManager {
-    if (!TooltipManager.instance) {
-      TooltipManager.instance = new TooltipManager();
-    }
-    return TooltipManager.instance;
-  }
   
   /**
    * Initialize the tooltip manager with container and theme

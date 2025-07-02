@@ -1,6 +1,5 @@
 import type { FlowData, Flow } from '../types';
 import { FlowIntegrationProcessor } from '../processors/FlowIntegrationProcessor';
-import { isBidirectionalFlowType } from '../utils/flowTypeUtils';
 
 /**
  * Data adapter for loading and transforming data from ds.json

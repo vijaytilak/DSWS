@@ -11,12 +11,15 @@ import { FlowRenderer } from '../renderers/FlowRenderer';
 import { TooltipManager } from '../renderers/TooltipManager';
 import { InteractionManager } from '../renderers/InteractionManager';
 import { VisualizationManager } from './VisualizationManager';
+import ThemeManager from '../services/ThemeManager';
+import EventManager from '../services/EventManager';
+import ViewManager from '../services/ViewManager';
 
 /**
  * Interface for dependency registration
  */
 export interface DependencyRegistration {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -50,6 +53,11 @@ export class DependencyContainer {
     this.register('configManager', ConfigurationManager.getInstance());
     this.register('renderingRules', new RenderingRules());
     
+    // Service singletons for DI compatibility
+    this.register('ThemeManager', ThemeManager.getInstance());
+    this.register('EventManager', EventManager.getInstance());
+    this.register('ViewManager', ViewManager.getInstance());
+    
     // Adapters
     this.register('dataAdapter', new DataAdapter());
     this.register('flowAdapter', new FlowAdapter());
@@ -64,10 +72,22 @@ export class DependencyContainer {
     // Factories
     this.register('arrowFactory', new ArrowFactory());
     
-    // Renderers
-    this.register('bubbleRenderer', new BubbleRenderer(this.resolve('renderingRules')));
-    this.register('flowRenderer', new FlowRenderer(this.resolve('renderingRules')));
-    this.register('tooltipManager', new TooltipManager());
+    // Renderers with full DI
+    this.register('bubbleRenderer', new BubbleRenderer(
+      this.resolve('renderingRules'),
+      this.resolve('ThemeManager'),
+      this.resolve('EventManager'), 
+      this.resolve('ViewManager')
+    ));
+    this.register('flowRenderer', new FlowRenderer(
+      this.resolve('renderingRules'),
+      this.resolve('arrowFactory'),
+      this.resolve('EventManager')
+    ));
+    this.register('tooltipManager', new TooltipManager(
+      this.resolve('ThemeManager'),
+      this.resolve('ViewManager')
+    ));
     this.register('interactionManager', new InteractionManager(this.resolve('tooltipManager')));
     
     // Register VisualizationManager with all its dependencies
@@ -88,7 +108,7 @@ export class DependencyContainer {
   /**
    * Register a dependency
    */
-  register(key: string, instance: any): void {
+  register(key: string, instance: unknown): void {
     this.dependencies[key] = instance;
   }
   

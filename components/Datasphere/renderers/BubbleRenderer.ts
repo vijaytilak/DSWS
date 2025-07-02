@@ -38,11 +38,16 @@ export class BubbleRenderer {
   private lastFocusBubbleId: number | null = null;
   private lastIsMarketView: boolean = false;
 
-  constructor(renderingRules: RenderingRules) {
+  constructor(
+    renderingRules: RenderingRules,
+    themeManager: ThemeManager,
+    eventManager: EventManager,
+    viewManager: ViewManager
+  ) {
     this.renderingRules = renderingRules;
-    this.themeManager = ThemeManager.getInstance();
-    this.eventManager = EventManager.getInstance();
-    this.viewManager = ViewManager.getInstance();
+    this.themeManager = themeManager;
+    this.eventManager = eventManager;
+    this.viewManager = viewManager;
   }
 
   /**
@@ -68,8 +73,8 @@ export class BubbleRenderer {
       }
     };
 
-    // Add resize event listener with debounce
-    window.addEventListener('resize', this.debounce(resizeHandler, 250));
+    // Register resize event through EventManager
+    this.eventManager.on('windowResize', this.debounce(resizeHandler, 250));
   }
 
   /**
