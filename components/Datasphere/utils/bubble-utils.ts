@@ -13,29 +13,22 @@ export function prepareBubbleData(
   positionCircleRadius: number,
   noOfBubbles: number,
 ): { bubbles: Bubble[], maxBubbleRadius: number, minBubbleRadius: number } {
-  // Calculate the outer ring radius based on available circumference space
-  const circumference = 2 * Math.PI * positionCircleRadius;
-  const totalGapSpace = (noOfBubbles - 1) * CONFIG.bubble.minDistanceBetweenRings;
-  const availableSpace = Math.max(circumference - totalGapSpace, 0);
+  // Step 1: Calculate bubble size constraints based on positioning circle
+  const minBubbleRadius = positionCircleRadius * CONFIG.bubble.MIN_BUBBLE_SIZE_RATIO;
+  const maxBubbleRadius = positionCircleRadius * CONFIG.bubble.MAX_BUBBLE_SIZE_RATIO;
+  const minSpacing = positionCircleRadius * CONFIG.bubble.MIN_BUBBLE_SPACING_RATIO;
+  const outerRingPadding = positionCircleRadius * CONFIG.bubble.OUTER_RING_PADDING_RATIO;
   
-  // Ensure outer ring radius is proportional to position circle radius but within bounds
-  const outerRingRadius = Math.min(
-    Math.max(availableSpace / (2 * noOfBubbles), CONFIG.bubble.minBubbleRadius * 2),
-    CONFIG.bubble.maxOuterRingRadius,
-    positionCircleRadius * 0.15 // Ensure outer ring isn't too large relative to position circle
-  );
+  // Step 2: Verify spacing constraints for collision prevention
+  const availableArcLength = (2 * Math.PI * positionCircleRadius) / noOfBubbles;
+  const maxFitRadius = (availableArcLength - minSpacing) / 2;
+  const effectiveMaxBubbleRadius = Math.min(maxBubbleRadius, maxFitRadius);
+  
+  // Step 3: Ensure minimum size requirements are met
+  const finalMinBubbleRadius = Math.max(minBubbleRadius, CONFIG.bubble.minFontSize / 2);
+  const finalMaxBubbleRadius = Math.max(effectiveMaxBubbleRadius, finalMinBubbleRadius * 1.5);
 
-  // Calculate max and min bubble radius based on outer ring
-  const maxBubbleRadius = Math.max(
-    outerRingRadius - CONFIG.bubble.minDistanceBetweenBubbleAndRing,
-    CONFIG.bubble.minBubbleRadius
-  );
-  const minBubbleRadius = Math.max(
-    CONFIG.bubble.minBubbleRadiusPercentage * maxBubbleRadius,
-    CONFIG.bubble.minBubbleRadius
-  );
-
-  // Calculate relative sizes and percentile ranks
+  // Step 4: Calculate relative sizes and percentile ranks
   const itemsWithSizes = data.bubbles.map(item => ({
     ...item,
     bubbleID: item.bubbleID
@@ -45,7 +38,7 @@ export function prepareBubbleData(
     calculateRelativeSizePercent(itemsWithSizes, 'bubbleSize_absolute')
   );
 
-  // Create bubbles for all items except center
+  // Step 5: Create bubbles with optimized sizing
   const bubbles = itemsWithRanks.map((item, index) => {
     // Format label with line breaks for words longer than 3 letters
     const formatLabel = (label: string) => {
@@ -67,27 +60,23 @@ export function prepareBubbleData(
       return formattedLabel || currentLine;
     };
 
-    // Scale the bubble radius based on percentile rank with a more gradual scale
-    // Use a square root scale to make size differences more perceptible
+    // Scale the bubble radius based on data using square root scale for better perception
     const percentRankFactor = Math.sqrt(item.percentRank / 100);
-    const scaledRadius = Math.max(
-      minBubbleRadius + (maxBubbleRadius - minBubbleRadius) * percentRankFactor,
-      CONFIG.bubble.minBubbleRadius
-    );
+    const scaledRadius = finalMinBubbleRadius + (finalMaxBubbleRadius - finalMinBubbleRadius) * percentRankFactor;
     
-    // Calculate position on the circle
-    const angle = (2 * Math.PI * index) / noOfBubbles;
+    // Calculate position on the circle (starting from top, going clockwise)
+    const angle = ((2 * Math.PI * index) / noOfBubbles) - Math.PI / 2;
     const x = positionCircleRadius * Math.cos(angle);
     const y = positionCircleRadius * Math.sin(angle);
     
-    // Calculate text position with consistent radial offset from outer ring
-    const outerRingRadius = scaledRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing;
-    const labelOffset = CONFIG.bubble.labelOffset + outerRingRadius;
-    const textX = x + labelOffset * Math.cos(angle);
-    const textY = y + labelOffset * Math.sin(angle);
+    // Calculate outer ring radius
+    const outerRingRadius = scaledRadius + outerRingPadding;
+    // Temporary label positioning (will be properly calculated in calculateBubbleLayout)
+    const textX = 0;
+    const textY = 0;
     
-    // Calculate font size based on bubble radius
-    const fontSize = Math.max(scaledRadius * 0.8, CONFIG.bubble.minFontSize);
+    // Use fixed font size for bubble labels
+    const fontSize = CONFIG.bubble.BUBBLE_FONT_SIZE;
 
     return {
       id: item.bubbleID,
@@ -104,14 +93,12 @@ export function prepareBubbleData(
       focus: false,
       fontSize,
       outerRingRadius,
-      totalBubbles: noOfBubbles + 1, // Total including center bubble
-      isMarketView: ViewManager.getInstance().isMarketView(), // Use view manager
-      isDarkTheme: false, // Default value, will be updated
+      totalBubbles: noOfBubbles + 1 // Total including center bubble
     } as Bubble;
   });
 
-  // Add center bubble with appropriate sizing relative to the visualization
-  const centerBubbleRadius = 0.15 * positionCircleRadius;
+  // Add center bubble with ratio-based sizing
+  const centerBubbleRadius = positionCircleRadius * CONFIG.bubble.CENTER_BUBBLE_SIZE_RATIO;
   
   const centerBubble: Bubble = {
     id: noOfBubbles,
@@ -129,17 +116,15 @@ export function prepareBubbleData(
     focus: false,
     isCentre: true, // Mark as center bubble
     isSelected: false,
-    fontSize: Math.max(CONFIG.bubble.minFontSize * 1.2, centerBubbleRadius * 0.4),
-    outerRingRadius: centerBubbleRadius + CONFIG.bubble.minDistanceBetweenBubbleAndRing,
-    totalBubbles: noOfBubbles + 1, // Total including center bubble
-    isMarketView: true, // Default value, will be updated
-    isDarkTheme: false, // Default value, will be updated
+    fontSize: CONFIG.bubble.CENTER_BUBBLE_FONT_SIZE,
+    outerRingRadius: centerBubbleRadius + outerRingPadding,
+    totalBubbles: noOfBubbles + 1 // Total including center bubble
   };
 
   return { 
     bubbles: [...bubbles, centerBubble],
-    maxBubbleRadius,
-    minBubbleRadius
+    maxBubbleRadius: finalMaxBubbleRadius,
+    minBubbleRadius: finalMinBubbleRadius
   };
 }
 
@@ -154,31 +139,14 @@ export function calculateBubbleLayout(
   baseTextSize: number,
   isMarketView: boolean = true // Parameter kept for backward compatibility
 ): Bubble[] {
-  // Get theme state from ThemeManager
-  const themeManager = ThemeManager.getInstance();
-  const isDarkTheme = themeManager.isDark();
-  // Get ViewManager instance
-  const viewManager = ViewManager.getInstance();
-  
-  // Set view type based on isMarketView parameter for backward compatibility
-  viewManager.setViewType(isMarketView ? 'markets' : 'brands');
+  // View and theme state are now managed centrally by services
   const noOfBubbles = bubbles.length - 1; // Excluding center bubble
   
-  // Calculate the minimum radius needed to maintain minDistanceBetweenRings
-  const maxBubbleOuterRadius = Math.max(...bubbles.slice(0, -1).map(b => b.outerRingRadius));
-  const minRequiredCircumference = noOfBubbles * (2 * maxBubbleOuterRadius + CONFIG.bubble.minDistanceBetweenRings);
-  const minRequiredRadius = minRequiredCircumference / (2 * Math.PI);
+  // Use the positioning circle radius directly - it's already optimally calculated
+  const adjustedRadius = positionCircleRadius;
   
-  // Calculate adjusted radius based on container size and minimum requirements
-  // Use 95% of available space to maximize positioning ring while keeping labels visible
-  const containerRadius = Math.min(centerX, centerY) * 1.2;
-  const adjustedRadius = Math.max(
-    minRequiredRadius,
-    containerRadius // Use the larger container radius instead of limiting to positionCircleRadius
-  );
-  
-  // Calculate maximum label offset based on container size - increase to utilize more space
-  const maxLabelOffset = Math.min(centerX, centerY) * 0.4;
+  // Calculate label offset based on positioning circle
+  const maxLabelOffset = positionCircleRadius * CONFIG.bubble.LABEL_OFFSET_RATIO;
 
   return bubbles.map((bubble, index) => {
     if (index === bubbles.length - 1) {
@@ -190,8 +158,6 @@ export function calculateBubbleLayout(
         textX: centerX,
         textY: centerY,
         angle: 0,
-        isMarketView: viewManager.isMarketView(),
-        isDarkTheme,
       };
     }
 
@@ -201,23 +167,17 @@ export function calculateBubbleLayout(
     const y = centerY + adjustedRadius * Math.sin(angle);
     
     // Calculate optimal label position based on bubble size and angle
-    // For bubbles on the right side, position labels to the right
-    // For bubbles on the left side, position labels to the left
-    // This creates a more balanced visual appearance
-    const isRightSide = Math.cos(angle) >= 0;
-    const isTopHalf = Math.sin(angle) <= 0;
     
-    // Adjust label offset based on bubble size and position
-    const baseLabelOffset = bubble.radius * 1.5;
-    const labelLengthFactor = bubble.label.length * (baseTextSize * 0.15);
-    
-    const labelOffset = Math.min(
-      baseLabelOffset + labelLengthFactor,
+    // Position labels radially outward from center of visualization
+    // Calculate the minimum safe distance to prevent intersection
+    const baseLabelDistance = adjustedRadius + bubble.radius + 20; // 20px minimum clearance
+    const dynamicLabelOffset = Math.min(
+      bubble.radius * 2 + bubble.label.length * (baseTextSize * 0.2),
       maxLabelOffset
     );
     
-    // Position labels with appropriate spacing from the bubble
-    const labelRadius = adjustedRadius + labelOffset;
+    // Position labels radially from the center of the entire visualization
+    const labelRadius = baseLabelDistance + dynamicLabelOffset;
     const textX = centerX + labelRadius * Math.cos(angle);
     const textY = centerY + labelRadius * Math.sin(angle);
 
@@ -228,9 +188,7 @@ export function calculateBubbleLayout(
       textX,
       textY,
       angle,
-      fontSize: baseTextSize,
-      isMarketView,
-      isDarkTheme,
+      fontSize: CONFIG.bubble.BUBBLE_FONT_SIZE,
     };
   });
 }
@@ -247,23 +205,20 @@ export function initializeBubbleVisualization(
   centerY: number,
   isMarketView: boolean = true // Parameter kept for backward compatibility
 ): { bubbles: Bubble[]; maxBubbleRadius: number; minBubbleRadius: number } {
-  // Get theme state from ThemeManager
-  const themeManager = ThemeManager.getInstance();
-  const isDarkTheme = themeManager.isDark();
-  // Get ViewManager instance
-  const viewManager = ViewManager.getInstance();
-  
-  // Set view type based on isMarketView parameter for backward compatibility
-  viewManager.setViewType(isMarketView ? 'markets' : 'brands');
-  const baseTextSize = Math.max(
-    Math.min(centerX, centerY) * 0.035,
-    CONFIG.bubble.minFontSize
-  );
+  // View and theme state are now managed centrally by services
+  const baseTextSize = CONFIG.bubble.BUBBLE_FONT_SIZE;
 
-  // Maximize positioning ring size to utilize available space
-  // Use 85% of available radius to ensure bubbles aren't too close to edges
-  // This is consistent with the containerRadius calculation in calculateBubbleLayout
-  const positionCircleRadius = Math.min(width, height) * 0.425; // 85% of half the container
+  // Step 1: Calculate optimal positioning circle radius
+  const baseRadius = Math.min(width, height) / 2 * CONFIG.bubble.CANVAS_UTILIZATION_RATIO;
+  
+  // Step 2: Ensure circumference can accommodate all bubbles with spacing
+  const maxBubbleSize = baseRadius * CONFIG.bubble.MAX_BUBBLE_SIZE_RATIO;
+  const minSpacing = baseRadius * CONFIG.bubble.MIN_BUBBLE_SPACING_RATIO;
+  const minRequiredCircumference = noOfBubbles * (maxBubbleSize * 2 + minSpacing);
+  const minRequiredRadius = minRequiredCircumference / (2 * Math.PI);
+  
+  // Step 3: Use the larger of base radius or minimum required radius
+  const positionCircleRadius = Math.max(baseRadius, minRequiredRadius);
 
   const bubbleData = prepareBubbleData(data, positionCircleRadius, noOfBubbles);
 

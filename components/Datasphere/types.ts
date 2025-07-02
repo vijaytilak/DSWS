@@ -4,68 +4,6 @@ export interface TableDataItem {
   abs: string;
 }
 
-export interface BrandFlow {
-  from: number;
-  to: number;
-  tabledata?: TableDataItem[];
-  churn?: ChurnFlow[];
-  switching?: SwitchingFlow[];
-}
-
-export interface MarketFlow {
-  bubbleID: number;
-  churn: {
-    in: number;
-    out: number;
-    net: number;
-  };
-  switching: {
-    in: number;
-    out: number;
-    net: number;
-  };
-  tabledata?: TableDataItem[];
-}
-
-export interface FlowData {
-  bubbles: Array<{
-    bubbleID: number;
-    bubbleLabel: string;
-    bubbleSize_absolute: number;
-    bubbleSize_relative: number;
-    tabledata: TableDataItem[];
-  }>;
-  flow_brands: BrandFlow[];
-  flow_markets: MarketFlow[];
-}
-
-export interface Bubble {
-  id: number;
-  label: string;
-  radius: number;
-  x: number;
-  y: number;
-  textX: number;
-  textY: number;
-  angle: number;
-  itemSizeAbsolute: number;
-  itemSizeRelative?: number; // Relative size of the bubble
-  sizeRankPercentage: number;
-  color: string;
-  focus: boolean;
-  isCentre?: boolean; // Whether this is the center bubble
-  isSelected?: boolean; // Whether this bubble is currently selected
-  fontSize: number;
-  outerRingRadius: number;
-  totalBubbles: number; // Total number of bubbles including center
-  // Additional properties needed by rendering code
-  r?: number; // Alias for radius used in d3 simulations
-  relatedTo?: number[]; // Related bubble IDs
-  percentRank?: number; // Percentage rank for sizing
-  isMarketView?: boolean; // Whether the bubble is in market view
-  isDarkTheme?: boolean; // Whether the theme is dark
-}
-
 interface FlowDataWithPercentages {
   abs: number;
   out_perc: number;
@@ -104,6 +42,59 @@ interface SwitchingFlow {
     out_index: number;
     in_index: number;
   };
+}
+
+export interface BrandFlow {
+  from: number;
+  to: number;
+  tabledata?: TableDataItem[];
+  churn?: ChurnFlow[];
+  switching?: SwitchingFlow[];
+}
+
+export interface MarketFlow {
+  bubbleID: number;
+  churn: ChurnFlow[];     // Array of churn flow data
+  switching: SwitchingFlow[]; // Array of switching flow data  
+  tabledata?: TableDataItem[];
+}
+
+export interface FlowData {
+  bubbles: Array<{
+    bubbleID: number;
+    bubbleLabel: string;
+    bubbleSize_absolute: number;
+    bubbleSize_relative: number;
+    tabledata: TableDataItem[];
+  }>;
+  flow_brands: BrandFlow[];
+  flow_markets: MarketFlow[];
+}
+
+export interface Bubble {
+  id: number;
+  label: string;
+  radius: number;
+  x: number;
+  y: number;
+  textX: number;
+  textY: number;
+  angle: number;
+  itemSizeAbsolute: number;
+  itemSizeRelative?: number; // Relative size of the bubble
+  sizeRankPercentage: number;
+  color: string;
+  focus: boolean;
+  isCentre?: boolean; // Whether this is the center bubble
+  isSelected?: boolean; // Whether this bubble is currently selected
+  fontSize: number;
+  outerRingRadius: number;
+  totalBubbles: number; // Total number of bubbles including center
+  // Additional properties needed by rendering code
+  r?: number; // Alias for radius used in d3 simulations
+  relatedTo?: number[]; // Related bubble IDs
+  percentRank?: number; // Percentage rank for sizing
+  // Note: isMarketView and isDarkTheme removed - use ViewManager and ThemeManager services instead
 }
 
 export interface Flow {

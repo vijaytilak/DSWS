@@ -5,13 +5,21 @@ export const CONFIG = {
     parallelOffset: 5
   },
   bubble: {
-    minDistanceBetweenRings: 30,
-    minDistanceBetweenBubbleAndRing: 20,
-    minBubbleRadiusPercentage: 0.2,
-    labelOffset: 20,
-    maxOuterRingRadius: 100,
-    minBubbleRadius: 6,
-    minFontSize: 16,
+    // Ratio-based constants for adaptive sizing (max 11 bubbles)
+    CANVAS_UTILIZATION_RATIO: 1.1,      // Use 85% of available canvas space
+    MIN_BUBBLE_SPACING_RATIO: 0.08,      // Minimum space between bubbles (8% of positioning radius)
+    MIN_BUBBLE_SIZE_RATIO: 0.04,         // Minimum bubble size (4% of positioning radius)
+    MAX_BUBBLE_SIZE_RATIO: 0.15,         // Maximum bubble size (12% of positioning radius)
+    LABEL_OFFSET_RATIO: 0.15,            // Label distance from bubble center (35% of positioning radius)
+    OUTER_RING_PADDING_RATIO: 0.05,      // Padding between bubble and outer ring (2% of positioning radius)
+    CENTER_BUBBLE_SIZE_RATIO: 0.08,      // Center bubble size (8% of positioning radius)
+    
+    // Font configuration
+    BUBBLE_FONT_SIZE: 16,           // Font size for bubble labels
+    CENTER_BUBBLE_FONT_SIZE: 11.2,  // Font size for center bubble label
+    FONT_WEIGHT: 'bold',            // Font weight for all labels
+    minFontSize: 12,                // Fallback minimum font size
+    
     outerRing: {
       show: true,
       strokeWidth: 2,

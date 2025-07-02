@@ -250,3 +250,30 @@ components/Datasphere/
 - **Pipeline reuse** for data processing
 
 ---
+
+### Bubble Drawing Rules
+implemented the optimized bubble positioning logic with these key improvements:
+
+  ✅ What Changed:
+
+  1. Ratio-Based Constants: All sizing now uses meaningful percentages of the positioning circle
+  2. Optimal Positioning Circle: Automatically calculates the perfect radius for any number of bubbles (1-11)
+  3. Collision Prevention: Guarantees no overlapping bubbles with proper spacing
+  4. Adaptive Sizing: Bubbles scale appropriately regardless of count
+  5. Simplified Logic: Removed complex calculations in favor of ratio-based approach
+
+  ✅ Key Benefits:
+
+  - Consistent Appearance: DataSphere looks balanced with 3, 7, or 11 bubbles
+  - Maximum Space Utilization: Uses 85% of canvas while keeping everything visible
+  - Data-Driven Sizing: Bubble size reflects data values within optimal constraints
+  - Collision-Free: Mathematical guarantee of proper spacing
+  - Performance: Simpler calculations, faster rendering
+
+  ✅ New Logic Flow:
+
+  1. Calculate optimal positioning circle
+  2. Set bubble size constraints (4-12% of positioning radius)
+  3. Verify no collisions with available arc length
+  4. Scale bubble sizes based on data within constraints
+  5. Position labels at 25% of positioning radius from center

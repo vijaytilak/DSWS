@@ -227,12 +227,11 @@ export class BubbleRenderer {
         return 'middle';
       })
       .attr('font-size', d => {
-        // Follow documented font size rules
-        if (d.isCentre) return CONFIG.bubble.minFontSize * 0.7; // 70% of minimum font size for center
-        if (d.focus || d.isSelected) return Math.max(d.radius * 0.8, CONFIG.bubble.minFontSize) * 1.2;
-        return Math.max(d.radius * 0.8, CONFIG.bubble.minFontSize); // radius × 0.8 or minimum font size
+        // Use configured font sizes
+        if (d.isCentre) return CONFIG.bubble.CENTER_BUBBLE_FONT_SIZE;
+        return CONFIG.bubble.BUBBLE_FONT_SIZE;
       })
-      .attr('font-weight', 'bold') // Bold for all labels per documentation
+      .attr('font-weight', CONFIG.bubble.FONT_WEIGHT) // Use configured font weight
       .attr('dominant-baseline', 'middle')
       .attr('fill', d => {
         // Apply text color per documentation rules
@@ -248,7 +247,9 @@ export class BubbleRenderer {
       .each(function(d) {
         const lines = d.label.split('\n');
         const text = d3.select(this);
-        const lineHeight = d.fontSize * 1.2;
+        // Line height is calculated as fontSize * 1.2
+        const fontSize = d.isCentre ? CONFIG.bubble.CENTER_BUBBLE_FONT_SIZE : CONFIG.bubble.BUBBLE_FONT_SIZE;
+        const lineHeight = fontSize * 1.2;
         text.selectAll('*').remove();
         lines.forEach((line, i) => {
           text
