@@ -14,6 +14,7 @@ import { VisualizationManager } from './VisualizationManager';
 import ThemeManager from '../services/ThemeManager';
 import EventManager from '../services/EventManager';
 import ViewManager from '../services/ViewManager';
+import FlowManager from '../services/FlowManager';
 
 /**
  * Interface for dependency registration
@@ -57,6 +58,10 @@ export class DependencyContainer {
     this.register('ThemeManager', ThemeManager.getInstance());
     this.register('EventManager', EventManager.getInstance());
     this.register('ViewManager', ViewManager.getInstance());
+    this.register('FlowManager', FlowManager.getInstance());
+    
+    // Alternative registrations with consistent naming
+    this.register('ConfigurationManager', ConfigurationManager.getInstance());
     
     // Adapters
     this.register('dataAdapter', new DataAdapter());

@@ -7,7 +7,7 @@ import { DependencyContainer } from '../core/DependencyContainer';
  */
 function getTooltipManager(): TooltipManager {
   const container = DependencyContainer.getInstance();
-  return container.get<TooltipManager>('tooltipManager');
+  return container.resolve<TooltipManager>('tooltipManager');
 }
 
 /**

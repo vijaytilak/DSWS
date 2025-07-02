@@ -216,7 +216,7 @@ export class VisualizationManager {
   private updateThemeColors(isDarkTheme: boolean): void {
     // Update rendering rules for theme
     // Use default configuration with theme-specific overrides
-    const config = this.configManager.getConfiguration();
+    const config = this.configManager.getRenderingConfig();
     // Apply theme-specific settings if needed
     this.renderingRules.updateConfig({
       ...config,

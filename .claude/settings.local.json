@@ -7,7 +7,9 @@
       "Bash(npx madge:*)",
       "Bash(grep:*)",
       "Bash(npm run lint)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }

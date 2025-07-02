@@ -56,8 +56,8 @@ export default function DataSphere({
 
   // Get services from DI container
   const container = DependencyContainer.getInstance();
-  const viewManager = container.get<ViewManager>('ViewManager');
-  const configManager = container.get<ConfigurationManager>('ConfigurationManager');
+  const viewManager = container.resolve<ViewManager>('ViewManager');
+  const configManager = container.resolve<ConfigurationManager>('ConfigurationManager');
   
   // Use props or service defaults for view state
   const isMarketView = propIsMarketView ?? viewManager.isMarketView();
@@ -124,7 +124,7 @@ export default function DataSphere({
     }));
 
     // Get FlowManager from DI container
-    const flowManager = container.get<FlowManager>('FlowManager');
+    const flowManager = container.resolve<FlowManager>('FlowManager');
     
     // Process flows using FlowManager service
     flowManager.processFlows(
