@@ -1,10 +1,11 @@
 import * as d3 from 'd3';
-import { Bubble, Flow } from '../types';
+import { Bubble } from '../types';
+import type { Flow } from '../services/FlowFactory';
 import { RenderingRules } from './RenderingRules';
 import { BubbleRenderer } from '../renderers/BubbleRenderer';
-import { FlowRenderer } from '../renderers/FlowRenderer';
+import { ModernFlowRenderer } from '../renderers/ModernFlowRenderer';
 import { TooltipManager } from '../renderers/TooltipManager';
-import { InteractionManager } from '../renderers/InteractionManager';
+// InteractionManager removed - using EventManager directly
 import { ConfigurationManager } from '../config/ConfigurationManager';
 
 /**
@@ -33,9 +34,9 @@ export class VisualizationManager {
   
   // Injected dependencies
   private bubbleRenderer: BubbleRenderer;
-  private flowRenderer: FlowRenderer;
+  private flowRenderer: ModernFlowRenderer | null = null;
   private tooltipManager: TooltipManager;
-  private interactionManager: InteractionManager;
+  // interactionManager removed - using EventManager directly
   private configManager: ConfigurationManager;
   private renderingRules: RenderingRules;
   
@@ -59,18 +60,15 @@ export class VisualizationManager {
    */
   constructor(
     bubbleRenderer: BubbleRenderer,
-    flowRenderer: FlowRenderer,
     tooltipManager: TooltipManager,
-    interactionManager: InteractionManager,
     configManager: ConfigurationManager,
     renderingRules: RenderingRules
   ) {
     this.bubbleRenderer = bubbleRenderer;
-    this.flowRenderer = flowRenderer;
     this.tooltipManager = tooltipManager;
-    this.interactionManager = interactionManager;
     this.configManager = configManager;
     this.renderingRules = renderingRules;
+    // flowRenderer will be initialized when SVG is set
     
     // Create theme observer to handle theme changes
     this.themeObserver = new MutationObserver((mutations) => {
@@ -128,9 +126,12 @@ export class VisualizationManager {
       onBubbleClick: (bubble) => this.handleBubbleClick(bubble)
     });
     
-    this.flowRenderer.initialize({
+    // Create ModernFlowRenderer with SVG
+    this.flowRenderer = new ModernFlowRenderer({
       svg: this.svg,
-      onFlowClick: (flow, source, target) => this.handleFlowClick(flow, source, target)
+      width: this.width,
+      height: this.height,
+      onFlowClick: (flow, segment) => this.handleModernFlowClick(flow, segment)
     });
     
     this.tooltipManager.initialize({
@@ -139,11 +140,7 @@ export class VisualizationManager {
       flowOption: this.flowOption
     });
     
-    this.interactionManager.initialize({
-      svg: this.svg,
-      onBubbleClick: (bubble) => this.handleBubbleClick(bubble),
-      onFlowClick: (flow, source, target) => this.handleFlowClick(flow, source, target)
-    });
+    // interactionManager initialization removed - events handled directly by EventManager
     
     // Start observing theme changes
     this.themeObserver.observe(document.documentElement, { attributes: true });
@@ -181,6 +178,14 @@ export class VisualizationManager {
   /**
    * Render the visualization
    */
+  /**
+   * Update the internal data state
+   */
+  public updateData(bubbles: Bubble[], flows: Flow[]): void {
+    this.bubbles = bubbles;
+    this.flows = flows;
+  }
+
   public render(): void {
     if (!this.svg) return;
     
@@ -193,17 +198,13 @@ export class VisualizationManager {
       onBubbleClick: (bubble) => this.handleBubbleClick(bubble)
     });
     
-    // Initialize flow renderer if it has an initialize method
-    if (typeof this.flowRenderer.initialize === 'function') {
-      this.flowRenderer.initialize({
-        svg: this.svg,
-        onFlowClick: (flow, source, target) => this.handleFlowClick(flow, source, target)
-      });
-    }
+    // Flow renderer is already initialized in the initialize method
     
     // Clear individual renderers (this will now be redundant but keeping for consistency)
     this.bubbleRenderer.clear();
-    this.flowRenderer.clear();
+    if (this.flowRenderer) {
+      this.flowRenderer.clear();
+    }
     
     // Get the current theme
     const isDarkTheme = document.documentElement.classList.contains('dark');
@@ -219,12 +220,9 @@ export class VisualizationManager {
     // Note: Bubble labels are rendered as part of renderBubbles in the updated implementation
     
     // Render flows
-    this.flowRenderer.renderFlows(
-      this.flows,
-      this.bubbles,
-      this.flowType,
-      this.focusedFlow
-    );
+    if (this.flowRenderer) {
+      this.flowRenderer.render(this.flows);
+    }
   }
 
   /**
@@ -242,11 +240,25 @@ export class VisualizationManager {
   }
 
   /**
-   * Handle flow click event
+   * Handle flow click event from legacy renderer
    */
   private handleFlowClick(flow: Flow, source: Bubble, target: Bubble): void {
     if (this.onFlowClickCallback) {
       this.onFlowClickCallback(flow, source, target);
+    }
+  }
+
+  /**
+   * Handle flow click event from modern renderer
+   */
+  private handleModernFlowClick(flow: Flow, segment: any): void {
+    if (this.onFlowClickCallback) {
+      // Find source and target bubbles
+      const source = this.bubbles.find(b => b.id.toString() === flow.from);
+      const target = this.bubbles.find(b => b.id.toString() === flow.to);
+      if (source && target) {
+        this.onFlowClickCallback(flow, source, target);
+      }
     }
   }
 
@@ -274,7 +286,9 @@ export class VisualizationManager {
     
     // Clear renderer states
     this.bubbleRenderer.clear();
-    this.flowRenderer.clear();
+    if (this.flowRenderer) {
+      this.flowRenderer.clear();
+    }
     
     // Reset state
     this.bubbles = [];
@@ -318,11 +332,7 @@ export class VisualizationManager {
       onBubbleClick: (bubble) => this.handleBubbleClick(bubble)
     });
     
-    // Update the flow renderer with new references
-    this.flowRenderer.initialize({
-      svg: this.svg,
-      onFlowClick: (flow, source, target) => this.handleFlowClick(flow, source, target)
-    });
+    // Flow renderer doesn't need to be re-initialized
   }
 
   // Getters for state

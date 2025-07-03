@@ -1,20 +1,20 @@
 import { ArrowFactory } from '../arrows/ArrowFactory';
 import { ConfigurationManager } from '../config/ConfigurationManager';
 import { DataAdapter } from '../adapters/DataAdapter';
-import { DataProcessor } from './DataProcessor';
-import { FlowAdapter } from '../adapters/FlowAdapter';
-import { FlowIntegrationProcessor } from '../processors/FlowIntegrationProcessor';
-import { FlowProcessor } from '../processors/FlowProcessor';
+// DataProcessor and FlowIntegrationProcessor removed - using FlowDataService directly
 import { RenderingRules } from './RenderingRules';
 import { BubbleRenderer } from '../renderers/BubbleRenderer';
-import { FlowRenderer } from '../renderers/FlowRenderer';
+import { ModernFlowRenderer } from '../renderers/ModernFlowRenderer';
 import { TooltipManager } from '../renderers/TooltipManager';
-import { InteractionManager } from '../renderers/InteractionManager';
+// InteractionManager removed - using EventManager directly
 import { VisualizationManager } from './VisualizationManager';
 import ThemeManager from '../services/ThemeManager';
 import EventManager from '../services/EventManager';
 import ViewManager from '../services/ViewManager';
-import FlowManager from '../services/FlowManager';
+// FlowManager removed - using FlowDataService instead
+import FlowFactory from '../services/FlowFactory';
+import FlowSegmentGenerator from '../services/FlowSegmentGenerator';
+import FlowDataService from '../services/FlowDataService';
 
 /**
  * Interface for dependency registration
@@ -58,21 +58,24 @@ export class DependencyContainer {
     this.register('ThemeManager', ThemeManager.getInstance());
     this.register('EventManager', EventManager.getInstance());
     this.register('ViewManager', ViewManager.getInstance());
-    this.register('FlowManager', FlowManager.getInstance());
+    // FlowManager removed - using FlowDataService instead
+    
+    // New Flow system services
+    this.register('FlowFactory', FlowFactory.getInstance());
+    this.register('FlowSegmentGenerator', FlowSegmentGenerator.getInstance());
+    this.register('FlowDataService', FlowDataService.getInstance());
     
     // Alternative registrations with consistent naming
     this.register('ConfigurationManager', ConfigurationManager.getInstance());
     
     // Adapters
     this.register('dataAdapter', new DataAdapter());
-    this.register('flowAdapter', new FlowAdapter());
     
     // Processors
     const configManager = this.resolve<ConfigurationManager>('configManager');
     const defaultViewConfig = configManager.getViewConfiguration('markets');
-    this.register('dataProcessor', new DataProcessor(defaultViewConfig));
-    this.register('flowProcessor', new FlowProcessor());
-    this.register('flowIntegrationProcessor', new FlowIntegrationProcessor());
+    // dataProcessor removed - using FlowDataService directly
+    // flowIntegrationProcessor removed - using FlowDataService directly
     
     // Factories
     this.register('arrowFactory', new ArrowFactory());
@@ -84,23 +87,17 @@ export class DependencyContainer {
       this.resolve('EventManager'), 
       this.resolve('ViewManager')
     ));
-    this.register('flowRenderer', new FlowRenderer(
-      this.resolve('renderingRules'),
-      this.resolve('arrowFactory'),
-      this.resolve('EventManager')
-    ));
+    // flowRenderer removed - ModernFlowRenderer instantiated at runtime with SVG
     this.register('tooltipManager', new TooltipManager(
       this.resolve('ThemeManager'),
       this.resolve('ViewManager')
     ));
-    this.register('interactionManager', new InteractionManager(this.resolve('tooltipManager')));
+    // interactionManager removed - using EventManager directly
     
     // Register VisualizationManager with all its dependencies
     const visualizationManager = new VisualizationManager(
       this.resolve('bubbleRenderer'),
-      this.resolve('flowRenderer'),
       this.resolve('tooltipManager'),
-      this.resolve('interactionManager'),
       this.resolve('configManager'),
       this.resolve('renderingRules')
     );

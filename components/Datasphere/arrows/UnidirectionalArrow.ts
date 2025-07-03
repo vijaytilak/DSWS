@@ -1,5 +1,5 @@
 import { ArrowBase } from './ArrowBase';
-import { ArrowConfiguration, Point } from '../config/ArrowTypes';
+import { ArrowConfiguration } from '../config/ArrowTypes';
 import ArrowStyleManager, { StandardizedArrowStyle } from '../services/ArrowStyleManager';
 
 /**

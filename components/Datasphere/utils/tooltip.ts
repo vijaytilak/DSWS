@@ -1,4 +1,5 @@
-import type { Flow, Bubble } from '../types';
+import type { Bubble } from '../types';
+import type { Flow } from '../services/FlowFactory';
 import { TooltipManager } from '../renderers/TooltipManager';
 import { DependencyContainer } from '../core/DependencyContainer';
 

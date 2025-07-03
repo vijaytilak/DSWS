@@ -1,5 +1,5 @@
-import type { FlowData, Flow } from '../types';
-import { FlowIntegrationProcessor } from '../processors/FlowIntegrationProcessor';
+import type { FlowData } from '../types';
+// FlowIntegrationProcessor removed - using FlowDataService directly
 
 /**
  * Data adapter for loading and transforming data from ds.json

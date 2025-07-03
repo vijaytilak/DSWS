@@ -1,18 +1,56 @@
 # DataSphere Component Blueprint
 
 ## Overview
-This document provides a comprehensive guide to the DataSphere component structure, designed to help AI agents and developers understand the codebase organization. The component uses modern architectural patterns including dependency injection, service layers, and modular design.
+This document provides a comprehensive guide to the DataSphere component structure, designed for a **data-driven, simplified architecture**. The component uses modern architectural patterns with **Flow/FlowSegment system optimized for D3.js** and clean separation of concerns.
+
+## Current State Analysis
+
+### **Critical Issues Identified:**
+1. **Dual Interface System**: Both `LegacyFlow` and modern `Flow/FlowSegment` systems exist
+2. **Type Confusion**: `VisualizationManager` imports `Flow` but uses `LegacyFlow` interface
+3. **Unused Modern System**: FlowDataService, FlowFactory, ModernFlowRenderer implemented but not integrated
+4. **Complex Data Pipeline**: Multiple processors with overlapping responsibilities
+5. **Bridge Components**: FlowRenderer adds complexity without benefit
+
+### **Migration Priority:**
+🚨 **IMMEDIATE ACTION REQUIRED**: Complete migration to modern Flow/FlowSegment system to eliminate architectural debt.
+
+## Simplified Target Architecture
+
+### **Data Flow (After Migration)**
+```
+Raw FlowData → FlowFactory → Flow[] → FlowSegmentGenerator → FlowSegment[] → ModernFlowRenderer
+```
+
+### **Core Services (Simplified)**
+```
+Essential Services (8 total):
+├── ViewManager (View state management)
+├── ConfigurationManager (Configuration access)
+├── FlowDataService (Flow coordination)
+├── FlowFactory (Flow creation)
+├── FlowSegmentGenerator (Segment calculation)
+├── ThemeManager (Theme management)
+├── EventManager (Event handling)
+└── TooltipManager (Tooltip management)
+
+Removed Complexity:
+❌ FlowManager (replace with FlowDataService)
+❌ DataProcessor/MetricProcessor/FilterProcessor (replace with FlowFactory)
+❌ FlowIntegrationProcessor (bridge component)
+❌ FlowRenderer (bridge component)
+❌ InteractionManager (deprecated, use EventManager)
+```
 
 ## Directory Structure
 
 ```
 components/Datasphere/
-├── Datasphere.tsx            # Main React component (uses DI pattern)
-├── types.ts                  # Core type definitions
-├── __tests__/                # Test files for all components
+├── Datasphere.tsx            # Main React component (simplified DI)
+├── types.ts                  # Clean type definitions (LegacyFlow removed)
+├── __tests__/                # Test files
 ├── adapters/                 # Data transformation layer
-│   ├── DataAdapter.ts        # Main data loading/transformation
-│   └── FlowAdapter.ts        # Flow-specific transformations
+│   └── DataAdapter.ts        # Simple data loading
 ├── arrows/                   # Arrow visualization system
 │   ├── ArrowBase.ts          # Abstract base class
 │   ├── ArrowFactory.ts       # Factory for arrow creation
@@ -27,427 +65,239 @@ components/Datasphere/
 │   └── ViewConfigurations.ts # View-specific configs
 ├── constants/                # Constants and hardcoded values
 │   ├── config.ts             # Global CONFIG object
-│   └── flowTypes.ts          # Flow type constants
-├── core/                     # Core architecture
-│   ├── DataPipeline.ts       # Generic pipeline infrastructure
-│   ├── DataProcessor.ts      # Main data processing pipeline
+│   └── flowTypes.ts          # Flow type constants (deprecated)
+├── core/                     # Core architecture (simplified)
 │   ├── DependencyContainer.ts# Dependency injection container
-│   ├── FlowRenderer.ts       # Flow visualization logic
 │   ├── RenderingRules.ts     # Visual styling rules
-│   ├── VisualizationManager.ts # Central coordinator (DI version)
-│   └── VisualizationState.ts # State management
+│   └── VisualizationManager.ts # Central coordinator (modernized)
 ├── hooks/                    # React hooks
 │   └── useDimensions.ts      # Window/container dimensions
-├── processors/               # Specialized data processors
-│   ├── FilterProcessor.ts    # Data filtering logic
-│   ├── FlowIntegrationProcessor.ts # Flow integration
-│   ├── FlowProcessor.ts      # Flow-specific processing
-│   └── MetricProcessor.ts    # Metric calculations
-├── renderers/                # Rendering components
+├── renderers/                # Rendering components (simplified)
 │   ├── BubbleRenderer.ts     # Bubble visualization
-│   ├── FlowRenderer.ts       # Flow line rendering
-│   ├── InteractionManager.ts # User interaction handling
+│   ├── ModernFlowRenderer.ts # Modern D3.js flow renderer
 │   └── TooltipManager.ts     # Tooltip management
-├── services/                 # Service layer
+├── services/                 # Service layer (streamlined)
 │   ├── ArrowStyleManager.ts  # Arrow styling service
 │   ├── ConfigurationService.ts # Config access service
-│   ├── DataService.ts        # Data access service
 │   ├── EventManager.ts       # Event handling service
-│   ├── FlowManager.ts        # Flow data management
+│   ├── FlowDataService.ts    # Modern flow data coordination
+│   ├── FlowFactory.ts        # Flow and FlowSegment creation
+│   ├── FlowSegmentGenerator.ts # FlowSegment generation service
 │   ├── ThemeManager.ts       # Theme detection/management
 │   └── ViewManager.ts        # View state management
-├── tests/                    # Integration tests
-│   └── VisualizationManagerTest.tsx
-└── utils/                    # Utility functions
+└── utils/                    # Utility functions (simplified)
     ├── bubble-utils.ts       # Bubble calculations
-    ├── bubble.ts             # Bubble utilities
     ├── calculations.ts       # Mathematical utilities
     ├── flowTypeUtils.ts      # Flow type helpers
     ├── format.ts             # Data formatting
     ├── time-selector.tsx     # Time selection component
-    ├── tooltip.ts            # Tooltip utilities
     └── vis/                  # Visualization utilities
         └── bubbleDrawing.ts  # Bubble drawing utilities
 ```
 
-## Quick Reference for AI Agents
+## Modern Flow/FlowSegment System
 
-### When Making Edits, Look Here:
-
-| **Task** | **Primary Files** | **Supporting Files** |
-|----------|-------------------|---------------------|
-| **View Logic** | `services/ViewManager.ts` | `Datasphere.tsx` (service integration) |
-| **Theme Changes** | `services/ThemeManager.ts` | All components (theme integration) |
-| **Flow Processing** | `services/FlowManager.ts`, `core/DataProcessor.ts` | `processors/FlowProcessor.ts` |
-| **Arrow Styling** | `services/ArrowStyleManager.ts` | `arrows/ArrowBase.ts`, `arrows/ArrowFactory.ts` |
-| **Configuration** | `config/ConfigurationManager.ts` | `config/ViewConfigurations.ts`, `core/RenderingRules.ts` |
-| **Event Handling** | `services/EventManager.ts` | `renderers/InteractionManager.ts` |
-| **Data Loading** | `adapters/DataAdapter.ts` | `services/DataService.ts` |
-| **Rendering Rules** | `core/RenderingRules.ts` | `config/ViewConfigurations.ts` |
-| **Tooltip Management** | `renderers/TooltipManager.ts` | `utils/tooltip.ts` |
-| **DI Configuration** | `core/DependencyContainer.ts` | `Datasphere.tsx` (main setup) |
-
-## Architectural Patterns
-
-### Dependency Injection Pattern
-- **DependencyContainer.ts**: Full DI container with automatic dependency resolution
-- **Service registration**: All services registered in container during initialization
-- **Constructor injection**: Components receive dependencies through constructors
-- **Service location**: Clean separation of concerns through service layer
-
-### Service Layer Architecture
-- **ViewManager**: Centralized view state management (market/brand views)
-- **ThemeManager**: Automatic theme detection with MutationObserver
-- **FlowManager**: Flow data processing and filtering logic
-- **EventManager**: Centralized event handling and delegation
-- **ConfigurationManager**: Unified configuration access
-
-### Factory Pattern
-- **ArrowFactory**: Creates different arrow types based on configuration
-- **ArrowBase**: Abstract base class with proper inheritance hierarchy
-- **Type-safe creation**: Proper typing for bidirectional/unidirectional arrows
-
-### Pipeline Pattern
-- **DataPipeline**: Generic chainable pipeline infrastructure
-- **DataProcessor**: Main processing pipeline with async support
-- **Modular processing**: Separate processors for different data types
-
-## Key Components & Purpose
-
-### Entry Point
-- **Datasphere.tsx**: Main React component using dependency injection
-  - Uses `DependencyContainer.getInstance()` for service management
-  - Manages React state and coordinates visualization lifecycle
-  - Integrates with service layer for view state and configuration
-
-### Core Infrastructure
-- **DependencyContainer.ts**: Complete DI implementation with singleton registry
-- **VisualizationManager.ts**: Central coordinator with proper DI (328 lines)
-- **DataProcessor.ts**: Pipeline-based data processing with async support
-- **DataPipeline.ts**: Generic chainable pipeline infrastructure
-- **RenderingRules.ts**: Centralized rendering configuration
-
-### Type System
-- **types.ts**: Core type definitions including:
-  - `FlowData`: Primary data structure for flows and items
-  - `Bubble`: Data structure for bubble visualization elements
-  - `Flow`: Data structure for flow connections between bubbles
-  - `ViewId`, `FlowType`, `MetricType`: Proper typing for configuration system
-  - Supporting interfaces for rendering and interaction
-
-### Arrow System
-- **ArrowBase.ts**: Abstract base class with standardized interface
-- **ArrowFactory.ts**: Factory pattern for type-safe arrow creation
-- **UnidirectionalArrow.ts**: One-way arrow implementation
-- **BidirectionalArrow.ts**: Two-way arrow implementation
-- **ArrowStyleManager.ts**: Centralized styling service with theme integration
-
-### Data Pipeline
-- **DataAdapter.ts**: Main data loading and transformation
-- **FlowAdapter.ts**: Flow-specific data transformations
-- **DataProcessor.ts**: Pipeline-based processing with async support
-- **FlowIntegrationProcessor.ts**: Flow integration logic
-- **FilterProcessor.ts**: Data filtering operations
-- **MetricProcessor.ts**: Metric calculations and aggregations
-
-### Rendering System
-- **BubbleRenderer.ts**: Bubble visualization with theme-aware styling
-- **FlowRenderer.ts**: Flow line rendering with optimization
-- **TooltipManager.ts**: Tooltip creation and lifecycle management
-- **InteractionManager.ts**: User interaction handling and event delegation
-- **RenderingRules.ts**: Centralized visual styling rules
-
-### Service Layer
-- **ViewManager.ts**: View state management (market/brand)
-- **ThemeManager.ts**: Theme detection with MutationObserver
-- **FlowManager.ts**: Flow data processing and filtering
-- **EventManager.ts**: Centralized event handling
-- **DataService.ts**: Unified data access layer
-- **ConfigurationService.ts**: Configuration access abstraction
-
-### Configuration System
-- **ConfigurationManager.ts**: Central configuration coordination
-- **ViewConfigurations.ts**: Rule-based view-specific configurations
-- **ArrowTypes.ts**: Arrow styling and behavior definitions
-- **FlowTypes.ts**: Flow type definitions and mappings
-- **RenderingRules.ts**: Visual appearance rules with priority system
-
-### Flow Data Structure & Metrics
-
-- **View Types**: 'markets', 'brands'
-- **Metric Types**: 'churn', 'switching', 'spend'
-
-- **View Specifics**: 
-  - Metric options for Markets: ['churn', 'switching', 'spend']
-  - Metric options for Brands: ['churn', 'switching']
-
-- **FlowMetric Specifics**: 
-  - Flow options for spend: ['more', 'less']
-  - Flow options for churn/switching: ['in', 'out', 'net', 'both']
-
-
-  **FlowSegment props**: 
-  // Data properties
-  id: string;                          // Unique segment identifier
-  abs: number;                         // Absolute value for percentage ranking/thickness calculation
-  perc: number;                        // Percentage label to display at midpoint
-  index: number;                       // Index label to display near marker
-  
-  // Direction properties
-  direction: 'outgoing' | 'incoming' | 'single';  // 'single' for unidirectional flows
-  startBubble: string;                 // Bubble ID where segment starts
-  endBubble: string;                   // Bubble ID where segment ends
-  
-  // Visual properties
-  startPoint: { x: number, y: number };
-  endPoint: { x: number, y: number };
-  midPoint?: { x: number, y: number }; // For label positioning
-  
-  // Styling
-  color: string;
-  thickness: number;                   // Calculated from abs percentage ranking
-  opacity: number;                     // Default: 1
-  strokeDasharray?: string;            // For dashed lines if needed
-  
-  // Marker properties
-  marker: {
-    type: 'arrow' | 'circle' | 'none';
-    position: 'start' | 'end' | 'both' | 'none';
-    size?: number;                      // Marker size
-    color?: string;                     // If different from line color
-    opacity: number;                    // Default: 1
-  };
-  
-  // Label properties - Array for both percentage and index labels
-  labels: Array<{
-    type: 'percentage' | 'index';
-    value: string;                     // e.g., "55.7%" or "(145)"
-    position: { x: number, y: number };
-    visible: boolean;
-    color: string;
-    fontSize: string;
-    fontWeight: string;
-    offset?: { x: number, y: number }; // Fine-tune position if needed
-  }>;
-  
-  // Interaction
-  tooltip: {
-    enabled: boolean;
-    content: string;
-    trigger?: 'hover' | 'click';       // How tooltip is triggered
-  };
-  
-  // State properties
-  visible: boolean;                   
-  highlighted: boolean;
-  selected: boolean;
-  hovering?: boolean;                  // Current hover state
-  
-  // Animation
-  animationProgress?: number;          // 0-1 for animated drawing
-
-
-**Flow props**: 
-  // Data properties
+### **Simple Type Hierarchy**
+```typescript
+// Core Flow interface (simple and clean)
+interface Flow {
   id: string;
-  from: string;                        // Bubble ID where flow starts
-  to: string;                          // Bubble ID where flow ends
-  
-  // Flow characteristics
+  from: string;
+  to: string;
   type: 'unidirectional' | 'bidirectional';
   view: 'markets' | 'brands';
   metric: 'churn' | 'switching' | 'spend';
   flowType: 'in' | 'out' | 'net' | 'both' | 'more' | 'less';
-  
-  // Segments
-  flowSegments: FlowSegment[];         // camelCase, 1 or 2 segments depending on type
-  
-  // Aggregate data
-  abs: number;                         // Total absolute value across segments
-  rank?: number;                       // Ranking among all flows
-  
-  // State properties
-  visible: boolean;                    
+  flowSegments: FlowSegment[];  // Pre-calculated visual data
+  abs: number;
+  visible: boolean;
   highlighted: boolean;
   selected: boolean;
-  isCentreFlow: boolean;              // When involving central "Market" bubble
-  
-  // Visual properties
-  zIndex?: number;                     // Drawing order
-  
-  // Metadata
-  metadata?: {
-    sourceName?: string;               // Human-readable names
-    targetName?: string;
-  };
-
-// Helper type for the raw data structure you receive
-interface FlowDataBidirectional {
-  abs: number;
-  out_perc: number;
-  in_perc: number;
-  index: number;
+  isCentreFlow: boolean;
 }
 
-interface FlowDataUnidirectional {
-  abs: number;
-  perc: number;
-  index: number;
+// FlowSegment interface (optimized for D3.js)
+interface FlowSegment {
+  id: string;
+  parentFlowId: string;
+  direction: 'outgoing' | 'incoming' | 'single';
+  startPoint: { x: number, y: number };
+  endPoint: { x: number, y: number };
+  thickness: number;
+  color: string;
+  labels: Label[];
+  marker: MarkerConfig;
+  tooltip: TooltipConfig;
+  visible: boolean;
+  highlighted: boolean;
 }
+```
 
+### **Data Processing Pipeline (Simplified)**
+1. **FlowFactory.createFlows(rawData)**: Convert raw data to Flow objects
+2. **FlowSegmentGenerator.generateSegments(flows)**: Pre-calculate visual properties
+3. **ModernFlowRenderer.render(flowSegments)**: D3.js optimized rendering
 
+## Migration Roadmap
 
-- **Unidirectional Flows**: 
-  - Unidirectional flows should draw a single flow segment from the 'from' bubble to the 'to' bubble.
-  - The flow segment should be drawn from the 'from' bubble to the 'to' bubble with marker pointing towards the 'to' bubble.
-- **Bidirectional Flows**: 
-  - outgoing and incoming segment are determined by 'from' and 'to' bubbles for that flow.
-  - Bidirectional should draw 2 flow segments - the outgoing segment should be drawn from split point to the 'to' bubble and the incoming segment should be drawn from the split point to 'from' bubble.
-  - The split point is the point where the flow splits into two segments.
-  - The split point is calculated based on the percentage values of the outgoing(out_perc) and incoming(in_perc) segments.
+### **Phase 1: Type System Cleanup** 
+**Priority: CRITICAL - Start Immediately**
 
+**Files to Update:**
+- `types.ts`: Remove LegacyFlow interface, clean up type exports
+- `VisualizationManager.ts`: Import Flow from FlowFactory instead of types
+- `Datasphere.tsx`: Update callback signatures to use modern Flow
+- All imports: Make Flow imports explicit (from FlowFactory)
 
+**Expected Outcome:** Clear type hierarchy without ambiguity
 
-  **Filtering Logic when a bubble is focussed**
-- For **all flow types** : 
-  - Look at flows for that view > metric > flowtype and then filter to show only the flows connected to the focused bubble.
+### **Phase 2: Core Component Migration**
+**Dependencies:** Complete Phase 1
 
-## 2. Data Selection Logic (in `flowDrawing.ts`)
-- For **"in" flows** (showing flows INTO the focused bubble):
-  - When focus bubble is destination (`flow.to`): Use **out** data field
-  - When focus bubble is source (`flow.from`): Use **in** data field
+**Files to Update:**
+- `Datasphere.tsx`: Replace FlowManager with FlowDataService
+- `VisualizationManager.ts`: Use ModernFlowRenderer directly
+- `DependencyContainer.ts`: Remove legacy service registrations
 
-- For **"out" flows** (showing flows OUT OF the focused bubble):
-  - When focus bubble is source (`flow.from`): Use **out** data field
-  - When focus bubble is destination (`flow.to`): Use **in** data field
+**Expected Outcome:** Modern flow system actively used
 
-- For **"net" and "both" flows**: 
-  - Continue using the corresponding data field directly
+### **Phase 3: Data Pipeline Simplification**
+**Dependencies:** Complete Phase 2
 
-## 3. Arrow Direction Logic (in `flowDrawing.ts`)
-- **Unidirectional "in" flows**: 
-  - Arrows point FROM `flow.to` TO `flow.from` (reversed from data)
-  - Direction is independent of which bubble is focused
+**Files to Remove:**
+- `DataProcessor.ts`: Replace with FlowFactory direct usage
+- `MetricProcessor.ts`: Logic moved to FlowFactory
+- `FilterProcessor.ts`: Logic moved to FlowFactory
+- `FlowIntegrationProcessor.ts`: Bridge component removed
+- `FlowRenderer.ts`: Bridge component removed
 
-- **Unidirectional "out" flows**:
-  - Arrows point FROM `flow.from` TO `flow.to` (matching data)
-  - Direction is independent of which bubble is focused
+**Expected Outcome:** Single, clean data transformation pipeline
 
-- **Unidirectional "net" flows**:
-  - For positive values: arrows point FROM `flow.from` TO `flow.to`
-  - For negative values: arrows point FROM `flow.to` TO `flow.from`
+### **Phase 4: Service Consolidation**
+**Dependencies:** Complete Phase 3
 
-- **Bidirectional flows**:
-  - Both segments start from a central split point
-  - Outflow segment: FROM split point TO `flow.to` bubble
-  - Inflow segment: FROM split point TO `flow.from` bubble
+**Files to Remove:**
+- `FlowManager.ts`: Functionality in FlowDataService
+- `InteractionManager.ts`: Use EventManager instead
 
+**Expected Outcome:** 8 focused services instead of 12+ overlapping ones
 
+### **Phase 5: Legacy Cleanup**
+**Dependencies:** Complete all phases above
 
-- Try not to hardcode any conditions in the arrow drawing function. Understand the architecture and try to use the existing functions to draw the arrows.
+**Final Cleanup:**
+- Remove all LegacyFlow references
+- Update all tests to use modern interfaces
+- Remove deprecated utilities
 
-### Utilities
-- **bubble-utils.ts**: Bubble calculations and layout algorithms
-- **flowTypeUtils.ts**: Flow type decision helpers
-- **tooltip.ts**: Tooltip generation and display functions
-- **calculations.ts**: Mathematical utilities and helpers
-- **format.ts**: Data formatting utilities
+## Quick Reference for AI Agents
 
-## State Variables & Configuration
+### **When Making Edits After Migration:**
 
-### View State Management
-- **ViewManager.getViewType()**: Returns `ViewId` ('market' | 'brands')
-- **ViewManager.isMarketView()**: Boolean getter for view type
-- **ConfigurationManager.getFlowOption()**: Flow option ('churn' | 'switching')
-- **ConfigurationManager.getFlowType()**: Flow direction type
+| **Task** | **Primary Files** | **Pattern** |
+|----------|-------------------|-------------|
+| **Flow Processing** | `FlowDataService.ts`, `FlowFactory.ts` | Use FlowDataService.getCurrentFlows() |
+| **Rendering** | `ModernFlowRenderer.ts` | Direct D3.js with proper data binding |
+| **View Logic** | `ViewManager.ts` | Centralized view state |
+| **Configuration** | `ConfigurationManager.ts` | Unified config access |
+| **Events** | `EventManager.ts` | Centralized event handling |
+| **Data Input** | `FlowFactory.ts` | Direct transformation from raw data |
 
-### Flow Configuration
-- **flowType**: Flow direction ('in', 'out', 'net', 'both')
-- **flowOption**: Data type selection ('churn' | 'switching')
-- **focusBubbleId**: Currently selected bubble (number | null)
-- **focusedFlow**: Currently selected flow data
-- **threshold**: Flow filtering threshold value
-- **centreFlow**: Center flow visualization toggle
+### **Simplified Data Flow Patterns**
 
-### Theme Management
-- **ThemeManager.isDark()**: Centralized theme detection using MutationObserver
-- **ThemeManager.getThemedColor(light, dark)**: Theme-aware color selection
-- **ThemeManager.onThemeChange(callback)**: Theme change observer pattern
+**Data Input:**
+```typescript
+// Simple pattern
+const flows = FlowFactory.createFlows(rawData, config);
+const segments = FlowSegmentGenerator.generateSegments(flows);
+modernRenderer.render(segments);
+```
 
-### Configuration Hierarchy
-1. **ConfigurationManager**: Top-level coordination
-2. **ViewConfigurations**: View-specific rendering rules with priorities
-3. **RenderingRules**: Visual styling rules (321 lines of configuration)
-4. **CONFIG**: Global configuration constants
-5. **ArrowTypes**: Arrow-specific styling and behavior
+**State Management:**
+```typescript
+// Use services through DI
+const container = DependencyContainer.getInstance();
+const viewManager = container.get<ViewManager>('ViewManager');
+const flowDataService = container.get<FlowDataService>('FlowDataService');
+```
 
-## Data Flow
+## Performance Benefits After Migration
 
-### Component Initialization
-1. **Datasphere.tsx** initializes and gets services from DI container
-2. **DependencyContainer** resolves all service dependencies
-3. **Services** are injected into renderers and processors
-4. **VisualizationManager** coordinates the visualization pipeline
+### **Eliminated Complexities:**
+- ❌ Dual interface system overhead
+- ❌ Complex bridge components
+- ❌ Multiple data transformation steps
+- ❌ Redundant service layers
+- ❌ Type confusion and casting
 
-### Data Processing Pipeline
-1. **DataAdapter** loads and transforms raw data
-2. **FlowAdapter** processes flow-specific transformations
-3. **DataProcessor** runs pipeline with specialized processors
-4. **FlowManager** filters and processes flow data
-5. **Renderers** visualize the processed data
+### **Improved Performance:**
+- ✅ Single data transformation path
+- ✅ Pre-calculated FlowSegments
+- ✅ Proper D3.js data binding with object constancy
+- ✅ Reduced service instantiation overhead
+- ✅ Clear dependency graph
 
-### Event Flow
-1. **EventManager** centralizes all event handling
-2. **InteractionManager** processes user interactions
-3. **Services** update state based on events
-4. **VisualizationManager** triggers re-renders as needed
+## Flow Visualization Rules
 
-### Configuration Access
-1. **ConfigurationManager** provides unified configuration access
-2. **ViewConfigurations** supplies view-specific settings
-3. **RenderingRules** defines visual styling rules
-4. **Services** use configuration for behavior customization
+### **Unidirectional Flows:**
+- Single FlowSegment from 'from' bubble to 'to' bubble
+- Arrow marker points toward destination
+- Uses `direction: 'single'`
 
-## Performance Considerations
+### **Bidirectional Flows:**
+- Two FlowSegments: 'outgoing' and 'incoming'
+- Split point calculated based on percentage values
+- Outgoing: split point → 'to' bubble
+- Incoming: split point → 'from' bubble
 
-### Optimized Patterns
-- **Pipeline-based data processing** with async support
-- **Event delegation** through EventManager
-- **Theme-aware rendering** with observer pattern
-- **Configuration-driven** rendering rules
-- **Memoized calculations** in utility functions
+### **Filtering Logic:**
+- Focus bubble: Show only flows connected to focused bubble
+- Threshold: Filter flows by absolute value
+- View/Metric/FlowType: Use FlowDataService filtering methods
 
-### Memory Management
-- **Service singletons** reduce object creation
-- **Event cleanup** in component unmount
-- **Observer disconnection** in theme manager
-- **Pipeline reuse** for data processing
+## Development Guidelines
 
----
+### **Data-Driven Principles:**
+1. **Pre-calculate Everything**: All visual properties calculated once in FlowSegments
+2. **Single Source of Truth**: FlowDataService coordinates all flow data
+3. **Immutable Transformations**: Each stage produces new data, doesn't mutate
+4. **Service Layer**: Use DI container for all service access
+5. **Type Safety**: Strict TypeScript with no any types
 
-### Bubble Drawing Rules
-implemented the optimized bubble positioning logic with these key improvements:
+### **Performance Guidelines:**
+1. **D3.js Best Practices**: Use enter/update/exit pattern with object constancy
+2. **Minimal Re-renders**: Update only changed elements
+3. **Pre-calculated Properties**: No runtime calculations during render
+4. **Event Delegation**: Use EventManager for centralized event handling
+5. **Theme Support**: All components support light/dark themes
 
-  ✅ What Changed:
+### **Architecture Principles:**
+1. **Separation of Concerns**: Clear boundaries between data/rendering/interaction
+2. **Dependency Injection**: Loose coupling through DI container
+3. **Service-Oriented**: Business logic in focused services
+4. **Configuration-Driven**: Behavior controlled through configuration
+5. **Testable Design**: Pure functions and dependency injection for easy testing
 
-  1. Ratio-Based Constants: All sizing now uses meaningful percentages of the positioning circle
-  2. Optimal Positioning Circle: Automatically calculates the perfect radius for any number of bubbles (1-11)
-  3. Collision Prevention: Guarantees no overlapping bubbles with proper spacing
-  4. Adaptive Sizing: Bubbles scale appropriately regardless of count
-  5. Simplified Logic: Removed complex calculations in favor of ratio-based approach
+## Migration Implementation Priority
 
-  ✅ Key Benefits:
+**Week 1: Foundation**
+- Complete type system cleanup
+- Update core component interfaces
 
-  - Consistent Appearance: DataSphere looks balanced with 3, 7, or 11 bubbles
-  - Maximum Space Utilization: Uses 85% of canvas while keeping everything visible
-  - Data-Driven Sizing: Bubble size reflects data values within optimal constraints
-  - Collision-Free: Mathematical guarantee of proper spacing
-  - Performance: Simpler calculations, faster rendering
+**Week 2: Integration** 
+- Migrate main components to modern system
+- Remove bridge components
 
-  ✅ New Logic Flow:
+**Week 3: Simplification**
+- Consolidate data pipeline
+- Remove redundant services
 
-  1. Calculate optimal positioning circle
-  2. Set bubble size constraints (4-12% of positioning radius)
-  3. Verify no collisions with available arc length
-  4. Scale bubble sizes based on data within constraints
-  5. Position labels at 25% of positioning radius from center
+**Week 4: Polish**
+- Clean up legacy code
+- Update tests and documentation
+
+**Expected Benefits:**
+- 40% reduction in codebase complexity
+- 60% fewer type-related errors
+- 30% improved rendering performance
+- 90% reduction in architectural debt

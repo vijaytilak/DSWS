@@ -191,9 +191,8 @@ export class DataPipeline<T = unknown> {
    * Log execution summary
    */
   private logExecutionSummary(executionLog: PipelineStageInfo[]): void {
-    const totalTime = executionLog.reduce((sum, stage) => sum + (stage.executionTime || 0), 0);
-    const successfulStages = executionLog.filter(stage => !stage.error).length;
-    
-    // Pipeline execution complete
+    // Pipeline execution complete - log summary if needed
+    // const totalTime = executionLog.reduce((sum, stage) => sum + (stage.executionTime || 0), 0);
+    // const successfulStages = executionLog.filter(stage => !stage.error).length;
   }
 }

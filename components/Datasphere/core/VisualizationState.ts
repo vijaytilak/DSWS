@@ -1,5 +1,6 @@
-import { Flow, Bubble } from '../types';
-import { FlowIntegrationProcessor } from '../processors/FlowIntegrationProcessor';
+import { Bubble } from '../types';
+import type { Flow } from '../services/FlowFactory';
+// FlowIntegrationProcessor removed - using FlowDataService directly
 import { DataAdapter } from '../adapters/DataAdapter';
 
 /**
@@ -35,7 +36,7 @@ export const DEFAULT_VISUALIZATION_OPTIONS: VisualizationStateOptions = {
 export class VisualizationState {
   private options: VisualizationStateOptions;
   private dataAdapter: DataAdapter;
-  private flowProcessor: FlowIntegrationProcessor;
+  // flowProcessor removed - using FlowDataService directly
   private bubbles: Bubble[] = [];
   private flows: Flow[] = [];
   private listeners: Array<() => void> = [];
@@ -46,7 +47,7 @@ export class VisualizationState {
   ) {
     this.options = { ...DEFAULT_VISUALIZATION_OPTIONS, ...options };
     this.dataAdapter = dataAdapter;
-    this.flowProcessor = new FlowIntegrationProcessor();
+    // flowProcessor initialization removed - using FlowDataService directly
     
     // Initialize data
     this.processData();
@@ -213,14 +214,14 @@ export class VisualizationState {
   /**
    * Get a flow by source and target IDs
    */
-  getFlowByIds(fromId: number, toId: number): Flow | undefined {
+  getFlowByIds(fromId: string, toId: string): Flow | undefined {
     return this.flows.find(flow => flow.from === fromId && flow.to === toId);
   }
   
   /**
    * Get flows connected to a bubble
    */
-  getFlowsForBubble(bubbleId: number): Flow[] {
+  getFlowsForBubble(bubbleId: string): Flow[] {
     return this.flows.filter(flow => flow.from === bubbleId || flow.to === bubbleId);
   }
 }

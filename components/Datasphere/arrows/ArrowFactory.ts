@@ -3,7 +3,6 @@ import { UnidirectionalArrow } from './UnidirectionalArrow';
 import { BidirectionalArrow } from './BidirectionalArrow';
 import { 
   ArrowConfiguration, 
-  ArrowType, 
   Point, 
   ArrowStyle, 
   MarkerStyle 

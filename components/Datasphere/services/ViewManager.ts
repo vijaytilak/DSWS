@@ -7,6 +7,7 @@ import { ViewId } from '../config/ViewConfigurations';
 export class ViewManager {
   private static instance: ViewManager;
   private viewType: ViewId = 'brands';
+  private changeListeners: Array<(viewType: ViewId) => void> = [];
   
   /**
    * Get singleton instance of ViewManager
@@ -36,7 +37,10 @@ export class ViewManager {
    * @param viewType The view type to set
    */
   public setViewType(viewType: ViewId): void {
-    this.viewType = viewType;
+    if (this.viewType !== viewType) {
+      this.viewType = viewType;
+      this.notifyListeners();
+    }
   }
   
   /**
@@ -61,6 +65,45 @@ export class ViewManager {
    */
   public getDataSourceKey(): 'flows_markets' | 'flows_brands' {
     return this.isMarketView() ? 'flows_markets' : 'flows_brands';
+  }
+
+  /**
+   * Add a listener for view changes
+   * @param listener Callback function to call when view changes
+   */
+  public onViewChange(listener: (viewType: ViewId) => void): void {
+    this.changeListeners.push(listener);
+  }
+
+  /**
+   * Remove a listener for view changes
+   * @param listener Callback function to remove
+   */
+  public removeViewChangeListener(listener: (viewType: ViewId) => void): void {
+    const index = this.changeListeners.indexOf(listener);
+    if (index > -1) {
+      this.changeListeners.splice(index, 1);
+    }
+  }
+
+  /**
+   * Clear all view change listeners
+   */
+  public clearViewChangeListeners(): void {
+    this.changeListeners = [];
+  }
+
+  /**
+   * Notify all listeners of view change
+   */
+  private notifyListeners(): void {
+    this.changeListeners.forEach(listener => {
+      try {
+        listener(this.viewType);
+      } catch (error) {
+        console.error('Error in view change listener:', error);
+      }
+    });
   }
 }
 

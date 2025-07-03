@@ -1,5 +1,5 @@
 import { DataAdapter } from '../../adapters/DataAdapter';
-import { FlowIntegrationProcessor } from '../../processors/FlowIntegrationProcessor';
+// FlowIntegrationProcessor removed - using FlowDataService directly
 import type { FlowData } from '../../types';
 
 // Mock dependencies

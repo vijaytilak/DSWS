@@ -27,7 +27,7 @@ export interface ApplicationConfig {
     centerY: number;
   };
   flow: {
-    defaultOption: 'churn' | 'switching';
+    defaultOption: 'churn' | 'switching' | 'spend';
     defaultType: string;
   };
   colors: string[];
@@ -40,6 +40,7 @@ export interface ApplicationConfig {
 export class ConfigurationManager {
   private static instance: ConfigurationManager;
   private config: ApplicationConfig;
+  private changeListeners: Array<(config: ApplicationConfig) => void> = [];
   
   private constructor() {
     // Initialize with default configuration
@@ -151,7 +152,7 @@ export class ConfigurationManager {
   /**
    * Get default flow option
    */
-  getFlowOption(): 'churn' | 'switching' {
+  getFlowOption(): 'churn' | 'switching' | 'spend' {
     return this.config.flow.defaultOption;
   }
   
@@ -165,12 +166,18 @@ export class ConfigurationManager {
   /**
    * Update flow configuration
    */
-  updateFlowConfig(option?: 'churn' | 'switching', type?: string): void {
-    if (option) {
+  updateFlowConfig(option?: 'churn' | 'switching' | 'spend', type?: string): void {
+    let hasChanges = false;
+    if (option && this.config.flow.defaultOption !== option) {
       this.config.flow.defaultOption = option;
+      hasChanges = true;
     }
-    if (type) {
+    if (type && this.config.flow.defaultType !== type) {
       this.config.flow.defaultType = type;
+      hasChanges = true;
+    }
+    if (hasChanges) {
+      this.notifyListeners();
     }
   }
   
@@ -210,5 +217,44 @@ export class ConfigurationManager {
   applyTheme(isDarkTheme: boolean): void {
     const themeConfig = this.getThemeConfig(isDarkTheme);
     this.updateRenderingConfig(themeConfig.rendering || {});
+  }
+
+  /**
+   * Add a listener for configuration changes
+   * @param listener Callback function to call when configuration changes
+   */
+  public onConfigChange(listener: (config: ApplicationConfig) => void): void {
+    this.changeListeners.push(listener);
+  }
+
+  /**
+   * Remove a listener for configuration changes
+   * @param listener Callback function to remove
+   */
+  public removeConfigChangeListener(listener: (config: ApplicationConfig) => void): void {
+    const index = this.changeListeners.indexOf(listener);
+    if (index > -1) {
+      this.changeListeners.splice(index, 1);
+    }
+  }
+
+  /**
+   * Clear all configuration change listeners
+   */
+  public clearConfigChangeListeners(): void {
+    this.changeListeners = [];
+  }
+
+  /**
+   * Notify all listeners of configuration change
+   */
+  private notifyListeners(): void {
+    this.changeListeners.forEach(listener => {
+      try {
+        listener(this.config);
+      } catch (error) {
+        console.error('Error in configuration change listener:', error);
+      }
+    });
   }
 }

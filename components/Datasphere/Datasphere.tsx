@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
-import type { FlowData, Bubble, Flow } from './types';
+import type { FlowData, Bubble } from './types';
+import type { Flow } from './services/FlowFactory';
 import { VisualizationManager } from './core/VisualizationManager';
 import { DependencyContainer } from './core/DependencyContainer';
-import FlowManager from './services/FlowManager';
+import FlowDataService from './services/FlowDataService';
 import ViewManager from './services/ViewManager';
 import { ConfigurationManager } from './config/ConfigurationManager';
 import { useDimensions } from './hooks/useDimensions';
@@ -51,7 +52,7 @@ export default function DataSphere({
   const svgRef = useRef<SVGSVGElement>(null);
   const { resolvedTheme } = useTheme();
   const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
-  const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
+  const [focusedFlow, setFocusedFlow] = useState<{ from: string, to: string } | null>(null);
   const dimensions = useDimensions(containerRef);
 
   // Get services from DI container
@@ -123,34 +124,29 @@ export default function DataSphere({
       isDarkTheme
     }));
 
-    // Get FlowManager from DI container
-    const flowManager = container.resolve<FlowManager>('FlowManager');
+    // Get FlowDataService from DI container
+    const flowDataService = container.resolve<FlowDataService>('FlowDataService');
     
-    // Process flows using FlowManager service
-    flowManager.processFlows(
-      data,
-      flowType,
-      flowOption,
-      threshold,
+    // Initialize the service with raw data
+    flowDataService.initialize(data);
+    
+    // Configure the service
+    flowDataService.updateConfig({
+      bubbles: updatedBubbles,
+      canvasWidth: dimensions.width,
+      canvasHeight: dimensions.height,
+      threshold: threshold || 0,
       focusBubbleId,
-      centreFlow
-    ).then(flows => {
-      // When flows are ready, update the visualization
-    
-      // Update the visualization with the flows and bubbles
-      visualizationManager.update(
-        updatedBubbles,
-        flows,
-        flowType,
-        focusBubbleId,
-        centreFlow,
-        isMarketView,
-        flowOption,
-        focusedFlow
-      );
-    }).catch(error => {
-      console.error('Error processing flows:', error);
     });
+    
+    // Get current flows
+    const flows = flowDataService.getCurrentFlows();
+    
+    // Update VisualizationManager's internal state
+    visualizationManager.updateData(updatedBubbles, flows);
+    
+    // Trigger rendering
+    visualizationManager.render();
 
     // Cleanup when component unmounts
     return () => {
