@@ -172,6 +172,180 @@ components/Datasphere/
 - **FlowTypes.ts**: Flow type definitions and mappings
 - **RenderingRules.ts**: Visual appearance rules with priority system
 
+### Flow Data Structure & Metrics
+
+- **View Types**: 'markets', 'brands'
+- **Metric Types**: 'churn', 'switching', 'spend'
+
+- **View Specifics**: 
+  - Metric options for Markets: ['churn', 'switching', 'spend']
+  - Metric options for Brands: ['churn', 'switching']
+
+- **FlowMetric Specifics**: 
+  - Flow options for spend: ['more', 'less']
+  - Flow options for churn/switching: ['in', 'out', 'net', 'both']
+
+
+  **FlowSegment props**: 
+  // Data properties
+  id: string;                          // Unique segment identifier
+  abs: number;                         // Absolute value for percentage ranking/thickness calculation
+  perc: number;                        // Percentage label to display at midpoint
+  index: number;                       // Index label to display near marker
+  
+  // Direction properties
+  direction: 'outgoing' | 'incoming' | 'single';  // 'single' for unidirectional flows
+  startBubble: string;                 // Bubble ID where segment starts
+  endBubble: string;                   // Bubble ID where segment ends
+  
+  // Visual properties
+  startPoint: { x: number, y: number };
+  endPoint: { x: number, y: number };
+  midPoint?: { x: number, y: number }; // For label positioning
+  
+  // Styling
+  color: string;
+  thickness: number;                   // Calculated from abs percentage ranking
+  opacity: number;                     // Default: 1
+  strokeDasharray?: string;            // For dashed lines if needed
+  
+  // Marker properties
+  marker: {
+    type: 'arrow' | 'circle' | 'none';
+    position: 'start' | 'end' | 'both' | 'none';
+    size?: number;                      // Marker size
+    color?: string;                     // If different from line color
+    opacity: number;                    // Default: 1
+  };
+  
+  // Label properties - Array for both percentage and index labels
+  labels: Array<{
+    type: 'percentage' | 'index';
+    value: string;                     // e.g., "55.7%" or "(145)"
+    position: { x: number, y: number };
+    visible: boolean;
+    color: string;
+    fontSize: string;
+    fontWeight: string;
+    offset?: { x: number, y: number }; // Fine-tune position if needed
+  }>;
+  
+  // Interaction
+  tooltip: {
+    enabled: boolean;
+    content: string;
+    trigger?: 'hover' | 'click';       // How tooltip is triggered
+  };
+  
+  // State properties
+  visible: boolean;                   
+  highlighted: boolean;
+  selected: boolean;
+  hovering?: boolean;                  // Current hover state
+  
+  // Animation
+  animationProgress?: number;          // 0-1 for animated drawing
+
+
+**Flow props**: 
+  // Data properties
+  id: string;
+  from: string;                        // Bubble ID where flow starts
+  to: string;                          // Bubble ID where flow ends
+  
+  // Flow characteristics
+  type: 'unidirectional' | 'bidirectional';
+  view: 'markets' | 'brands';
+  metric: 'churn' | 'switching' | 'spend';
+  flowType: 'in' | 'out' | 'net' | 'both' | 'more' | 'less';
+  
+  // Segments
+  flowSegments: FlowSegment[];         // camelCase, 1 or 2 segments depending on type
+  
+  // Aggregate data
+  abs: number;                         // Total absolute value across segments
+  rank?: number;                       // Ranking among all flows
+  
+  // State properties
+  visible: boolean;                    
+  highlighted: boolean;
+  selected: boolean;
+  isCentreFlow: boolean;              // When involving central "Market" bubble
+  
+  // Visual properties
+  zIndex?: number;                     // Drawing order
+  
+  // Metadata
+  metadata?: {
+    sourceName?: string;               // Human-readable names
+    targetName?: string;
+  };
+
+// Helper type for the raw data structure you receive
+interface FlowDataBidirectional {
+  abs: number;
+  out_perc: number;
+  in_perc: number;
+  index: number;
+}
+
+interface FlowDataUnidirectional {
+  abs: number;
+  perc: number;
+  index: number;
+}
+
+
+
+- **Unidirectional Flows**: 
+  - Unidirectional flows should draw a single flow segment from the 'from' bubble to the 'to' bubble.
+  - The flow segment should be drawn from the 'from' bubble to the 'to' bubble with marker pointing towards the 'to' bubble.
+- **Bidirectional Flows**: 
+  - outgoing and incoming segment are determined by 'from' and 'to' bubbles for that flow.
+  - Bidirectional should draw 2 flow segments - the outgoing segment should be drawn from split point to the 'to' bubble and the incoming segment should be drawn from the split point to 'from' bubble.
+  - The split point is the point where the flow splits into two segments.
+  - The split point is calculated based on the percentage values of the outgoing(out_perc) and incoming(in_perc) segments.
+
+
+
+  **Filtering Logic when a bubble is focussed**
+- For **all flow types** : 
+  - Look at flows for that view > metric > flowtype and then filter to show only the flows connected to the focused bubble.
+
+## 2. Data Selection Logic (in `flowDrawing.ts`)
+- For **"in" flows** (showing flows INTO the focused bubble):
+  - When focus bubble is destination (`flow.to`): Use **out** data field
+  - When focus bubble is source (`flow.from`): Use **in** data field
+
+- For **"out" flows** (showing flows OUT OF the focused bubble):
+  - When focus bubble is source (`flow.from`): Use **out** data field
+  - When focus bubble is destination (`flow.to`): Use **in** data field
+
+- For **"net" and "both" flows**: 
+  - Continue using the corresponding data field directly
+
+## 3. Arrow Direction Logic (in `flowDrawing.ts`)
+- **Unidirectional "in" flows**: 
+  - Arrows point FROM `flow.to` TO `flow.from` (reversed from data)
+  - Direction is independent of which bubble is focused
+
+- **Unidirectional "out" flows**:
+  - Arrows point FROM `flow.from` TO `flow.to` (matching data)
+  - Direction is independent of which bubble is focused
+
+- **Unidirectional "net" flows**:
+  - For positive values: arrows point FROM `flow.from` TO `flow.to`
+  - For negative values: arrows point FROM `flow.to` TO `flow.from`
+
+- **Bidirectional flows**:
+  - Both segments start from a central split point
+  - Outflow segment: FROM split point TO `flow.to` bubble
+  - Inflow segment: FROM split point TO `flow.from` bubble
+
+
+
+- Try not to hardcode any conditions in the arrow drawing function. Understand the architecture and try to use the existing functions to draw the arrows.
+
 ### Utilities
 - **bubble-utils.ts**: Bubble calculations and layout algorithms
 - **flowTypeUtils.ts**: Flow type decision helpers

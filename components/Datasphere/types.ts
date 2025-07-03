@@ -44,6 +44,11 @@ interface SwitchingFlow {
   };
 }
 
+interface SpendFlow {
+  more: FlowDataWithSinglePercentage;
+  less: FlowDataWithSinglePercentage;
+}
+
 export interface BrandFlow {
   from: number;
   to: number;
@@ -53,9 +58,10 @@ export interface BrandFlow {
 }
 
 export interface MarketFlow {
-  bubbleID: number;
+  bubbleID: number;  // Bubble ID for the market flow
   churn: ChurnFlow[];     // Array of churn flow data
-  switching: SwitchingFlow[]; // Array of switching flow data  
+  switching: SwitchingFlow[]; // Array of switching flow data
+  spend: SpendFlow[];     // Array of spend flow data (Markets only)
   tabledata?: TableDataItem[];
 }
 
@@ -104,6 +110,32 @@ export interface Flow {
   absolute_outFlow: number;
   absolute_netFlowDirection: "inFlow" | "outFlow";
   absolute_netFlow: number;
+  
+  // Core flow values (abs, perc, index) for display
+  inFlow_abs?: number;      // Absolute value for thickness calculation
+  inFlow_perc?: number;     // Percentage for midpoint label
+  inFlow_index?: number;    // Index for marker label
+  outFlow_abs?: number;     // Absolute value for thickness calculation
+  outFlow_perc?: number;    // Percentage for midpoint label
+  outFlow_index?: number;   // Index for marker label
+  netFlow_abs?: number;     // Net absolute value
+  netFlow_perc?: number;    // Net percentage
+  netFlow_index?: number;   // Net index
+  
+  // Bidirectional flow values (for flows with out_perc and in_perc)
+  bidirectional_inPerc?: number;   // Percentage label on incoming segment
+  bidirectional_outPerc?: number;  // Percentage label on outgoing segment  
+  bidirectional_inIndex?: number;  // Index value on incoming segment
+  bidirectional_outIndex?: number; // Index value on outgoing segment
+  
+  // Spend metric values (more/less instead of in/out)
+  moreFlow_abs?: number;    // More absolute value
+  moreFlow_perc?: number;   // More percentage
+  moreFlow_index?: number;  // More index
+  lessFlow_abs?: number;    // Less absolute value
+  lessFlow_perc?: number;   // Less percentage
+  lessFlow_index?: number;  // Less index
+  
   sizePercent?: number;
   percentRank?: number;
   sizePercent_absolute_inFlow?: number;
@@ -111,10 +143,7 @@ export interface Flow {
   sizePercent_absolute_netFlow?: number;
   churn?: ChurnFlow[];
   switching?: ChurnFlow[];
-  bidirectional_inPerc?: number;
-  bidirectional_outPerc?: number;
-  bidirectional_inIndex?: number;
-  bidirectional_outIndex?: number;
+  spend?: SpendFlow[];
   displayValue?: number;
   displayDirection?: 'from-to' | 'to-from' | 'bidirectional';
   isBidirectional?: boolean;

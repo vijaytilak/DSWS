@@ -2,6 +2,7 @@ import type { Flow, FlowData, Bubble } from '../types';
 import type { MetricType, FlowType } from '../config/ViewConfigurations';
 import { getViewConfiguration } from '../config/ViewConfigurations';
 import ViewManager from './ViewManager';
+import { MetricProcessor } from '../processors/MetricProcessor';
 
 /**
  * Interface representing the internal processor response
@@ -33,9 +34,11 @@ export interface FlowFilterOptions {
 export default class FlowManager {
   private static instance: FlowManager;
   private viewManager: ViewManager;
+  private metricProcessor: MetricProcessor;
 
   private constructor() {
     this.viewManager = ViewManager.getInstance();
+    this.metricProcessor = new MetricProcessor();
   }
 
   /**
@@ -83,29 +86,17 @@ export default class FlowManager {
         return;
       }
       
-      // If it's the standard FlowData object, extract flows based on view type
+      // If it's the standard FlowData object, use MetricProcessor to extract flows
       const viewId = this.viewManager.getViewType();
       const isMarketView = viewId === 'markets';
+      const viewConfig = getViewConfiguration(viewId);
       
       // Get flows from the appropriate data source based on view type
-      const flowsKey = isMarketView ? 'flows_markets' : 'flows_brands';
+      const flowsKey = isMarketView ? 'flow_markets' : 'flow_brands';
       let rawFlows: any[] = (data as FlowData)[flowsKey] || [];
       
-      // Transform raw flows into Flow objects
-      const flows = rawFlows.map(rawFlow => {
-        const flow: Flow = {
-          from: rawFlow.from || rawFlow.itemID,
-          to: rawFlow.to || 0, // Markets might not have this
-          absolute_inFlow: this.extractFlowValue(rawFlow, 'in', metric),
-          absolute_outFlow: this.extractFlowValue(rawFlow, 'out', metric),
-          absolute_netFlow: this.extractFlowValue(rawFlow, 'net', metric),
-          absolute_netFlowDirection: this.extractFlowValue(rawFlow, 'net', metric) >= 0 ? 'outFlow' : 'inFlow',
-          // Include all the other potential properties from the raw flow
-          ...rawFlow
-        };
-        
-        return flow;
-      });
+      // Use MetricProcessor to transform raw flows into Flow objects
+      const flows = this.metricProcessor.processMetric(rawFlows, metric as MetricType, viewConfig);
       
       // Apply any filters or processing
       let processedFlows = flows;
@@ -125,27 +116,6 @@ export default class FlowManager {
   /**
    * Helper method to extract flow values from different data structures
    */
-  private extractFlowValue(flow: any, direction: 'in' | 'out' | 'net', metric: string): number {
-    // Handle different data structures
-    if (flow[metric] && typeof flow[metric] === 'object') {
-      return flow[metric][direction] || 0;
-    }
-    
-    // Handle direct property access
-    if (direction === 'in' && typeof flow.inFlow === 'number') {
-      return flow.inFlow;
-    }
-    
-    if (direction === 'out' && typeof flow.outFlow === 'number') {
-      return flow.outFlow;
-    }
-    
-    if (direction === 'net' && typeof flow.netFlow === 'number') {
-      return flow.netFlow;
-    }
-    
-    return 0;
-  }
 
   /**
    * Determine if a flow should be bidirectional
@@ -181,8 +151,13 @@ export default class FlowManager {
       // Without a focus bubble, use default flow values
       if (flowType === 'in') return flow.inFlow || flow.absolute_inFlow || 0;
       if (flowType === 'out') return flow.outFlow || flow.absolute_outFlow || 0;
+      if (flowType === 'more') return flow.moreFlow_abs || 0;
+      if (flowType === 'less') return flow.lessFlow_abs || 0;
       if (flowType === 'net') return flow.netFlow || flow.absolute_netFlow || 0;
-      // For 'both', use the sum of in and out
+      // For 'both', use the sum of in and out (or more and less for spend)
+      if (flow.moreFlow_abs !== undefined && flow.lessFlow_abs !== undefined) {
+        return flow.moreFlow_abs + flow.lessFlow_abs;
+      }
       return (flow.inFlow || flow.absolute_inFlow || 0) + (flow.outFlow || flow.absolute_outFlow || 0);
     }
     
@@ -198,11 +173,20 @@ export default class FlowManager {
       // For 'out' flows, show flows OUT OF the focus bubble
       if (isFocusBubbleSource) return flow.outFlow || flow.absolute_outFlow || 0;
       if (isFocusBubbleTarget) return flow.inFlow || flow.absolute_inFlow || 0;
+    } else if (flowType === 'more') {
+      // For 'more' flows (spend metric), show more values
+      return flow.moreFlow_abs || 0;
+    } else if (flowType === 'less') {
+      // For 'less' flows (spend metric), show less values
+      return flow.lessFlow_abs || 0;
     } else if (flowType === 'net') {
       // For 'net' flows, use the net value
       return flow.netFlow || flow.absolute_netFlow || 0;
     } else {
-      // For 'both', use the sum of in and out
+      // For 'both', use the sum of in and out (or more and less for spend)
+      if (flow.moreFlow_abs !== undefined && flow.lessFlow_abs !== undefined) {
+        return flow.moreFlow_abs + flow.lessFlow_abs;
+      }
       return (flow.inFlow || flow.absolute_inFlow || 0) + (flow.outFlow || flow.absolute_outFlow || 0);
     }
     
@@ -235,12 +219,20 @@ export default class FlowManager {
         value = flow.inFlow || flow.absolute_inFlow || 0;
       } else if (flowType === 'out') {
         value = flow.outFlow || flow.absolute_outFlow || 0;
+      } else if (flowType === 'more') {
+        value = flow.moreFlow_abs || 0;
+      } else if (flowType === 'less') {
+        value = flow.lessFlow_abs || 0;
       } else if (flowType === 'net') {
         value = Math.abs(flow.netFlow || flow.absolute_netFlow || 0);
       } else {
-        // For 'both', use the sum of in and out
-        value = (flow.inFlow || flow.absolute_inFlow || 0) + 
-               (flow.outFlow || flow.absolute_outFlow || 0);
+        // For 'both', use the sum of in and out (or more and less for spend)
+        if (flow.moreFlow_abs !== undefined && flow.lessFlow_abs !== undefined) {
+          value = flow.moreFlow_abs + flow.lessFlow_abs;
+        } else {
+          value = (flow.inFlow || flow.absolute_inFlow || 0) + 
+                 (flow.outFlow || flow.absolute_outFlow || 0);
+        }
       }
       
       return value >= threshold;
@@ -261,6 +253,10 @@ export default class FlowManager {
       return 'to-from'; // Arrows point FROM flow.to TO flow.from
     } else if (flowType === 'out') {
       return 'from-to'; // Arrows point FROM flow.from TO flow.to
+    } else if (flowType === 'more') {
+      return 'from-to'; // For 'more' spending, arrows point from bubble to center
+    } else if (flowType === 'less') {
+      return 'from-to'; // For 'less' spending, arrows point from bubble to center
     } else if (flowType === 'net') {
       // For net flows, direction depends on the sign of the net flow
       const netFlowValue = flow.netFlow || flow.absolute_netFlow || 0;

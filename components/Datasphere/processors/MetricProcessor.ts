@@ -29,25 +29,82 @@ export class MetricProcessor {
       const metricData = flow[metric];
       
       if (!metricData) {
-        console.warn(`No ${metric} data found for market flow ${flow.itemID || index}`);
-        return this.createEmptyFlow(flow.itemID || index, this.getCenterBubbleId(marketData));
+        console.warn(`No ${metric} data found for market flow ${flow.bubbleID || index}`);
+        return this.createEmptyFlow(flow.bubbleID || index, this.getCenterBubbleId(marketData));
       }
 
       // Handle both array and object structures
       const data = Array.isArray(metricData) ? metricData[0] : metricData;
       
+      // Handle spend metric differently (more/less vs in/out)
+      if (metric === 'spend') {
+        const moreValues = this.extractAllValues(data, 'more');
+        const lessValues = this.extractAllValues(data, 'less');
+        
+        return {
+          from: flow.bubbleID,
+          to: this.getCenterBubbleId(marketData),
+          absolute_inFlow: moreValues.abs,
+          absolute_outFlow: lessValues.abs,
+          absolute_netFlowDirection: this.determineSpendDirection(data),
+          absolute_netFlow: Math.abs(moreValues.abs - lessValues.abs),
+          
+          // Spend-specific values for display
+          moreFlow_abs: moreValues.abs,
+          moreFlow_perc: moreValues.perc,
+          moreFlow_index: moreValues.index,
+          lessFlow_abs: lessValues.abs,
+          lessFlow_perc: lessValues.perc,
+          lessFlow_index: lessValues.index,
+          
+          // Preserve original data
+          [metric]: Array.isArray(metricData) ? metricData : [metricData]
+        } as Flow;
+      }
+      
+      // Handle churn/switching metrics (in/out structure)
+      const inValues = this.extractAllValues(data, 'in');
+      const outValues = this.extractAllValues(data, 'out');
+      const netValues = this.extractAllValues(data, 'net');
+      const bothValues = this.extractAllValues(data, 'both');
       const flowDirection = this.determineFlowDirection(data);
       
-      return {
-        from: flow.itemID,
+      const processedFlow: Flow = {
+        from: flow.bubbleID,
         to: this.getCenterBubbleId(marketData),
-        absolute_inFlow: this.extractValue(data, 'in') || 0,
-        absolute_outFlow: this.extractValue(data, 'out') || 0,
+        absolute_inFlow: inValues.abs,
+        absolute_outFlow: outValues.abs,
         absolute_netFlowDirection: flowDirection,
-        absolute_netFlow: Math.abs(this.extractValue(data, 'net') || 0),
+        absolute_netFlow: netValues.abs,
+        
+        // Core flow values for display
+        inFlow_abs: inValues.abs,
+        inFlow_perc: inValues.perc,
+        inFlow_index: inValues.index,
+        outFlow_abs: outValues.abs,
+        outFlow_perc: outValues.perc,
+        outFlow_index: outValues.index,
+        netFlow_abs: netValues.abs,
+        netFlow_perc: netValues.perc,
+        netFlow_index: netValues.index,
+        
         // Preserve original data for bidirectional rendering
         [metric]: Array.isArray(metricData) ? metricData : [metricData]
-      } as Flow;
+      };
+      
+      // Handle bidirectional flows (when both field contains out_perc and in_perc)
+      if (data.both && typeof data.both === 'object') {
+        const both = data.both;
+        if (typeof both.out_perc === 'number' && typeof both.in_perc === 'number') {
+          processedFlow.bidirectional_outPerc = both.out_perc;
+          processedFlow.bidirectional_inPerc = both.in_perc;
+          processedFlow.bidirectional_outIndex = both.out_index || 0;
+          processedFlow.bidirectional_inIndex = both.in_index || 0;
+          processedFlow.isBidirectional = true;
+        }
+      }
+      
+      return processedFlow;
     });
   }
 
@@ -66,15 +123,30 @@ export class MetricProcessor {
       }
 
       const data = metricData[0];
+      const inValues = this.extractAllValues(data, 'in');
+      const outValues = this.extractAllValues(data, 'out');
+      const netValues = this.extractAllValues(data, 'net');
       const flowDirection = this.determineFlowDirection(data);
       
       const processedFlow: Flow = {
         from: flow.from,
         to: flow.to,
-        absolute_inFlow: this.extractValue(data, 'in') || 0,
-        absolute_outFlow: this.extractValue(data, 'out') || 0,
+        absolute_inFlow: inValues.abs,
+        absolute_outFlow: outValues.abs,
         absolute_netFlowDirection: flowDirection,
-        absolute_netFlow: Math.abs(this.extractValue(data, 'net') || 0),
+        absolute_netFlow: netValues.abs,
+        
+        // Core flow values for display
+        inFlow_abs: inValues.abs,
+        inFlow_perc: inValues.perc,
+        inFlow_index: inValues.index,
+        outFlow_abs: outValues.abs,
+        outFlow_perc: outValues.perc,
+        outFlow_index: outValues.index,
+        netFlow_abs: netValues.abs,
+        netFlow_perc: netValues.perc,
+        netFlow_index: netValues.index,
+        
         // Preserve original data for advanced rendering
         churn: flow.churn,
         switching: flow.switching,
@@ -82,11 +154,15 @@ export class MetricProcessor {
       };
 
       // Add bidirectional data if available
-      if (data.both) {
-        processedFlow.bidirectional_inPerc = (data.both.in_perc || 0) * 100;
-        processedFlow.bidirectional_outPerc = (data.both.out_perc || 0) * 100;
-        processedFlow.bidirectional_inIndex = data.both.in_index || 0;
-        processedFlow.bidirectional_outIndex = data.both.out_index || 0;
+      if (data.both && typeof data.both === 'object') {
+        const both = data.both;
+        if (typeof both.out_perc === 'number' && typeof both.in_perc === 'number') {
+          processedFlow.bidirectional_outPerc = both.out_perc;
+          processedFlow.bidirectional_inPerc = both.in_perc;
+          processedFlow.bidirectional_outIndex = both.out_index || 0;
+          processedFlow.bidirectional_inIndex = both.in_index || 0;
+          processedFlow.isBidirectional = true;
+        }
       }
 
       flows.push(processedFlow);
@@ -96,30 +172,36 @@ export class MetricProcessor {
   }
 
   /**
-   * Extract value from data structure (handles both new and legacy formats)
+   * Extract all values (abs, perc, index) from data structure
    */
-  private extractValue(data: unknown, field: 'in' | 'out' | 'net' | 'both'): number {
+  private extractAllValues(data: unknown, field: 'in' | 'out' | 'net' | 'both' | 'more' | 'less'): { abs: number; perc: number; index: number } {
     if (!data || typeof data !== 'object') {
-      return 0;
+      return { abs: 0, perc: 0, index: 0 };
     }
 
     const value = data[field];
     
     if (typeof value === 'number') {
-      return value;
+      return { abs: value, perc: value, index: value };
     }
     
     if (typeof value === 'object' && value !== null) {
-      // Handle nested structure
-      if (typeof value.abs === 'number') {
-        return value.abs;
-      }
-      if (typeof value.perc === 'number') {
-        return value.perc * 100; // Convert to percentage
-      }
+      return {
+        abs: typeof value.abs === 'number' ? value.abs : 0,
+        perc: typeof value.perc === 'number' ? value.perc : 0,
+        index: typeof value.index === 'number' ? value.index : 0
+      };
     }
 
-    return 0;
+    return { abs: 0, perc: 0, index: 0 };
+  }
+
+  /**
+   * Extract value from data structure (backward compatibility)
+   */
+  private extractValue(data: unknown, field: 'in' | 'out' | 'net' | 'both' | 'more' | 'less'): number {
+    const values = this.extractAllValues(data, field);
+    return values.abs; // Use abs value for backward compatibility
   }
 
   /**
@@ -131,10 +213,19 @@ export class MetricProcessor {
   }
 
   /**
+   * Determine spend direction based on more vs less values
+   */
+  private determineSpendDirection(data: unknown): "inFlow" | "outFlow" {
+    const moreValue = this.extractValue(data, 'more');
+    const lessValue = this.extractValue(data, 'less');
+    return moreValue >= lessValue ? "inFlow" : "outFlow";
+  }
+
+  /**
    * Get center bubble ID for market flows
    */
   private getCenterBubbleId(marketData: unknown[]): number {
-    // Find the maximum bubbleID and add 1 for center bubble
+    // Find the maximum bubble ID and add 1 for center bubble
     const maxId = Math.max(...marketData.map(flow => flow.bubbleID || 0));
     return maxId + 1;
   }
