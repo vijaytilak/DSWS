@@ -13,7 +13,7 @@ const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
 
 export default function Page() {
   const [threshold, setThreshold] = useState(0);
-  const { centreFlow, setCentreFlow, flowType, setFlowType } = useCentreFlow();
+  const { centreFlow, setCentreFlow, flowType, setFlowType, isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
 
   return (
     <main className="flex h-screen flex-col">
@@ -33,6 +33,10 @@ export default function Page() {
               flowType={flowType}
               centreFlow={centreFlow}
               threshold={threshold}
+              isMarketView={isMarketView}
+              flowOption={flowOption}
+              focusBubbleId={focusBubbleId}
+              onFocusBubbleChange={setFocusBubbleId}
             />
           </div>
         </div>

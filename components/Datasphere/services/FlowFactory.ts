@@ -151,7 +151,7 @@ export default class FlowFactory {
     if (config.view === 'brands') {
       return this.generateBrandFlows(data.flow_brands, config);
     } else {
-      return this.generateMarketFlows(data.flow_markets, config);
+      return this.generateMarketFlows(data.flow_markets, config, data.bubbles.length);
     }
   }
 
@@ -192,8 +192,10 @@ export default class FlowFactory {
   /**
    * Generate flows for markets view
    */
-  private generateMarketFlows(marketFlows: MarketFlow[], config: FlowGenerationConfig): Flow[] {
+  private generateMarketFlows(marketFlows: MarketFlow[], config: FlowGenerationConfig, numBubbles: number): Flow[] {
     const flows: Flow[] = [];
+    // Calculate center bubble ID - it should be the count of data bubbles (11 for data with bubbles 0-10)
+    const centerBubbleId = numBubbles.toString();
 
     for (const marketFlow of marketFlows) {
       // Apply focus bubble filter if specified
@@ -214,7 +216,7 @@ export default class FlowFactory {
         continue;
       }
 
-      const flow = this.createFlowFromMarketData(marketFlow, config, flowTypeData);
+      const flow = this.createFlowFromMarketData(marketFlow, config, flowTypeData, centerBubbleId);
       if (flow) {
         flows.push(flow);
       }
@@ -278,14 +280,15 @@ export default class FlowFactory {
   private createFlowFromMarketData(
     marketFlow: MarketFlow, 
     config: FlowGenerationConfig, 
-    flowTypeData: any
+    flowTypeData: any,
+    centerBubbleId: string
   ): Flow | null {
     const flowId = `market-${marketFlow.bubbleID}-center-${config.metric}-${config.flowType}`;
     
     const flow: Flow = {
       id: flowId,
       from: marketFlow.bubbleID.toString(),
-      to: 'center', // Market flows go to conceptual center
+      to: centerBubbleId, // Market flows go to center bubble
       type: this.determineFlowType(config.flowType),
       view: 'markets',
       metric: config.metric as 'churn' | 'switching' | 'spend',

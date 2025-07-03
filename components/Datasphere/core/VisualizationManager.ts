@@ -203,7 +203,7 @@ export class VisualizationManager {
     // Clear individual renderers (this will now be redundant but keeping for consistency)
     this.bubbleRenderer.clear();
     if (this.flowRenderer) {
-      this.flowRenderer.clear();
+      this.flowRenderer.clearHighlights();
     }
     
     // Get the current theme
@@ -287,7 +287,7 @@ export class VisualizationManager {
     // Clear renderer states
     this.bubbleRenderer.clear();
     if (this.flowRenderer) {
-      this.flowRenderer.clear();
+      this.flowRenderer.clearHighlights();
     }
     
     // Reset state

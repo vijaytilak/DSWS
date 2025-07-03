@@ -11,6 +11,7 @@ import ViewManager from './services/ViewManager';
 import { ConfigurationManager } from './config/ConfigurationManager';
 import { useDimensions } from './hooks/useDimensions';
 import { initializeBubbleVisualization } from './utils/bubble-utils';
+import { useTableData } from '@/app/contexts/table-data-context';
 
 /**
  * Props interface for the DataSphere component
@@ -28,6 +29,10 @@ interface DataSphereProps {
   isMarketView?: boolean;
   /** Flow option override - if not provided, uses ConfigurationManager default */
   flowOption?: 'churn' | 'switching';
+  /** Focused bubble ID from context */
+  focusBubbleId?: number | null;
+  /** Callback to set focused bubble ID */
+  onFocusBubbleChange?: (bubbleId: number | null) => void;
 }
 
 /**
@@ -47,13 +52,15 @@ export default function DataSphere({
   threshold,
   isMarketView: propIsMarketView,
   flowOption: propFlowOption,
+  focusBubbleId: propFocusBubbleId,
+  onFocusBubbleChange,
 }: DataSphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const { resolvedTheme } = useTheme();
-  const [focusBubbleId, setFocusBubbleId] = useState<number | null>(null);
   const [focusedFlow, setFocusedFlow] = useState<{ from: string, to: string } | null>(null);
   const dimensions = useDimensions(containerRef);
+  const { setTableData, setSelectedItemLabel } = useTableData();
 
   // Get services from DI container
   const container = DependencyContainer.getInstance();
@@ -63,6 +70,7 @@ export default function DataSphere({
   // Use props or service defaults for view state
   const isMarketView = propIsMarketView ?? viewManager.isMarketView();
   const flowOption = propFlowOption ?? configManager.getFlowOption();
+  const focusBubbleId = propFocusBubbleId ?? null;
 
   // Handle bubble click
   const handleBubbleClick = useCallback((bubble: Bubble) => {
@@ -70,8 +78,21 @@ export default function DataSphere({
     setFocusedFlow(null);
     
     const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
-    setFocusBubbleId(newFocusId);
-  }, [focusBubbleId]);
+    onFocusBubbleChange?.(newFocusId);
+    
+    // Update table data context with bubble data
+    if (newFocusId !== null) {
+      const bubbleData = data.bubbles.find(b => b.bubbleID === bubble.id);
+      if (bubbleData && bubbleData.tabledata) {
+        setTableData(bubbleData.tabledata);
+        setSelectedItemLabel(bubbleData.bubbleLabel);
+      }
+    } else {
+      // Clear table data when no bubble is selected
+      setTableData([]);
+      setSelectedItemLabel('');
+    }
+  }, [focusBubbleId, onFocusBubbleChange, data.bubbles, setTableData, setSelectedItemLabel]);
 
   // Handle flow click
   const handleFlowClick = useCallback((flow: Flow) => {
@@ -139,8 +160,14 @@ export default function DataSphere({
       focusBubbleId,
     });
     
-    // Get current flows
-    const flows = flowDataService.getCurrentFlows();
+    // Get flows with current configuration
+    const flows = flowDataService.getFilteredFlows({
+      view: isMarketView ? 'markets' : 'brands',
+      metric: flowOption,
+      flowType: flowType as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
+      focusBubbleId,
+      threshold: threshold || 0
+    });
     
     // Update VisualizationManager's internal state
     visualizationManager.updateData(updatedBubbles, flows);

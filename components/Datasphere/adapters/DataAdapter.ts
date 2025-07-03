@@ -1,5 +1,6 @@
 import type { FlowData } from '../types';
-// FlowIntegrationProcessor removed - using FlowDataService directly
+import FlowDataService from '../services/FlowDataService';
+import type { Flow } from '../services/FlowFactory';
 
 /**
  * Data adapter for loading and transforming data from ds.json
@@ -8,7 +9,11 @@ import type { FlowData } from '../types';
 export class DataAdapter {
   private data: FlowData | null = null;
   private dataPath: string = '/data/ds.json';
-  private processor: FlowIntegrationProcessor = new FlowIntegrationProcessor();
+  private flowDataService: FlowDataService;
+
+  constructor() {
+    this.flowDataService = FlowDataService.getInstance();
+  }
 
   /**
    * Load data from the specified path
@@ -26,6 +31,7 @@ export class DataAdapter {
       const data = await response.json();
       this.validateData(data);
       this.data = data;
+      this.flowDataService.initialize(data);
       return data;
     } catch (error) {
       console.error('Error loading flow data:', error);
@@ -64,16 +70,14 @@ export class DataAdapter {
       throw new Error('Data not loaded. Call loadData() first.');
     }
     
-    // Use the synchronous version of the processor to avoid Promise return type
-    return this.processor.processFlowDataSync(
-      this.data,
-      isMarketView,
-      flowType,
-      flowOption,
+    // Use FlowDataService to get filtered flows
+    return this.flowDataService.getFilteredFlows({
+      view: isMarketView ? 'markets' : 'brands',
+      metric: flowOption as 'churn' | 'switching' | 'spend',
+      flowType: flowType as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
       focusBubbleId,
-      threshold,
-      showCentreFlows
-    );
+      threshold
+    });
   }
   
   /**

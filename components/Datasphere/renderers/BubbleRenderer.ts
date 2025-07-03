@@ -160,7 +160,7 @@ export class BubbleRenderer {
       .attr('r', d => d.radius)
       .attr('fill', d => {
         if (d.isCentre) {
-          return isDarkTheme ? '#1a1a1a' : '#ffffff';
+          return '#FF0033'; // Center bubble should be red for visibility
         }
         return d.color;
       })
@@ -170,12 +170,12 @@ export class BubbleRenderer {
         return 'none';
       })
       .attr('stroke-width', d => {
-        if (d.isCentre) return isMarketView ? 2 : 0;
+        if (d.isCentre) return 2; // Center bubble should always have a border
         if (d.focus || d.isSelected) return 4;
         return 0;
       })
       .attr('opacity', d => {
-        if (d.isCentre) return isMarketView ? 1 : 0;
+        if (d.isCentre) return 1; // Center bubble should always be visible
         return 1;
       })
       .attr('cursor', d => (d.isCentre ? 'default' : 'pointer'))
@@ -235,8 +235,8 @@ export class BubbleRenderer {
       .attr('dominant-baseline', 'middle')
       .attr('fill', d => {
         // Apply text color per documentation rules
-        if (d.isCentre && !isMarketView) {
-          return 'transparent';
+        if (d.isCentre) {
+          return isDarkTheme ? '#ffffff' : '#000000';
         }
         if (d.focus || d.isSelected) {
           return isDarkTheme ? '#ffffff' : '#000000';
