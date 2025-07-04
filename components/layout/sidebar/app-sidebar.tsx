@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
-type FlowOption = 'churn' | 'switching' | 'affinity';
+type FlowOption = 'churn' | 'switching';
 type View = 'Markets' | 'Brands';
 
 // This is sample data.
@@ -87,9 +87,9 @@ export function AppSidebar({
     setCentreFlow(isMarkets);
     setIsMarketView(isMarkets);
     
-    // Reset to Churn and netFlow when view changes
+    // Reset to Churn and net when view changes
     onFlowOptionChange?.('churn');
-    setFlowType('netFlow');
+    setFlowType('net');
   };
 
   return (
@@ -105,26 +105,17 @@ export function AppSidebar({
           onViewChange={handleViewChange}
         />
         <NavOptions 
-          onFlowOptionChange={(option) => {
-            onFlowOptionChange?.(option);
-            // When Affinity is selected, force netFlow type
-            if (option === 'affinity') {
-              setFlowType('netFlow');
-            }
-          }} 
+          onFlowOptionChange={(option: FlowOption) => onFlowOptionChange?.(option)} 
           flowOption={flowOption}
           selectedView={selectedView}
         />
-        {/* Only show flow types if not using Affinity */}
-        {flowOption !== 'affinity' && (
-          <NavFlowTypes 
-            setFlowType={setFlowType} 
-            currentFlowType={flowType}
-            focusBubbleId={focusBubbleId}
-            isMarketView={isMarketView}
-            flowOption={flowOption}
-          />
-        )}
+        <NavFlowTypes 
+          setFlowType={setFlowType} 
+          currentFlowType={flowType}
+          focusBubbleId={focusBubbleId}
+          isMarketView={isMarketView}
+          flowOption={flowOption}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />

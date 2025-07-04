@@ -3,9 +3,9 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { DashboardHeader } from "@/components/layout/header/dashboard-header";
-import sampleData from '@/data/sample.json';
+import sampleData from '@/data/ds.json';
+import type { FlowData } from '@/components/Datasphere/types';
 import { useCentreFlow } from './layout';
-import { adaptFlowData } from '@/utils/data-adapter';
 
 const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
   ssr: false
@@ -13,7 +13,7 @@ const DataSphere = dynamic(() => import('@/components/Datasphere/Datasphere'), {
 
 export default function Page() {
   const [threshold, setThreshold] = useState(0);
-  const { centreFlow, setCentreFlow, flowType, setFlowType } = useCentreFlow();
+  const { centreFlow, setCentreFlow, flowType, setFlowType, isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
 
   return (
     <main className="flex h-screen flex-col">
@@ -29,10 +29,14 @@ export default function Page() {
         <div className="h-full p-4 pt-0">
           <div className="h-full bg-muted/0 p-4">
             <DataSphere 
-              data={adaptFlowData(sampleData)}
+              data={sampleData as FlowData}
               flowType={flowType}
               centreFlow={centreFlow}
               threshold={threshold}
+              isMarketView={isMarketView}
+              flowOption={flowOption}
+              focusBubbleId={focusBubbleId}
+              onFocusBubbleChange={setFocusBubbleId}
             />
           </div>
         </div>

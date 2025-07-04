@@ -3,7 +3,6 @@ import { CONFIG } from '../../constants/config';
 import type { FlowData, Bubble } from '../../types';
 import { createTooltip, showTooltip, hideTooltip, getBubbleTooltip } from '../tooltip';
 import { prepareBubbleData, calculateBubbleLayout } from '../bubble';
-import VisualizationManager from './VisualizationManager';
 
 export function initializeBubbleVisualization(
   data: FlowData,
@@ -41,7 +40,7 @@ export function drawBubbles(
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   bubbles: Bubble[],
   isDark: boolean,
-  isMarketView: boolean,
+  isMarketView: boolean, // Parameter kept for backward compatibility
   centerX: number,
   centerY: number,
   focusedBubbleId: number | null,
@@ -53,8 +52,8 @@ export function drawBubbles(
     opacity?: number;
   }
 ) {
-  const visualizationManager = VisualizationManager.getInstance();
-  visualizationManager.updateReferences(svg, bubbles, isMarketView);
+  // Note: Legacy visualization manager reference removed
+  // This functionality is now handled by the DI-based VisualizationManager
 
   if (outerRingConfig) {
     CONFIG.bubble.outerRing = {

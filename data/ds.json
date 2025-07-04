@@ -1,0 +1,1334 @@
+{
+  "bubbles": [
+    {
+      "bubbleID": 0,
+      "bubbleLabel": "Pizza Hut",
+      "bubbleSize_absolute": 47000,
+      "bubbleSize_relative": 0.088,
+      "tabledata": [
+        {
+          "item": "Customer Satisfaction",
+          "index": "82",
+          "abs": "82.5%"
+        },
+        {
+          "item": "Market Share",
+          "index": "47000",
+          "abs": "8.8%"
+        },
+        {
+          "item": "Store Count",
+          "index": "387",
+          "abs": "387 stores"
+        }
+      ]
+    },
+    {
+      "bubbleID": 1,
+      "bubbleLabel": "McDonald's",
+      "bubbleSize_absolute": 124599,
+      "bubbleSize_relative": 0.234,
+      "tabledata": [
+        {
+          "item": "Revenue 2024",
+          "index": "124599",
+          "abs": "23.4%"
+        },
+        {
+          "item": "Store Count NSW",
+          "index": "245",
+          "abs": "24.5%"
+        },
+        {
+          "item": "Store Count VIC",
+          "index": "198",
+          "abs": "19.8%"
+        },
+        {
+          "item": "Customer Base",
+          "index": "1.2M",
+          "abs": "1,200,000"
+        }
+      ]
+    },
+    {
+      "bubbleID": 2,
+      "bubbleLabel": "KFC",
+      "bubbleSize_absolute": 89650,
+      "bubbleSize_relative": 0.168,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "89650",
+          "abs": "16.8%"
+        },
+        {
+          "item": "Brand Recognition",
+          "index": "94",
+          "abs": "94.2%"
+        },
+        {
+          "item": "Store Count",
+          "index": "298",
+          "abs": "298 stores"
+        }
+      ]
+    },
+    {
+      "bubbleID": 3,
+      "bubbleLabel": "Subway",
+      "bubbleSize_absolute": 56780,
+      "bubbleSize_relative": 0.107,
+      "tabledata": [
+        {
+          "item": "Store Count",
+          "index": "456",
+          "abs": "456 stores"
+        },
+        {
+          "item": "Market Share",
+          "index": "10.7",
+          "abs": "10.7%"
+        },
+        {
+          "item": "Health Rating",
+          "index": "85.2",
+          "abs": "85.2%"
+        }
+      ]
+    },
+    {
+      "bubbleID": 4,
+      "bubbleLabel": "Domino's",
+      "bubbleSize_absolute": 73450,
+      "bubbleSize_relative": 0.138,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "73450",
+          "abs": "13.8%"
+        },
+        {
+          "item": "Delivery Speed",
+          "index": "18.5",
+          "abs": "18.5 min avg"
+        },
+        {
+          "item": "Online Orders",
+          "index": "87",
+          "abs": "87.3%"
+        }
+      ]
+    },
+    {
+      "bubbleID": 5,
+      "bubbleLabel": "Hungry Jacks",
+      "bubbleSize_absolute": 42300,
+      "bubbleSize_relative": 0.079,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "42300",
+          "abs": "7.9%"
+        },
+        {
+          "item": "Store Coverage",
+          "index": "189",
+          "abs": "189 stores"
+        },
+        {
+          "item": "Brand Loyalty",
+          "index": "67.8",
+          "abs": "67.8%"
+        }
+      ]
+    },
+    {
+      "bubbleID": 6,
+      "bubbleLabel": "Red Rooster",
+      "bubbleSize_absolute": 18750,
+      "bubbleSize_relative": 0.035,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "18750",
+          "abs": "3.5%"
+        },
+        {
+          "item": "Store Coverage",
+          "index": "98",
+          "abs": "98 stores"
+        },
+        {
+          "item": "Customer Loyalty",
+          "index": "45.6",
+          "abs": "45.6%"
+        }
+      ]
+    },
+    {
+      "bubbleID": 7,
+      "bubbleLabel": "Guzman y Gomez",
+      "bubbleSize_absolute": 31200,
+      "bubbleSize_relative": 0.058,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "31200",
+          "abs": "5.8%"
+        },
+        {
+          "item": "Growth Rate",
+          "index": "28.5",
+          "abs": "28.5%"
+        },
+        {
+          "item": "Store Count",
+          "index": "156",
+          "abs": "156 stores"
+        }
+      ]
+    },
+    {
+      "bubbleID": 8,
+      "bubbleLabel": "Boost Juice",
+      "bubbleSize_absolute": 24890,
+      "bubbleSize_relative": 0.047,
+      "tabledata": [
+        {
+          "item": "Revenue",
+          "index": "24890",
+          "abs": "4.7%"
+        },
+        {
+          "item": "Health Score",
+          "index": "92.3",
+          "abs": "92.3%"
+        },
+        {
+          "item": "Customer Retention",
+          "index": "73.4",
+          "abs": "73.4%"
+        }
+      ]
+    },
+    {
+      "bubbleID": 9,
+      "bubbleLabel": "Nando's",
+      "bubbleSize_absolute": 39600,
+      "bubbleSize_relative": 0.074,
+      "tabledata": [
+        {
+          "item": "Market Share",
+          "index": "39600",
+          "abs": "7.4%"
+        },
+        {
+          "item": "Brand Recognition",
+          "index": "78.9",
+          "abs": "78.9%"
+        },
+        {
+          "item": "Store Count",
+          "index": "134",
+          "abs": "134 stores"
+        }
+      ]
+    },
+    {
+      "bubbleID": 10,
+      "bubbleLabel": "Others",
+      "bubbleSize_absolute": 48300,
+      "bubbleSize_relative": 0.091,
+      "tabledata": [
+        {
+          "item": "Combined Revenue",
+          "index": "48300",
+          "abs": "9.1%"
+        },
+        {
+          "item": "Market Coverage",
+          "index": "567",
+          "abs": "567 stores"
+        },
+        {
+          "item": "Growth Rate",
+          "index": "12.8",
+          "abs": "12.8%"
+        }
+      ]
+    }
+  ],
+  "flow_brands": [
+    {
+      "from": 1,
+      "to": 6,
+      "tabledata": [
+        {
+          "item": "Customer Flow",
+          "index": "2340",
+          "abs": "2,340 customers"
+        },
+        {
+          "item": "Revenue Impact",
+          "index": "4.2",
+          "abs": "4.2%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 199,
+            "out_perc": 0.698819,
+            "in_perc": 0.301181,
+            "out_index": 1.372391,
+            "in_index": 1.911284
+          },
+          "out": {
+            "abs": 211,
+            "out_perc": 0.595923,
+            "in_perc": 0.404077,
+            "out_index": 1.989468,
+            "in_index": 1.965052
+          },
+          "net": {
+            "abs": 12,
+            "perc": 0.118879,
+            "index": 3.904463
+          },
+          "both": {
+            "abs": 12,
+            "out_perc": 0.393208,
+            "in_perc": 0.606792,
+            "out_index": 0.952637,
+            "in_index": 0.834074
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 109,
+            "perc": 0.262202,
+            "index": 1.537199
+          },
+          "out": {
+            "abs": 137,
+            "perc": 0.568134,
+            "index": 1.621916
+          },
+          "net": {
+            "abs": 28,
+            "perc": 0.191614,
+            "index": 1.80661
+          },
+          "both": {
+            "abs": 28,
+            "out_perc": 0.596362,
+            "in_perc": 0.403638,
+            "out_index": 1.070984,
+            "in_index": 1.090571
+          }
+        }
+      ]
+    },
+    {
+      "from": 2,
+      "to": 0,
+      "tabledata": [
+        {
+          "item": "Customer Migration",
+          "index": "1890",
+          "abs": "1,890 customers"
+        },
+        {
+          "item": "Market Impact",
+          "index": "3.1",
+          "abs": "3.1%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 143,
+            "out_perc": 0.698271,
+            "in_perc": 0.301729,
+            "out_index": 1.316503,
+            "in_index": 1.641647
+          },
+          "out": {
+            "abs": 267,
+            "out_perc": 0.624242,
+            "in_perc": 0.375758,
+            "out_index": 1.439146,
+            "in_index": 1.857539
+          },
+          "net": {
+            "abs": 124,
+            "perc": 0.239767,
+            "index": 1.462782
+          },
+          "both": {
+            "abs": 124,
+            "out_perc": 0.624914,
+            "in_perc": 0.375086,
+            "out_index": 1.11902,
+            "in_index": 1.153439
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 259,
+            "perc": 0.432551,
+            "index": 1.089668
+          },
+          "out": {
+            "abs": 298,
+            "perc": 0.379044,
+            "index": 1.878525
+          },
+          "net": {
+            "abs": 39,
+            "perc": 0.089541,
+            "index": 3.389748
+          },
+          "both": {
+            "abs": 39,
+            "out_perc": 0.60314,
+            "in_perc": 0.39686,
+            "out_index": 1.011829,
+            "in_index": 0.98346
+          }
+        }
+      ]
+    }
+  ],
+  "flow_markets": [
+    {
+      "bubbleID": 0,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "5",
+          "abs": "5th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "8.8",
+          "abs": "8.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "4.2",
+          "abs": "4.2%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 4477.0,
+            "perc": 0.0639069302690743,
+            "index": 1.1335552953465635
+          },
+          "out": {
+            "abs": 4348.0,
+            "perc": 0.07036623456490428,
+            "index": 1.2481278238339175
+          },
+          "net": {
+            "abs": 129.0,
+            "perc": 0.015149735760422783,
+            "index": 0.26871988878237185
+          },
+          "both": {
+            "abs": 8825.0,
+            "out_perc": 0.49269121813031164,
+            "in_perc": 0.5073087818696884,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 255.0,
+            "perc": 0.020693013065000404,
+            "index": 0.9997368758402768
+          },
+          "out": {
+            "abs": 305.0,
+            "perc": 0.022050318102949683,
+            "index": 1.0653120481914113
+          },
+          "net": {
+            "abs": -50.0,
+            "perc": 0.030012004801920768,
+            "index": 1.449963223051542
+          },
+          "both": {
+            "abs": 560.0,
+            "out_perc": 0.5446428571428571,
+            "in_perc": 0.45535714285714285,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5313736574335783,
+            "perc": 0.5313736574335783,
+            "index": 0.9820646319000959
+          },
+          "less": {
+            "abs": 0.4656868287167891,
+            "perc": 0.4656868287167891,
+            "index": 1.021838752203444
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 1,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "1",
+          "abs": "1st position"
+        },
+        {
+          "item": "Market Share",
+          "index": "23.4",
+          "abs": "23.4%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "7.8",
+          "abs": "7.8%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1315.0,
+            "perc": 0.018770965669830848,
+            "index": 1.2701910233795894
+          },
+          "out": {
+            "abs": 1171.0,
+            "perc": 0.018950979916169022,
+            "index": 1.2823722016844803
+          },
+          "net": {
+            "abs": 144.0,
+            "perc": 0.016911332941867294,
+            "index": 1.14435366160557
+          },
+          "both": {
+            "abs": 2486.0,
+            "out_perc": 0.47103781174577636,
+            "in_perc": 0.5289621882542237,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 239.0,
+            "perc": 0.019394627931510183,
+            "index": 1.312392912208298
+          },
+          "out": {
+            "abs": 286.0,
+            "perc": 0.020676691729323307,
+            "index": 1.3991474221267453
+          },
+          "net": {
+            "abs": -47.0,
+            "perc": 0.028211284513805522,
+            "index": 1.9089971702966901
+          },
+          "both": {
+            "abs": 525.0,
+            "out_perc": 0.5447619047619048,
+            "in_perc": 0.4552380952380952,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5459286000802246,
+            "perc": 0.5459286000802246,
+            "index": 1.0089645246453292
+          },
+          "less": {
+            "abs": 0.45126353790613716,
+            "perc": 0.45126353790613716,
+            "index": 0.9901902782166755
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 2,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "2",
+          "abs": "2nd position"
+        },
+        {
+          "item": "Market Share",
+          "index": "16.8",
+          "abs": "16.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "5.4",
+          "abs": "5.4%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 2571.0,
+            "perc": 0.03669973592177575,
+            "index": 1.348792247963332
+          },
+          "out": {
+            "abs": 1613.0,
+            "perc": 0.02610412519622599,
+            "index": 0.9593813366826616
+          },
+          "net": {
+            "abs": 958.0,
+            "perc": 0.11250733998825602,
+            "index": 4.134880652508853
+          },
+          "both": {
+            "abs": 4184.0,
+            "out_perc": 0.3855162523900574,
+            "in_perc": 0.6144837476099426,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 517.0,
+            "perc": 0.041954069625902785,
+            "index": 1.5419000289959999
+          },
+          "out": {
+            "abs": 401.0,
+            "perc": 0.028990746096009254,
+            "index": 1.065470707481824
+          },
+          "net": {
+            "abs": 116.0,
+            "perc": 0.7388535031847133,
+            "index": 27.154415486809665
+          },
+          "both": {
+            "abs": 918.0,
+            "out_perc": 0.43681917211328974,
+            "in_perc": 0.5631808278867102,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5843660629170638,
+            "perc": 0.5843660629170638,
+            "index": 1.0800031850379976
+          },
+          "less": {
+            "abs": 0.41110581506196375,
+            "perc": 0.41110581506196375,
+            "index": 0.9020737267662211
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 3,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "4",
+          "abs": "4th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "10.7",
+          "abs": "10.7%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "12.3",
+          "abs": "12.3%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 2345.0,
+            "perc": 0.035678912,
+            "index": 1.345678912
+          },
+          "out": {
+            "abs": 1876.0,
+            "perc": 0.028456789,
+            "index": 1.078654321
+          },
+          "net": {
+            "abs": 469.0,
+            "perc": 0.089123456,
+            "index": 3.289123456
+          },
+          "both": {
+            "abs": 4221.0,
+            "out_perc": 0.444328,
+            "in_perc": 0.555672,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 423.0,
+            "perc": 0.038912345,
+            "index": 1.432156789
+          },
+          "out": {
+            "abs": 334.0,
+            "perc": 0.025678912,
+            "index": 0.945671234
+          },
+          "net": {
+            "abs": 89.0,
+            "perc": 0.456789123,
+            "index": 16.789123456
+          },
+          "both": {
+            "abs": 757.0,
+            "out_perc": 0.441217,
+            "in_perc": 0.558783,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.6234567890123456,
+            "perc": 0.6234567890123456,
+            "index": 1.1523678901234567
+          },
+          "less": {
+            "abs": 0.3765432109876544,
+            "perc": 0.3765432109876544,
+            "index": 0.8276321098765433
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 4,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "3",
+          "abs": "3rd position"
+        },
+        {
+          "item": "Market Share",
+          "index": "13.8",
+          "abs": "13.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "18.9",
+          "abs": "18.9%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 2987.0,
+            "perc": 0.038567891,
+            "index": 1.456789123
+          },
+          "out": {
+            "abs": 2234.0,
+            "perc": 0.029876543,
+            "index": 1.123456789
+          },
+          "net": {
+            "abs": 753.0,
+            "perc": 0.102345679,
+            "index": 3.767891234
+          },
+          "both": {
+            "abs": 5221.0,
+            "out_perc": 0.427914,
+            "in_perc": 0.572086,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 567.0,
+            "perc": 0.043567891,
+            "index": 1.601234567
+          },
+          "out": {
+            "abs": 398.0,
+            "perc": 0.028912345,
+            "index": 1.067891234
+          },
+          "net": {
+            "abs": 169.0,
+            "perc": 0.678912345,
+            "index": 24.987654321
+          },
+          "both": {
+            "abs": 965.0,
+            "out_perc": 0.412435,
+            "in_perc": 0.587565,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5789123456789012,
+            "perc": 0.5789123456789012,
+            "index": 1.0678901234567891
+          },
+          "less": {
+            "abs": 0.4210876543210988,
+            "perc": 0.4210876543210988,
+            "index": 0.9321098765432109
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 5,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "6",
+          "abs": "6th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.9",
+          "abs": "7.9%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "3.2",
+          "abs": "3.2%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1789.0,
+            "perc": 0.028567891,
+            "index": 1.078654321
+          },
+          "out": {
+            "abs": 1456.0,
+            "perc": 0.023456789,
+            "index": 0.865432109
+          },
+          "net": {
+            "abs": 333.0,
+            "perc": 0.067891234,
+            "index": 2.498765432
+          },
+          "both": {
+            "abs": 3245.0,
+            "out_perc": 0.448537,
+            "in_perc": 0.551463,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 298.0,
+            "perc": 0.029876543,
+            "index": 1.098765432
+          },
+          "out": {
+            "abs": 234.0,
+            "perc": 0.019876543,
+            "index": 0.732109876
+          },
+          "net": {
+            "abs": 64.0,
+            "perc": 0.378912345,
+            "index": 13.934567891
+          },
+          "both": {
+            "abs": 532.0,
+            "out_perc": 0.439850,
+            "in_perc": 0.560150,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.4567890123456789,
+            "perc": 0.4567890123456789,
+            "index": 0.8432109876543211
+          },
+          "less": {
+            "abs": 0.5432109876543211,
+            "perc": 0.5432109876543211,
+            "index": 1.1567890123456789
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 6,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "9",
+          "abs": "9th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "3.5",
+          "abs": "3.5%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "1.8",
+          "abs": "1.8%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 956.0,
+            "perc": 0.018567891,
+            "index": 0.701234567
+          },
+          "out": {
+            "abs": 823.0,
+            "perc": 0.015678912,
+            "index": 0.576543210
+          },
+          "net": {
+            "abs": 133.0,
+            "perc": 0.034567891,
+            "index": 1.271234567
+          },
+          "both": {
+            "abs": 1779.0,
+            "out_perc": 0.462640,
+            "in_perc": 0.537360,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 145.0,
+            "perc": 0.017891234,
+            "index": 0.658765432
+          },
+          "out": {
+            "abs": 123.0,
+            "perc": 0.013456789,
+            "index": 0.495678912
+          },
+          "net": {
+            "abs": 22.0,
+            "perc": 0.178912345,
+            "index": 6.581234567
+          },
+          "both": {
+            "abs": 268.0,
+            "out_perc": 0.459702,
+            "in_perc": 0.540298,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.3456789012345679,
+            "perc": 0.3456789012345679,
+            "index": 0.6387654321098765
+          },
+          "less": {
+            "abs": 0.6543210987654321,
+            "perc": 0.6543210987654321,
+            "index": 1.3612345678901235
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 7,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "7",
+          "abs": "7th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "5.8",
+          "abs": "5.8%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "28.5",
+          "abs": "28.5%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1234.0,
+            "perc": 0.023456789,
+            "index": 0.887654321
+          },
+          "out": {
+            "abs": 987.0,
+            "perc": 0.018765432,
+            "index": 0.690123456
+          },
+          "net": {
+            "abs": 247.0,
+            "perc": 0.056789123,
+            "index": 2.089123456
+          },
+          "both": {
+            "abs": 2221.0,
+            "out_perc": 0.444259,
+            "in_perc": 0.555741,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 189.0,
+            "perc": 0.023456789,
+            "index": 0.863210987
+          },
+          "out": {
+            "abs": 145.0,
+            "perc": 0.017234567,
+            "index": 0.634567891
+          },
+          "net": {
+            "abs": 44.0,
+            "perc": 0.281234567,
+            "index": 10.345678912
+          },
+          "both": {
+            "abs": 334.0,
+            "out_perc": 0.434132,
+            "in_perc": 0.565868,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.6789012345678901,
+            "perc": 0.6789012345678901,
+            "index": 1.2543210987654321
+          },
+          "less": {
+            "abs": 0.3210987654321099,
+            "perc": 0.3210987654321099,
+            "index": 0.7456789012345679
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 8,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "8",
+          "abs": "8th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "4.7",
+          "abs": "4.7%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "6.1",
+          "abs": "6.1%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1067.0,
+            "perc": 0.021234567,
+            "index": 0.803456789
+          },
+          "out": {
+            "abs": 834.0,
+            "perc": 0.016789123,
+            "index": 0.617891234
+          },
+          "net": {
+            "abs": 233.0,
+            "perc": 0.054321098,
+            "index": 1.998765432
+          },
+          "both": {
+            "abs": 1901.0,
+            "out_perc": 0.438717,
+            "in_perc": 0.561283,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 167.0,
+            "perc": 0.020678912,
+            "index": 0.761234567
+          },
+          "out": {
+            "abs": 134.0,
+            "perc": 0.015432109,
+            "index": 0.567891234
+          },
+          "net": {
+            "abs": 33.0,
+            "perc": 0.219876543,
+            "index": 8.087654321
+          },
+          "both": {
+            "abs": 301.0,
+            "out_perc": 0.445183,
+            "in_perc": 0.554817,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.4123456789012346,
+            "perc": 0.4123456789012346,
+            "index": 0.7614321098765432
+          },
+          "less": {
+            "abs": 0.5876543210987654,
+            "perc": 0.5876543210987654,
+            "index": 1.2385678901234568
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 9,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "7",
+          "abs": "7th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "7.4",
+          "abs": "7.4%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "9.2",
+          "abs": "9.2%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1543.0,
+            "perc": 0.026789123,
+            "index": 1.012345678
+          },
+          "out": {
+            "abs": 1234.0,
+            "perc": 0.021456789,
+            "index": 0.789123456
+          },
+          "net": {
+            "abs": 309.0,
+            "perc": 0.062345679,
+            "index": 2.295678912
+          },
+          "both": {
+            "abs": 2777.0,
+            "out_perc": 0.444444,
+            "in_perc": 0.555556,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 234.0,
+            "perc": 0.026789123,
+            "index": 0.985432109
+          },
+          "out": {
+            "abs": 178.0,
+            "perc": 0.019876543,
+            "index": 0.732109876
+          },
+          "net": {
+            "abs": 56.0,
+            "perc": 0.356789123,
+            "index": 13.123456789
+          },
+          "both": {
+            "abs": 412.0,
+            "out_perc": 0.432038,
+            "in_perc": 0.567962,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5987654321098765,
+            "perc": 0.5987654321098765,
+            "index": 1.1054321098765432
+          },
+          "less": {
+            "abs": 0.4012345678901235,
+            "perc": 0.4012345678901235,
+            "index": 0.8945678901234568
+          }
+        }
+      ]
+    },
+    {
+      "bubbleID": 10,
+      "tabledata": [
+        {
+          "item": "Market Position",
+          "index": "6",
+          "abs": "6th position"
+        },
+        {
+          "item": "Market Share",
+          "index": "9.1",
+          "abs": "9.1%"
+        },
+        {
+          "item": "Growth Trend",
+          "index": "8.7",
+          "abs": "8.7%"
+        }
+      ],
+      "churn": [
+        {
+          "in": {
+            "abs": 1876.0,
+            "perc": 0.032456789,
+            "index": 1.228765432
+          },
+          "out": {
+            "abs": 1456.0,
+            "perc": 0.025678912,
+            "index": 0.945678912
+          },
+          "net": {
+            "abs": 420.0,
+            "perc": 0.076543210,
+            "index": 2.816789123
+          },
+          "both": {
+            "abs": 3332.0,
+            "out_perc": 0.437044,
+            "in_perc": 0.562956,
+            "index": 1
+          }
+        }
+      ],
+      "switching": [
+        {
+          "in": {
+            "abs": 298.0,
+            "perc": 0.032456789,
+            "index": 1.194567891
+          },
+          "out": {
+            "abs": 223.0,
+            "perc": 0.024567891,
+            "index": 0.904321987
+          },
+          "net": {
+            "abs": 75.0,
+            "perc": 0.425678912,
+            "index": 15.667891234
+          },
+          "both": {
+            "abs": 521.0,
+            "out_perc": 0.428022,
+            "in_perc": 0.571978,
+            "index": 1
+          }
+        }
+      ],
+      "spend": [
+        {
+          "more": {
+            "abs": 0.5234567890123456,
+            "perc": 0.5234567890123456,
+            "index": 0.9654321098765432
+          },
+          "less": {
+            "abs": 0.4765432109876544,
+            "perc": 0.4765432109876544,
+            "index": 1.0345678901234568
+          }
+        }
+      ]
+    }
+  ]
+}

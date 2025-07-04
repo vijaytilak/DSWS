@@ -1,172 +1,196 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
-import * as d3 from 'd3';
-import type { FlowData, Bubble, Flow } from './types';
-import { initializeBubbleVisualization, drawBubbles, drawFlows } from './utils/visualization';
-import { prepareFlowData } from './utils/flow';
+import type { FlowData, Bubble } from './types';
+import type { Flow } from './services/FlowFactory';
+import { VisualizationManager } from './core/VisualizationManager';
+import { DependencyContainer } from './core/DependencyContainer';
+import FlowDataService from './services/FlowDataService';
+import ViewManager from './services/ViewManager';
+import { ConfigurationManager } from './config/ConfigurationManager';
 import { useDimensions } from './hooks/useDimensions';
-import { useCentreFlow } from '@/app/dashboard/layout';
+import { initializeBubbleVisualization } from './utils/bubble-utils';
 import { useTableData } from '@/app/contexts/table-data-context';
 
+/**
+ * Props interface for the DataSphere component
+ */
 interface DataSphereProps {
+  /** Flow data containing items and relationships */
   data: FlowData;
+  /** Type of flow visualization ('in', 'out', 'net', 'both') */
   flowType: string;
+  /** Whether to show center flow visualization */
   centreFlow: boolean;
+  /** Threshold value for filtering flows */
   threshold: number;
-  outerRingConfig?: {
-    show?: boolean;
-    strokeWidth?: number;
-    strokeDasharray?: string;
-    opacity?: number;
-  };
+  /** View type override - if not provided, uses ViewManager service default */
+  isMarketView?: boolean;
+  /** Flow option override - if not provided, uses ConfigurationManager default */
+  flowOption?: 'churn' | 'switching';
+  /** Focused bubble ID from context */
+  focusBubbleId?: number | null;
+  /** Callback to set focused bubble ID */
+  onFocusBubbleChange?: (bubbleId: number | null) => void;
 }
 
+/**
+ * DataSphere Component
+ * 
+ * A React component that renders an interactive data visualization using D3.js.
+ * Features include bubble visualization with flow connections, tooltips, and
+ * interactive controls for data exploration.
+ * 
+ * @param props - Component properties
+ * @returns JSX element containing the data sphere visualization
+ */
 export default function DataSphere({ 
   data,
   flowType,
   centreFlow,
   threshold,
-  outerRingConfig,
+  isMarketView: propIsMarketView,
+  flowOption: propFlowOption,
+  focusBubbleId: propFocusBubbleId,
+  onFocusBubbleChange,
 }: DataSphereProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const { resolvedTheme } = useTheme();
-  const { isMarketView, flowOption, focusBubbleId, setFocusBubbleId } = useCentreFlow();
-  const { setTableData, setSelectedItemLabel } = useTableData();
-  const [focusedFlow, setFocusedFlow] = useState<{ from: number, to: number } | null>(null);
+  const [focusedFlow, setFocusedFlow] = useState<{ from: string, to: string } | null>(null);
   const dimensions = useDimensions(containerRef);
+  const { setTableData, setSelectedItemLabel } = useTableData();
+
+  // Get services from DI container
+  const container = DependencyContainer.getInstance();
+  const viewManager = container.resolve<ViewManager>('ViewManager');
+  const configManager = container.resolve<ConfigurationManager>('ConfigurationManager');
+  
+  // Use props or service defaults for view state
+  const isMarketView = propIsMarketView ?? viewManager.isMarketView();
+  const flowOption = propFlowOption ?? configManager.getFlowOption();
+  const focusBubbleId = propFocusBubbleId ?? null;
+
+  // Handle bubble click
+  const handleBubbleClick = useCallback((bubble: Bubble) => {
+    // Clear focused flow when clicking a bubble
+    setFocusedFlow(null);
+    
+    const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
+    onFocusBubbleChange?.(newFocusId);
+    
+    // Update table data context with bubble data
+    if (newFocusId !== null) {
+      const bubbleData = data.bubbles.find(b => b.bubbleID === bubble.id);
+      if (bubbleData && bubbleData.tabledata) {
+        setTableData(bubbleData.tabledata);
+        setSelectedItemLabel(bubbleData.bubbleLabel);
+      }
+    } else {
+      // Clear table data when no bubble is selected
+      setTableData([]);
+      setSelectedItemLabel('');
+    }
+  }, [focusBubbleId, onFocusBubbleChange, data.bubbles, setTableData, setSelectedItemLabel]);
+
+  // Handle flow click
+  const handleFlowClick = useCallback((flow: Flow) => {
+    // Check if we're toggling this flow off (clicking the same flow again)
+    const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
+    
+    // Set focused flow state
+    setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
+  }, [focusedFlow]);
 
   useEffect(() => {
-    if (!svgRef.current || !data || !data.itemIDs || !dimensions.width) return;
+    if (!svgRef.current || !data || !data.bubbles || !dimensions.width) return;
 
-    const svg = d3.select(svgRef.current);
-    svg.attr("width", "100%")
-      .attr("height", "100%")
-      .attr("viewBox", `0 0 ${dimensions.width} ${dimensions.height}`)
-      .attr("preserveAspectRatio", "xMidYMid meet");
-
-    // Clear previous content
-    svg.selectAll("*").remove();
-
-    // Initialize visualization with minimum constraints
-    const centerX = dimensions.width / 2;
-    const centerY = dimensions.height / 2;
-    const noOfBubbles = Object.keys(data.itemIDs).length;
+    // Get the VisualizationManager instance from the DI container
+    const visualizationManager = container.resolve<VisualizationManager>('visualizationManager');
+    
+    // Initialize the visualization manager if needed
+    visualizationManager.initialize({
+      svgElement: svgRef.current,
+      width: dimensions.width,
+      height: dimensions.height,
+      onBubbleClick: handleBubbleClick,
+      onFlowClick: handleFlowClick
+    });
     
     // Calculate bubble positions and sizes
-    const { bubbles: initialBubbles } = initializeBubbleVisualization(
+    const centerX = dimensions.width / 2;
+    const centerY = dimensions.height / 2;
+    const noOfBubbles = data.bubbles.length;
+    const isDarkTheme = resolvedTheme === 'dark';
+    
+    // Initialize bubble visualization using reference implementation logic
+    const { bubbles } = initializeBubbleVisualization(
       data,
       dimensions.width,
       dimensions.height,
       noOfBubbles,
       centerX,
-      centerY
+      centerY,
+      isMarketView
     );
-
-    // Draw bubbles
-    const handleBubbleClick = (bubble: Bubble) => {
-      if (bubble.id === initialBubbles.length) return; // Ignore center bubble click
-      
-      // Clear focused flow when clicking a bubble
-      setFocusedFlow(null);
-      
-      const newFocusId = focusBubbleId === bubble.id ? null : bubble.id;
-      setFocusBubbleId(newFocusId);
-
-      // If toggling off (deselecting), reset the table data
-      if (newFocusId === null) {
-        setTableData([]);
-        setSelectedItemLabel("");
-        return;
-      }
-
-      // Otherwise, update table data for the clicked bubble
-      const bubbleData = data.itemIDs.find(item => item.itemID === bubble.id);
-      if (bubbleData && bubbleData.tabledata) {
-        setTableData(bubbleData.tabledata);
-        setSelectedItemLabel(bubbleData.itemLabel);
-      }
-    };
-
-    // Handle flow click
-    const handleFlowClick = (flow: Flow) => {
-      // Check if we're toggling this flow off (clicking the same flow again)
-      const isToggleOff = focusedFlow?.from === flow.from && focusedFlow?.to === flow.to;
-      
-      // Set focused flow state
-      setFocusedFlow(isToggleOff ? null : { from: flow.from, to: flow.to });
-      
-      // If toggling off (deselecting), reset the table data
-      if (isToggleOff) {
-        setTableData([]);
-        setSelectedItemLabel("");
-        return;
-      }
-      
-      // Find the flow data
-      if (isMarketView) {
-        const marketFlows = data.flows_markets;
-        const selectedFlow = marketFlows.find(f => f.itemID === flow.from);
-        
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          setSelectedItemLabel(`Market: ${sourceBubble?.itemLabel || 'Unknown'}`);
-        }
-      } else {
-        const brandFlows = data.flows_brands;
-        const selectedFlow = brandFlows.find(f => 
-          (f.from === flow.from && f.to === flow.to) || 
-          (f.from === flow.to && f.to === flow.from)
-        );
-
-        if (selectedFlow?.tabledata) {
-          setTableData(selectedFlow.tabledata);
-          const sourceBubble = data.itemIDs.find(item => item.itemID === flow.from);
-          const targetBubble = data.itemIDs.find(item => item.itemID === flow.to);
-          setSelectedItemLabel(`Flow: ${sourceBubble?.itemLabel || 'Unknown'} → ${targetBubble?.itemLabel || 'Unknown'}`);
-        }
-      }
-    };
-
-    if (outerRingConfig) {
-      drawBubbles(
-        svg,
-        initialBubbles,
-        resolvedTheme === 'dark',
-        isMarketView,
-        centerX,
-        centerY,
-        focusBubbleId,
-        handleBubbleClick,
-        outerRingConfig
-      );
-    } else {
-      drawBubbles(
-        svg,
-        initialBubbles,
-        resolvedTheme === 'dark',
-        isMarketView,
-        centerX,
-        centerY,
-        focusBubbleId,
-        handleBubbleClick
-      );
-    }
-
-    const initialFlows = prepareFlowData(
-      data, 
-      flowType, 
-      centreFlow, 
-      threshold, 
-      focusBubbleId,
+    
+    // Update focus state for bubbles and set center bubble properties
+    const updatedBubbles = bubbles.map(bubble => ({
+      ...bubble,
+      focus: bubble.id === focusBubbleId,
+      isCentre: bubble.id === noOfBubbles, // Set center bubble flag
+      isSelected: bubble.id === focusBubbleId,
       isMarketView,
-      flowOption
-    );
-    drawFlows(svg, initialFlows, initialBubbles, flowType, focusBubbleId, centreFlow, isMarketView, flowOption, handleFlowClick, focusedFlow);
-  }, [data, flowType, centreFlow, threshold, focusBubbleId, focusedFlow, dimensions, isMarketView, flowOption, setTableData, setSelectedItemLabel, resolvedTheme, outerRingConfig, setFocusBubbleId]);
+      isDarkTheme
+    }));
+
+    // Get FlowDataService from DI container
+    const flowDataService = container.resolve<FlowDataService>('FlowDataService');
+    
+    // Initialize the service with raw data
+    flowDataService.initialize(data);
+    
+    // Configure the service
+    flowDataService.updateConfig({
+      bubbles: updatedBubbles,
+      canvasWidth: dimensions.width,
+      canvasHeight: dimensions.height,
+      threshold: threshold || 0,
+      focusBubbleId,
+    });
+    
+    // Get flows with current configuration
+    const flows = flowDataService.getFilteredFlows({
+      view: isMarketView ? 'markets' : 'brands',
+      metric: flowOption,
+      flowType: flowType as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
+      focusBubbleId,
+      threshold: threshold || 0
+    });
+    
+    // Update VisualizationManager's internal state
+    visualizationManager.updateData(updatedBubbles, flows);
+    
+    // Trigger rendering
+    visualizationManager.render();
+
+    // Cleanup when component unmounts
+    return () => {
+      visualizationManager.cleanup();
+    };
+  }, [
+    data, 
+    flowType, 
+    centreFlow, 
+    threshold, 
+    focusBubbleId, 
+    focusedFlow, 
+    dimensions, 
+    isMarketView, 
+    flowOption, 
+    resolvedTheme
+  ]);
 
   return (
     <div ref={containerRef} className="w-full h-full">

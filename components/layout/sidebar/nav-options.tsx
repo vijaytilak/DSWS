@@ -1,4 +1,4 @@
-import { Activity, Repeat, Heart } from "lucide-react"
+import { Activity, Repeat } from "lucide-react"
 
 import {
   SidebarGroup,
@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-type FlowOption = 'churn' | 'switching' | 'affinity';
+type FlowOption = 'churn' | 'switching';
 type View = 'Markets' | 'Brands';
 
 interface NavOptionsProps {
@@ -28,12 +28,6 @@ const optionItems = [
     value: "switching" as FlowOption,
     icon: Repeat,
   },
-  {
-    title: "Affinity",
-    value: "affinity" as FlowOption,
-    icon: Heart,
-    brandsOnly: true, // Only show for Brands view
-  },
 ]
 
 export function NavOptions({ onFlowOptionChange, flowOption, selectedView }: NavOptionsProps) {
@@ -41,9 +35,7 @@ export function NavOptions({ onFlowOptionChange, flowOption, selectedView }: Nav
     <SidebarGroup>
       <SidebarGroupLabel>Metric</SidebarGroupLabel>
       <SidebarMenu>
-        {optionItems
-          .filter(item => !item.brandsOnly || selectedView === 'Brands')
-          .map((item) => (
+        {optionItems.map((item) => (
             <SidebarMenuItem key={item.value}>
               <SidebarMenuButton
                 isActive={flowOption === item.value}

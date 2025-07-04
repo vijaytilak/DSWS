@@ -22,7 +22,7 @@ interface NavFlowTypesProps {
   }[]
   focusBubbleId?: number | null;
   isMarketView?: boolean;
-  flowOption?: 'churn' | 'switching' | 'affinity';
+  flowOption?: 'churn' | 'switching';
 }
 
 const defaultItems = [
@@ -30,25 +30,25 @@ const defaultItems = [
     title: "out",
     url: "#",
     icon: ArrowUpRight,
-    flowType: "outFlow only"
+    flowType: "out"
   },
   {
     title: "in",
     url: "#",
     icon: ArrowDownRight,
-    flowType: "inFlow only"
+    flowType: "in"
   },
   {
     title: "net",
     url: "#",
     icon: ArrowRightLeft,
-    flowType: "netFlow"
+    flowType: "net"
   },
   {
     title: "both",
     url: "#",
     icon: ArrowLeftRight,
-    flowType: "bi-directional"
+    flowType: "both"
   },
 ]
 
