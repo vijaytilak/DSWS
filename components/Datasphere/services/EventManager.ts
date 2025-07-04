@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
-import { Bubble, Flow } from '../types';
+import { Bubble } from '../types';
+import type { Flow } from './FlowFactory';
 import { ThemeManager } from './ThemeManager';
 import { TooltipManager } from '../renderers/TooltipManager';
 

@@ -19,6 +19,7 @@ export interface SegmentGenerationConfig {
 export default class FlowSegmentGenerator {
   private static instance: FlowSegmentGenerator;
   private themeManager: ThemeManager;
+  private bubbles: Bubble[] = [];
 
   private constructor() {
     this.themeManager = ThemeManager.getInstance();
@@ -35,6 +36,9 @@ export default class FlowSegmentGenerator {
    * Generate FlowSegment objects from Flow objects
    */
   public generateSegments(flows: Flow[], config: SegmentGenerationConfig): Flow[] {
+    // Store bubbles for color calculations
+    this.bubbles = config.bubbles;
+    
     const maxFlowValue = Math.max(...flows.map(f => f.abs));
 
     return flows.map(flow => {
@@ -73,15 +77,17 @@ export default class FlowSegmentGenerator {
     const endBubble = this.findBubble(flow.to, config.bubbles);
 
     if (!startBubble) {
+      console.error(`Start bubble ${flow.from} not found in bubbles:`, config.bubbles.map(b => ({ id: b.id, label: b.label })));
       throw new Error(`Start bubble ${flow.from} not found`);
     }
 
-    // Handle center flow case
+    // Calculate start point at outer edge of source bubble
+    const startPoint = this.calculateBubbleEdgePoint(startBubble, endBubble, config);
+    
+    // Handle center flow case - calculate end point at outer edge
     const endPoint = endBubble ? 
-      { x: endBubble.x, y: endBubble.y } : 
+      this.calculateBubbleEdgePoint(endBubble, startBubble, config) : 
       { x: config.canvasWidth / 2, y: config.canvasHeight / 2 };
-
-    const startPoint = { x: startBubble.x, y: startBubble.y };
     
     // Calculate midpoint for label positioning
     const midPoint = {
@@ -148,19 +154,19 @@ export default class FlowSegmentGenerator {
       throw new Error(`Start bubble ${flow.from} not found`);
     }
 
-    const endPoint = endBubble ? 
-      { x: endBubble.x, y: endBubble.y } : 
+    // Calculate actual edge points for start and end bubbles
+    const startEdgePoint = this.calculateBubbleEdgePoint(startBubble, endBubble, config);
+    const endEdgePoint = endBubble ? 
+      this.calculateBubbleEdgePoint(endBubble, startBubble, config) : 
       { x: config.canvasWidth / 2, y: config.canvasHeight / 2 };
 
-    const startPoint = { x: startBubble.x, y: startBubble.y };
-
     // Calculate split point based on flow percentages
-    const splitPoint = this.calculateSplitPoint(flow, startPoint, endPoint);
+    const splitPoint = this.calculateSplitPoint(flow, startEdgePoint, endEdgePoint);
 
     // Extract bidirectional flow data
     const bidirectionalData = this.extractBidirectionalData(flow);
 
-    // Create outgoing segment (from split point to end bubble)
+    // Create outgoing segment (from start bubble edge to split point)
     const outgoingSegment: FlowSegment = {
       id: `${flow.id}-segment-outgoing`,
       parentFlowId: flow.id,
@@ -169,14 +175,14 @@ export default class FlowSegmentGenerator {
       index: bidirectionalData.outIndex,
       
       direction: 'outgoing',
-      startBubble: 'split',
-      endBubble: flow.to,
+      startBubble: flow.from,
+      endBubble: 'split',
       
-      startPoint: splitPoint,
-      endPoint,
+      startPoint: startEdgePoint,
+      endPoint: splitPoint,
       midPoint: {
-        x: (splitPoint.x + endPoint.x) / 2,
-        y: (splitPoint.y + endPoint.y) / 2
+        x: (startEdgePoint.x + splitPoint.x) / 2,
+        y: (startEdgePoint.y + splitPoint.y) / 2
       },
       
       color: this.getFlowColor(flow, 'outgoing'),
@@ -192,8 +198,8 @@ export default class FlowSegmentGenerator {
       labels: this.createLabels(
         { abs: bidirectionalData.outAbs, perc: bidirectionalData.outPerc, index: bidirectionalData.outIndex },
         {
-          x: (splitPoint.x + endPoint.x) / 2,
-          y: (splitPoint.y + endPoint.y) / 2
+          x: (startEdgePoint.x + splitPoint.x) / 2,
+          y: (startEdgePoint.y + splitPoint.y) / 2
         }
       ),
       
@@ -208,7 +214,7 @@ export default class FlowSegmentGenerator {
       animationProgress: 1,
     };
 
-    // Create incoming segment (from split point to start bubble)
+    // Create incoming segment (from split point to end bubble edge)
     const incomingSegment: FlowSegment = {
       id: `${flow.id}-segment-incoming`,
       parentFlowId: flow.id,
@@ -218,13 +224,13 @@ export default class FlowSegmentGenerator {
       
       direction: 'incoming',
       startBubble: 'split',
-      endBubble: flow.from,
+      endBubble: flow.to,
       
       startPoint: splitPoint,
-      endPoint: startPoint,
+      endPoint: endEdgePoint,
       midPoint: {
-        x: (splitPoint.x + startPoint.x) / 2,
-        y: (splitPoint.y + startPoint.y) / 2
+        x: (splitPoint.x + endEdgePoint.x) / 2,
+        y: (splitPoint.y + endEdgePoint.y) / 2
       },
       
       color: this.getFlowColor(flow, 'incoming'),
@@ -240,8 +246,8 @@ export default class FlowSegmentGenerator {
       labels: this.createLabels(
         { abs: bidirectionalData.inAbs, perc: bidirectionalData.inPerc, index: bidirectionalData.inIndex },
         {
-          x: (splitPoint.x + startPoint.x) / 2,
-          y: (splitPoint.y + startPoint.y) / 2
+          x: (splitPoint.x + endEdgePoint.x) / 2,
+          y: (splitPoint.y + endEdgePoint.y) / 2
         }
       ),
       
@@ -304,12 +310,19 @@ export default class FlowSegmentGenerator {
    * Extract flow data values from Flow object
    */
   private extractFlowData(flow: Flow): { abs: number, perc: number, index: number } {
-    // This is a simplified version - in real implementation, you'd need to
-    // extract the actual perc and index values from the raw data
+    if (!flow.rawFlowData || !flow.rawFlowData[flow.flowType]) {
+      return {
+        abs: flow.abs,
+        perc: 0,
+        index: 0
+      };
+    }
+
+    const flowTypeData = flow.rawFlowData[flow.flowType];
     return {
       abs: flow.abs,
-      perc: 0, // TODO: Extract from raw data based on flowType
-      index: 0 // TODO: Extract from raw data based on flowType
+      perc: flowTypeData.perc || 0,
+      index: flowTypeData.index || 0
     };
   }
 
@@ -320,15 +333,30 @@ export default class FlowSegmentGenerator {
     inAbs: number, inPerc: number, inIndex: number,
     outAbs: number, outPerc: number, outIndex: number
   } {
-    // This is a simplified version - in real implementation, you'd need to
-    // extract the actual values from the raw data
+    if (!flow.rawFlowData || !flow.rawFlowData.both) {
+      // Default split if no specific data available
+      const defaultInRatio = 0.4;
+      const defaultOutRatio = 0.6;
+      
+      return {
+        inAbs: Math.round(flow.abs * defaultInRatio),
+        inPerc: defaultInRatio,
+        inIndex: 1,
+        outAbs: Math.round(flow.abs * defaultOutRatio),
+        outPerc: defaultOutRatio,
+        outIndex: 2
+      };
+    }
+
+    const bothData = flow.rawFlowData.both;
+    
     return {
-      inAbs: flow.abs * 0.4,  // TODO: Extract real values
-      inPerc: 0,
-      inIndex: 0,
-      outAbs: flow.abs * 0.6, // TODO: Extract real values
-      outPerc: 0,
-      outIndex: 0
+      inAbs: Math.round(flow.abs * (bothData.in_perc || 0.4)),
+      inPerc: bothData.in_perc || 0.4,
+      inIndex: bothData.index || 1,
+      outAbs: Math.round(flow.abs * (bothData.out_perc || 0.6)),
+      outPerc: bothData.out_perc || 0.6,
+      outIndex: bothData.index || 1 // Same index for both directions typically
     };
   }
 
@@ -343,23 +371,30 @@ export default class FlowSegmentGenerator {
   }
 
   /**
-   * Get flow color based on theme and flow properties
+   * Get flow color based on source bubble color
    */
   private getFlowColor(flow: Flow, direction?: 'incoming' | 'outgoing'): string {
-    const isDark = this.themeManager.isDark();
+    // Find the source bubble to get its color
+    const sourceBubble = this.findBubble(flow.from, this.bubbles);
+    let baseColor: string;
     
-    // Base colors for different metrics
-    const colorMap = {
-      churn: isDark ? '#ef4444' : '#dc2626',    // Red
-      switching: isDark ? '#3b82f6' : '#2563eb', // Blue
-      spend: isDark ? '#10b981' : '#059669'      // Green
-    };
+    if (sourceBubble && sourceBubble.color) {
+      // Use the source bubble's color
+      baseColor = sourceBubble.color;
+    } else {
+      // Fallback to theme-based colors if bubble color not available
+      const isDark = this.themeManager.isDark();
+      const colorMap = {
+        churn: isDark ? '#ef4444' : '#dc2626',    // Red
+        switching: isDark ? '#3b82f6' : '#2563eb', // Blue
+        spend: isDark ? '#10b981' : '#059669'      // Green
+      };
+      baseColor = colorMap[flow.metric] || (isDark ? '#6b7280' : '#4b5563');
+    }
 
-    let baseColor = colorMap[flow.metric] || (isDark ? '#6b7280' : '#4b5563');
-
-    // Modify opacity or hue for bidirectional flows
+    // Modify opacity for bidirectional flows - incoming should be slightly dimmer
     if (direction === 'incoming') {
-      baseColor = this.adjustColorOpacity(baseColor, 0.7);
+      baseColor = this.adjustColorOpacity(baseColor, 0.8);
     }
 
     return baseColor;
@@ -377,10 +412,21 @@ export default class FlowSegmentGenerator {
    * Get marker position based on flow direction
    */
   private getMarkerPosition(flow: Flow): 'start' | 'end' | 'both' | 'none' {
+    // For markets view, arrows should point TO the center
+    if (flow.view === 'markets') {
+      if (flow.flowType === 'in') return 'start'; // Arrow points away from center (incoming to bubble)
+      if (flow.flowType === 'out') return 'end';  // Arrow points toward center (outgoing from bubble)
+      if (flow.flowType === 'net') {
+        // For net flows, direction depends on value sign
+        return flow.abs >= 0 ? 'end' : 'start';
+      }
+      return 'end'; // Default for markets - toward center
+    }
+    
+    // For brands view, standard arrow directions
     if (flow.flowType === 'in') return 'start';
     if (flow.flowType === 'out') return 'end';
     if (flow.flowType === 'net') {
-      // For net flows, direction depends on value sign
       return flow.abs >= 0 ? 'end' : 'start';
     }
     return 'end'; // Default
@@ -426,5 +472,25 @@ export default class FlowSegmentGenerator {
     return `${flow.metadata?.sourceName} → ${flow.metadata?.targetName}${directionLabel}\n` +
            `${flow.metric}: ${flow.abs}\n` +
            `Type: ${flow.flowType}`;
+  }
+
+  /**
+   * Calculate the point on the outer edge of a bubble towards another bubble
+   */
+  private calculateBubbleEdgePoint(fromBubble: Bubble, toBubble: Bubble | null, config: SegmentGenerationConfig): { x: number, y: number } {
+    // Default target is canvas center if no target bubble
+    const targetX = toBubble ? toBubble.x : config.canvasWidth / 2;
+    const targetY = toBubble ? toBubble.y : config.canvasHeight / 2;
+    
+    // Calculate angle from bubble center to target
+    const deltaX = targetX - fromBubble.x;
+    const deltaY = targetY - fromBubble.y;
+    const angle = Math.atan2(deltaY, deltaX);
+    
+    // Calculate point on outer edge of bubble
+    const edgeX = fromBubble.x + fromBubble.radius * Math.cos(angle);
+    const edgeY = fromBubble.y + fromBubble.radius * Math.sin(angle);
+    
+    return { x: edgeX, y: edgeY };
   }
 }

@@ -2,6 +2,7 @@ import { Bubble } from '../types';
 import type { Flow } from '../services/FlowFactory';
 // FlowIntegrationProcessor removed - using FlowDataService directly
 import { DataAdapter } from '../adapters/DataAdapter';
+import { prepareBubbleData } from '../utils/bubble-utils';
 
 /**
  * Interface for visualization state options
@@ -67,29 +68,33 @@ export class VisualizationState {
     } = this.options;
     
     try {
+      // Get the loaded data which includes bubbles
+      const data = this.dataAdapter.getData();
+      
+      // Prepare bubble data using the utility function
+      // Using default values for positioning - these should be provided from component
+      const positionCircleRadius = 300; // Default value
+      const noOfBubbles = data.bubbles.length;
+      const { bubbles } = prepareBubbleData(data, positionCircleRadius, noOfBubbles);
+      this.bubbles = bubbles;
+      
       // Process flow data using DataAdapter
       if (isMarketView) {
-        const result = await this.dataAdapter.processMarketFlowData(
+        this.flows = await this.dataAdapter.processMarketFlowData(
           flowType,
           flowOption,
           focusBubbleId,
           threshold,
           centreFlow
         );
-        
-        this.bubbles = result.bubbles;
-        this.flows = result.flows;
       } else {
-        const result = await this.dataAdapter.processBrandFlowData(
+        this.flows = await this.dataAdapter.processBrandFlowData(
           flowType,
           flowOption,
           focusBubbleId,
           threshold,
           centreFlow
         );
-        
-        this.bubbles = result.bubbles;
-        this.flows = result.flows;
       }
       
       // Notify listeners of state change

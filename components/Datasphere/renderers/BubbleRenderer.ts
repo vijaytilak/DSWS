@@ -160,7 +160,7 @@ export class BubbleRenderer {
       .attr('r', d => d.radius)
       .attr('fill', d => {
         if (d.isCentre) {
-          return '#FF0033'; // Center bubble should be red for visibility
+          return '#000000'; // Center bubble should be black as per reference
         }
         return d.color;
       })
@@ -236,7 +236,7 @@ export class BubbleRenderer {
       .attr('fill', d => {
         // Apply text color per documentation rules
         if (d.isCentre) {
-          return isDarkTheme ? '#ffffff' : '#000000';
+          return '#ffffff'; // Center bubble text should always be white on black background
         }
         if (d.focus || d.isSelected) {
           return isDarkTheme ? '#ffffff' : '#000000';

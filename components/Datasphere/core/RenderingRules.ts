@@ -1,4 +1,5 @@
-import { Flow, Bubble } from '../types';
+import type { Flow } from '../services/FlowFactory';
+import { Bubble } from '../types';
 import { CONFIG } from '../constants/config';
 import { isBidirectionalFlowType } from '../utils/flowTypeUtils';
 
@@ -105,10 +106,14 @@ export class RenderingRules {
    */
   calculateFlowThickness(flow: Flow): number {
     const { minFlowThickness, maxFlowThickness } = this.config;
-    const value = flow.percentRank || 0;
+    const value = flow.abs || 0;
     
-    // Linear scaling of thickness based on percentile rank
-    return minFlowThickness + ((maxFlowThickness - minFlowThickness) * value) / 100;
+    // For now, use a simple scaling based on absolute value
+    // This should be replaced with proper percentile ranking
+    const maxValue = 10000; // Approximate max value, should be calculated from all flows
+    const ratio = Math.min(value / maxValue, 1);
+    
+    return minFlowThickness + ((maxFlowThickness - minFlowThickness) * ratio);
   }
 
   /**
@@ -132,7 +137,7 @@ export class RenderingRules {
       return this.config.flowColors.outflow;
     } else if (flowType === 'net') {
       // For net flows, use positive/negative colors based on value
-      return (flow.netFlow ?? 0) >= 0 ? this.config.flowColors.positive : this.config.flowColors.negative;
+      return (flow.abs ?? 0) >= 0 ? this.config.flowColors.positive : this.config.flowColors.negative;
     } else {
       // For bidirectional flows, use neutral color
       return this.config.flowColors.neutral;
@@ -143,7 +148,7 @@ export class RenderingRules {
    * Determine if flow should be rendered as bidirectional
    */
   shouldRenderAsBidirectional(flow: Flow, flowType: string, viewType: 'market' | 'brand', flowOption: 'churn' | 'switching'): boolean {
-    return flow.isBidirectional || 
+    return flow.type === 'bidirectional' || 
            flowType === 'both' || 
            isBidirectionalFlowType(flowType, viewType === 'market' ? 'Markets' : 'Brands', flowOption);
   }
@@ -160,7 +165,7 @@ export class RenderingRules {
       return 'normal';
     } else if (flowType === 'net') {
       // Net flows direction depends on value
-      return (flow.netFlow ?? 0) >= 0 ? 'normal' : 'reversed';
+      return (flow.abs ?? 0) >= 0 ? 'normal' : 'reversed';
     } else {
       // Both flows are bidirectional
       return 'bidirectional';
@@ -175,19 +180,19 @@ export class RenderingRules {
 
     if (flowType === 'in') {
       // For "in" flows
-      if (flow.to === focusBubbleId) {
+      if (flow.to === focusBubbleId?.toString()) {
         // When focus bubble is destination, use "out" data
         return 'out';
-      } else if (flow.from === focusBubbleId) {
+      } else if (flow.from === focusBubbleId?.toString()) {
         // When focus bubble is source, use "in" data
         return 'in';
       }
     } else if (flowType === 'out') {
       // For "out" flows
-      if (flow.from === focusBubbleId) {
+      if (flow.from === focusBubbleId?.toString()) {
         // When focus bubble is source, use "out" data
         return 'out';
-      } else if (flow.to === focusBubbleId) {
+      } else if (flow.to === focusBubbleId?.toString()) {
         // When focus bubble is destination, use "in" data
         return 'in';
       }
@@ -272,8 +277,8 @@ export class RenderingRules {
     }
     
     const isFocused = 
-      (flow.from === focusedFlow.from && flow.to === focusedFlow.to) ||
-      (flow.from === focusedFlow.to && flow.to === focusedFlow.from);
+      (flow.from === focusedFlow.from.toString() && flow.to === focusedFlow.to.toString()) ||
+      (flow.from === focusedFlow.to.toString() && flow.to === focusedFlow.from.toString());
       
     return isFocused ? focusedFlowOpacity : unfocusedFlowOpacity;
   }

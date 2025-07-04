@@ -24,10 +24,10 @@ export class ModernFlowRenderer {
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   private width: number;
   private height: number;
-  private flowContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private flowContainer!: d3.Selection<SVGGElement, unknown, null, undefined>;
   private segmentSelection: d3.Selection<SVGPathElement, FlowSegment, SVGGElement, unknown> | null = null;
-  private labelSelection: d3.Selection<SVGTextElement, FlowSegment['labels'][0], SVGGElement, unknown> | null = null;
-  private markerDefs: d3.Selection<SVGDefsElement, unknown, null, undefined>;
+  private labelSelection: d3.Selection<SVGTextElement, any, SVGGElement, unknown> | null = null;
+  private markerDefs!: d3.Selection<SVGDefsElement, unknown, null, undefined>;
   
   private themeManager: ThemeManager;
   private eventManager: EventManager;
@@ -64,8 +64,19 @@ export class ModernFlowRenderer {
    * Main render method using D3.js best practices
    */
   public render(flows: Flow[]): void {
+    console.log('ModernFlowRenderer.render Debug:', {
+      flowsCount: flows.length,
+      sampleFlow: flows[0],
+      flows: flows.slice(0, 3)
+    });
+    
     // Extract all segments from flows for flat data binding
     const allSegments = this.extractAllSegments(flows);
+    
+    console.log('ModernFlowRenderer segments:', {
+      segmentsCount: allSegments.length,
+      sampleSegment: allSegments[0]
+    });
     
     // Update markers first
     this.updateMarkers(allSegments);
@@ -124,6 +135,12 @@ export class ModernFlowRenderer {
    * Render segments using D3.js data binding best practices
    */
   private renderSegments(segments: FlowSegment[]): void {
+    console.log('renderSegments called with:', {
+      segmentsCount: segments.length,
+      firstSegment: segments[0],
+      hasValidCoordinates: segments[0] && segments[0].startPoint && segments[0].endPoint
+    });
+    
     // Data binding with object constancy
     this.segmentSelection = this.flowContainer
       .selectAll<SVGPathElement, FlowSegment>('path.flow-segment')
@@ -153,7 +170,10 @@ export class ModernFlowRenderer {
       .duration(300)
       .ease(d3.easeQuadInOut)
       .attr('d', d => this.generatePath(d))
-      .attr('stroke', d => d.color)
+      .attr('stroke', d => {
+        console.log('Segment color:', d.color, 'visible:', d.visible, 'opacity:', d.opacity);
+        return d.color;
+      })
       .attr('stroke-width', d => d.thickness)
       .style('opacity', d => d.visible ? d.opacity : 0)
       .attr('stroke-dasharray', d => d.strokeDasharray || 'none')
@@ -230,6 +250,18 @@ export class ModernFlowRenderer {
    */
   private generatePath(segment: FlowSegment): string {
     const { startPoint, endPoint } = segment;
+    
+    // Debug: Log invalid coordinates
+    if (!startPoint || !endPoint || 
+        isNaN(startPoint.x) || isNaN(startPoint.y) || 
+        isNaN(endPoint.x) || isNaN(endPoint.y)) {
+      console.error('Invalid segment coordinates:', { 
+        segment, 
+        startPoint, 
+        endPoint 
+      });
+      return '';
+    }
     
     // For now, simple straight line - can be enhanced with curves
     return `M ${startPoint.x},${startPoint.y} L ${endPoint.x},${endPoint.y}`;

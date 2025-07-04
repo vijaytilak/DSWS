@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
-import { Bubble, Flow } from '../types';
+import { Bubble } from '../types';
+import type { Flow } from '../services/FlowFactory';
 import ThemeManager from '../services/ThemeManager';
 import { formatNumber } from '../utils/format';
 import ViewManager from '../services/ViewManager';
@@ -232,20 +233,16 @@ export class TooltipManager {
     let flowLabel = '';
     
     // Choose appropriate flow data based on direction
+    // Use abs value for all flow types as per new Flow interface
+    flowValue = flow.abs || 0;
+    
     if (flowDirection === 'net') {
-      flowValue = flow.netFlow || 0;
       flowLabel = 'Net Flow';
     } else if (flowDirection === 'in') {
-      flowValue = flow.inFlow || 0;
       flowLabel = 'In Flow';
     } else if (flowDirection === 'out') {
-      flowValue = flow.outFlow || 0;
       flowLabel = 'Out Flow';
     } else {
-      // Both direction (bidirectional)
-      const inFlow = flow.inFlow || 0;
-      const outFlow = flow.outFlow || 0;
-      flowValue = inFlow + outFlow;
       flowLabel = 'Total Flow';
     }
     
@@ -254,9 +251,6 @@ export class TooltipManager {
       <div class="tooltip-content">
         <h4>${sourceLabel} → ${targetLabel}</h4>
         <p>${flowLabel}: ${formatNumber(flowValue)}</p>
-        ${flow.inFlow !== undefined ? `<p>In Flow: ${formatNumber(flow.inFlow)}</p>` : ''}
-        ${flow.outFlow !== undefined ? `<p>Out Flow: ${formatNumber(flow.outFlow)}</p>` : ''}
-        ${flow.netFlow !== undefined ? `<p>Net Flow: ${formatNumber(flow.netFlow)}</p>` : ''}
         <div><strong>From:</strong> ${source.label || ''}</div>
         <div><strong>To:</strong> ${target.label || ''}</div>
         <div><strong>${flowLabel}:</strong> ${(flow as any).displayValue?.toLocaleString() || (flow as any).value?.toLocaleString() || 'N/A'}</div>

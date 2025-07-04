@@ -50,6 +50,22 @@ export const FLOW_TYPE_DEFINITIONS: Record<FlowType, FlowTypeDefinition> = {
     requiresDirection: false,
     supportsBidirectional: true,
     defaultRenderType: 'bidirectional'
+  },
+  more: {
+    id: 'more',
+    label: 'More Spend',
+    description: 'Shows flows where spending is increasing',
+    requiresDirection: true,
+    supportsBidirectional: false,
+    defaultRenderType: 'unidirectional'
+  },
+  less: {
+    id: 'less',
+    label: 'Less Spend',
+    description: 'Shows flows where spending is decreasing',
+    requiresDirection: true,
+    supportsBidirectional: false,
+    defaultRenderType: 'unidirectional'
   }
 };
 
@@ -57,7 +73,9 @@ export const FLOW_TYPE_OPTIONS: FlowTypeOption[] = [
   { id: 'out', label: 'Out Flow', icon: 'ArrowUpRight' },
   { id: 'in', label: 'In Flow', icon: 'ArrowDownRight' },
   { id: 'net', label: 'Net Flow', icon: 'ArrowRightLeft' },
-  { id: 'both', label: 'Bi-directional', icon: 'ArrowLeftRight' }
+  { id: 'both', label: 'Bi-directional', icon: 'ArrowLeftRight' },
+  { id: 'more', label: 'More Spend', icon: 'TrendingUp' },
+  { id: 'less', label: 'Less Spend', icon: 'TrendingDown' }
 ];
 
 /**

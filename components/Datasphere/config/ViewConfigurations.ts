@@ -249,8 +249,16 @@ export function getFlowTypeOptions(metric: MetricType): { id: FlowType; label: s
         label = 'Both';
         description = 'Bidirectional flows';
         break;
+      case 'more':
+        label = 'More';
+        description = 'Increasing spend flows';
+        break;
+      case 'less':
+        label = 'Less';
+        description = 'Decreasing spend flows';
+        break;
       default:
-        label = flowType.charAt(0).toUpperCase() + flowType.slice(1);
+        label = (flowType as string).charAt(0).toUpperCase() + (flowType as string).slice(1);
         description = `${flowType} flows`;
     }
     

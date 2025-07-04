@@ -17,7 +17,8 @@
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
       "Bash(timeout 30s npm run build:*)",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

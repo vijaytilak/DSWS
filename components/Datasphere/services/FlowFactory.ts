@@ -84,6 +84,9 @@ export interface Flow {
   abs: number;
   rank?: number;
   
+  // Raw flow data for segment generation
+  rawFlowData?: any;
+  
   // State properties
   visible: boolean;
   highlighted: boolean;
@@ -148,6 +151,13 @@ export default class FlowFactory {
    * Generate Flow objects from raw data based on configuration
    */
   public generateFlows(data: FlowData, config: FlowGenerationConfig): Flow[] {
+    console.log('FlowFactory.generateFlows Debug:', {
+      config,
+      brandFlowsCount: data.flow_brands?.length || 0,
+      marketFlowsCount: data.flow_markets?.length || 0,
+      bubblesCount: data.bubbles?.length || 0
+    });
+    
     if (config.view === 'brands') {
       return this.generateBrandFlows(data.flow_brands, config);
     } else {
@@ -180,7 +190,7 @@ export default class FlowFactory {
         continue;
       }
 
-      const flow = this.createFlowFromBrandData(brandFlow, config, flowTypeData);
+      const flow = this.createFlowFromBrandData(brandFlow, config, flowTypeData, metricData);
       if (flow) {
         flows.push(flow);
       }
@@ -197,6 +207,13 @@ export default class FlowFactory {
     // Calculate center bubble ID - it should be the count of data bubbles (11 for data with bubbles 0-10)
     const centerBubbleId = numBubbles.toString();
 
+    console.log('generateMarketFlows Debug:', {
+      marketFlowsCount: marketFlows?.length || 0,
+      centerBubbleId,
+      config,
+      sampleMarketFlow: marketFlows?.[0]
+    });
+
     for (const marketFlow of marketFlows) {
       // Apply focus bubble filter if specified
       if (config.focusBubbleId !== null && config.focusBubbleId !== undefined) {
@@ -206,22 +223,29 @@ export default class FlowFactory {
       }
 
       const metricData = this.extractMetricData(marketFlow, config.metric);
-      if (!metricData) continue;
+      if (!metricData) {
+        console.log(`Market Flow ${marketFlow.bubbleID} - no metricData for ${config.metric}`);
+        continue;
+      }
 
       const flowTypeData = metricData[config.flowType];
-      if (!flowTypeData) continue;
+      if (!flowTypeData) {
+        console.log(`Market Flow ${marketFlow.bubbleID} - no flowTypeData for ${config.flowType} in`, metricData);
+        continue;
+      }
 
       // Apply threshold filter
       if (config.threshold && flowTypeData.abs < config.threshold) {
         continue;
       }
 
-      const flow = this.createFlowFromMarketData(marketFlow, config, flowTypeData, centerBubbleId);
+      const flow = this.createFlowFromMarketData(marketFlow, config, flowTypeData, centerBubbleId, metricData);
       if (flow) {
         flows.push(flow);
       }
     }
 
+    console.log(`generateMarketFlows completed: ${flows.length} flows created`);
     return flows;
   }
 
@@ -247,7 +271,8 @@ export default class FlowFactory {
   private createFlowFromBrandData(
     brandFlow: BrandFlow, 
     config: FlowGenerationConfig, 
-    flowTypeData: any
+    flowTypeData: any,
+    metricData: any
   ): Flow | null {
     const flowId = `brand-${brandFlow.from}-${brandFlow.to}-${config.metric}-${config.flowType}`;
     
@@ -261,6 +286,7 @@ export default class FlowFactory {
       flowType: config.flowType as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
       flowSegments: [], // Will be populated by FlowSegmentGenerator
       abs: flowTypeData.abs || 0,
+      rawFlowData: metricData, // Include raw data for segment generation
       visible: true,
       highlighted: false,
       selected: false,
@@ -281,7 +307,8 @@ export default class FlowFactory {
     marketFlow: MarketFlow, 
     config: FlowGenerationConfig, 
     flowTypeData: any,
-    centerBubbleId: string
+    centerBubbleId: string,
+    metricData: any
   ): Flow | null {
     const flowId = `market-${marketFlow.bubbleID}-center-${config.metric}-${config.flowType}`;
     
@@ -295,6 +322,7 @@ export default class FlowFactory {
       flowType: config.flowType as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
       flowSegments: [], // Will be populated by FlowSegmentGenerator
       abs: flowTypeData.abs || 0,
+      rawFlowData: metricData, // Include raw data for segment generation
       visible: true,
       highlighted: false,
       selected: false,

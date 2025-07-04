@@ -4,7 +4,13 @@ export interface TableDataItem {
   abs: string;
 }
 
-interface FlowDataWithPercentages {
+interface FlowDataWithSinglePercentage {
+  abs: number;
+  perc: number;
+  index: number;
+}
+
+interface FlowDataWithBidirectionalPercentages {
   abs: number;
   out_perc: number;
   in_perc: number;
@@ -12,15 +18,9 @@ interface FlowDataWithPercentages {
   in_index: number;
 }
 
-interface FlowDataWithSinglePercentage {
-  abs: number;
-  perc: number;
-  index: number;
-}
-
-interface ChurnFlow {
-  in: FlowDataWithPercentages;
-  out: FlowDataWithPercentages;
+interface BrandChurnFlow {
+  in: FlowDataWithBidirectionalPercentages;
+  out: FlowDataWithBidirectionalPercentages;
   net: FlowDataWithSinglePercentage;
   both: {
     abs: number;
@@ -31,7 +31,7 @@ interface ChurnFlow {
   };
 }
 
-interface SwitchingFlow {
+interface BrandSwitchingFlow {
   in: FlowDataWithSinglePercentage;
   out: FlowDataWithSinglePercentage;
   net: FlowDataWithSinglePercentage;
@@ -44,6 +44,30 @@ interface SwitchingFlow {
   };
 }
 
+interface MarketChurnFlow {
+  in: FlowDataWithSinglePercentage;
+  out: FlowDataWithSinglePercentage;
+  net: FlowDataWithSinglePercentage;
+  both: {
+    abs: number;
+    out_perc: number;
+    in_perc: number;
+    index: number;
+  };
+}
+
+interface MarketSwitchingFlow {
+  in: FlowDataWithSinglePercentage;
+  out: FlowDataWithSinglePercentage;
+  net: FlowDataWithSinglePercentage;
+  both: {
+    abs: number;
+    out_perc: number;
+    in_perc: number;
+    index: number;
+  };
+}
+
 interface SpendFlow {
   more: FlowDataWithSinglePercentage;
   less: FlowDataWithSinglePercentage;
@@ -53,14 +77,14 @@ export interface BrandFlow {
   from: number;
   to: number;
   tabledata?: TableDataItem[];
-  churn?: ChurnFlow[];
-  switching?: SwitchingFlow[];
+  churn?: BrandChurnFlow[];
+  switching?: BrandSwitchingFlow[];
 }
 
 export interface MarketFlow {
   bubbleID: number;  // Bubble ID for the market flow
-  churn: ChurnFlow[];     // Array of churn flow data
-  switching: SwitchingFlow[]; // Array of switching flow data
+  churn: MarketChurnFlow[];     // Array of churn flow data
+  switching: MarketSwitchingFlow[]; // Array of switching flow data
   spend: SpendFlow[];     // Array of spend flow data (Markets only)
   tabledata?: TableDataItem[];
 }

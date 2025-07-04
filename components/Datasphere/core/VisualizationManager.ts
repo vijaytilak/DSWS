@@ -136,7 +136,6 @@ export class VisualizationManager {
     
     this.tooltipManager.initialize({
       container: document.body,
-      isDarkTheme: document.documentElement.classList.contains('dark'),
       flowOption: this.flowOption
     });
     
@@ -198,7 +197,15 @@ export class VisualizationManager {
       onBubbleClick: (bubble) => this.handleBubbleClick(bubble)
     });
     
-    // Flow renderer is already initialized in the initialize method
+    // Re-initialize flow renderer containers after SVG clear
+    if (this.flowRenderer) {
+      this.flowRenderer = new ModernFlowRenderer({
+        svg: this.svg,
+        width: this.width,
+        height: this.height,
+        onFlowClick: (flow, segment) => this.handleModernFlowClick(flow, segment)
+      });
+    }
     
     // Clear individual renderers (this will now be redundant but keeping for consistency)
     this.bubbleRenderer.clear();
@@ -213,8 +220,7 @@ export class VisualizationManager {
     this.bubbleRenderer.renderBubbles(
       this.bubbles,
       this.focusBubbleId,
-      this.isMarketView,
-      isDarkTheme
+      this.isMarketView
     );
     
     // Note: Bubble labels are rendered as part of renderBubbles in the updated implementation
@@ -233,10 +239,7 @@ export class VisualizationManager {
     // Use default configuration with theme-specific overrides
     const config = this.configManager.getRenderingConfig();
     // Apply theme-specific settings if needed
-    this.renderingRules.updateConfig({
-      ...config,
-      isDarkTheme
-    });
+    this.renderingRules.updateConfig(config);
   }
 
   /**

@@ -106,7 +106,7 @@ export default class FlowDataService {
     const flowConfig: FlowGenerationConfig = {
       view: filters.view || this.viewManager.getViewType(),
       metric: filters.metric || this.configManager.getFlowOption(),
-      flowType: filters.flowType || this.configManager.getFlowType(),
+      flowType: filters.flowType || this.configManager.getFlowType() as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
       focusBubbleId: filters.focusBubbleId !== undefined ? filters.focusBubbleId : this.currentConfig.focusBubbleId,
       threshold: filters.threshold !== undefined ? filters.threshold : this.currentConfig.threshold,
     };
@@ -115,6 +115,15 @@ export default class FlowDataService {
     const flows = this.flowFactory.generateFlows(this.rawData, flowConfig);
     const rankedFlows = this.flowFactory.addRankingToFlows(flows);
 
+    // Debug: Log flow generation
+    console.log('FlowDataService.getFilteredFlows Debug:', {
+      rawDataExists: !!this.rawData,
+      flowConfig,
+      flowsGenerated: flows.length,
+      rankedFlows: rankedFlows.length,
+      sampleFlow: flows[0]
+    });
+
     // Generate segments
     const segmentConfig: SegmentGenerationConfig = {
       bubbles: this.currentConfig.bubbles,
@@ -122,7 +131,15 @@ export default class FlowDataService {
       canvasHeight: this.currentConfig.canvasHeight,
     };
 
-    return this.segmentGenerator.generateSegments(rankedFlows, segmentConfig);
+    const segmentedFlows = this.segmentGenerator.generateSegments(rankedFlows, segmentConfig);
+    
+    console.log('FlowSegmentGenerator Debug:', {
+      segmentConfig,
+      segmentedFlowsCount: segmentedFlows.length,
+      sampleSegmentedFlow: segmentedFlows[0]
+    });
+
+    return segmentedFlows;
   }
 
   /**
@@ -228,7 +245,7 @@ export default class FlowDataService {
   public exportFlowsData(): {
     flows: Flow[];
     config: FlowDataServiceConfig | null;
-    statistics: ReturnType<typeof this.getFlowStatistics>;
+    statistics: any;
   } {
     return {
       flows: this.currentFlows,
@@ -264,7 +281,7 @@ export default class FlowDataService {
       const flowConfig: FlowGenerationConfig = {
         view: this.viewManager.getViewType(),
         metric: this.configManager.getFlowOption(),
-        flowType: this.configManager.getFlowType(),
+        flowType: this.configManager.getFlowType() as 'in' | 'out' | 'net' | 'both' | 'more' | 'less',
         focusBubbleId: this.currentConfig.focusBubbleId,
         threshold: this.currentConfig.threshold,
       };

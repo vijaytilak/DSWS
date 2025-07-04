@@ -8,7 +8,7 @@ import type { FlowType } from '../config/ViewConfigurations';
 export const flowTypeOptions = FLOW_TYPE_OPTIONS.map(option => ({
   id: option.id,
   label: option.label
-})) as const;
+}));
 
 /**
  * Get flow type options for a specific view
