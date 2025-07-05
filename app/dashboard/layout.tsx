@@ -12,7 +12,7 @@ import {
 import { RightSidebarProvider } from "@/components/ui/right-sidebar"
 import { TableDataProvider } from "@/app/contexts/table-data-context";
 
-type FlowOption = 'churn' | 'switching' | 'affinity';
+type FlowOption = 'churn' | 'switching';
 
 interface CentreFlowContextType {
   centreFlow: boolean;

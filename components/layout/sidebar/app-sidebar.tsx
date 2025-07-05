@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
-type FlowOption = 'churn' | 'switching' | 'affinity';
+type FlowOption = 'churn' | 'switching';
 type View = 'Markets' | 'Brands';
 
 // This is sample data.
@@ -107,24 +107,17 @@ export function AppSidebar({
         <NavOptions 
           onFlowOptionChange={(option) => {
             onFlowOptionChange?.(option);
-            // When Affinity is selected, force netFlow type
-            if (option === 'affinity') {
-              setFlowType('netFlow');
-            }
           }} 
           flowOption={flowOption}
           selectedView={selectedView}
         />
-        {/* Only show flow types if not using Affinity */}
-        {flowOption !== 'affinity' && (
-          <NavFlowTypes 
-            setFlowType={setFlowType} 
-            currentFlowType={flowType}
-            focusBubbleId={focusBubbleId}
-            isMarketView={isMarketView}
-            flowOption={flowOption}
-          />
-        )}
+        <NavFlowTypes 
+          setFlowType={setFlowType} 
+          currentFlowType={flowType}
+          focusBubbleId={focusBubbleId}
+          isMarketView={isMarketView}
+          flowOption={flowOption}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userDetails} />
